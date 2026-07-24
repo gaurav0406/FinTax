@@ -24,7 +24,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           # Add the libraries your scraper needs below (e.g., requests, beautifulsoup4)
-          pip install requests beautifulsoup4 
+          pip install requests beautifulsoup4 feedparser google-generativeai gtts supabase
 
       - name: Run Scraper
         run: |
