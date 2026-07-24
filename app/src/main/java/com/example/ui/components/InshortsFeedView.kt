@@ -37,7 +37,9 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.graphics.vector.ImageVector
 import android.content.Context
 import android.content.Intent
+import android.app.Activity
 import androidx.compose.material.icons.filled.Refresh
+import com.example.utils.AdMobHelper
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.CircularProgressIndicator
@@ -104,6 +106,20 @@ fun InshortsFeedView(
 ) {
     var webViewUrlToOpen by remember { mutableStateOf<String?>(null) }
     var webViewTitleToOpen by remember { mutableStateOf("Financial Action") }
+    
+    val context = LocalContext.current
+    val openUrlWithAd = { url: String, title: String ->
+        val activity = context as? Activity
+        if (activity != null) {
+            AdMobHelper.showInterstitial(activity) {
+                webViewUrlToOpen = url
+                webViewTitleToOpen = title
+            }
+        } else {
+            webViewUrlToOpen = url
+            webViewTitleToOpen = title
+        }
+    }
 
     if (newsList.isEmpty()) {
         Box(
@@ -209,8 +225,7 @@ fun InshortsFeedView(
                         onPlayAudio = { onPlayAudio(news) },
                         onToggleBookmark = { onToggleBookmark(news) },
                         onOpenActionUrl = { url ->
-                            webViewUrlToOpen = url
-                            webViewTitleToOpen = news.title
+                            openUrlWithAd(url, news.title)
                         },
                         onOpenComments = if (onOpenComments != null) { { onOpenComments(news) } } else null
                     )
@@ -220,8 +235,7 @@ fun InshortsFeedView(
                     AdMobNativeExpressCard(
                         slideIndex = page,
                         onOpenAd = { url ->
-                            webViewUrlToOpen = url
-                            webViewTitleToOpen = "Sponsored Partner"
+                            openUrlWithAd(url, "Sponsored Partner")
                         }
                     )
                 }
@@ -230,8 +244,7 @@ fun InshortsFeedView(
                     LeadGenerationCard(
                         slideIndex = page,
                         onOpenExternalLink = { url ->
-                            webViewUrlToOpen = url
-                            webViewTitleToOpen = "Card Application Portal"
+                            openUrlWithAd(url, "Card Application Portal")
                         }
                     )
                 }

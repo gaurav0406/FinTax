@@ -55,6 +55,7 @@ import com.example.ui.theme.MinimalBackground
 import com.example.ui.theme.MinimalPurpleDark
 import com.example.ui.theme.MinimalPurpleLightContainer
 import com.example.ui.theme.MinimalPurplePrimary
+import com.example.ui.theme.MinimalSurfaceVariant
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 
@@ -121,6 +122,10 @@ fun CommunityDiscussionsTab(
                 contentPadding = PaddingValues(bottom = 80.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                item {
+                    DailyQuizCard()
+                }
+                
                 items(allNews, key = { it.id }) { news ->
                     val newsComments = allComments.filter { it.newsId == news.id }
                     TrendingDiscussionCard(
@@ -368,5 +373,128 @@ fun shareToSocial(context: Context, news: FinancialNewsEntity, platform: String)
             "Share via"
         )
         context.startActivity(chooser)
+    }
+}
+
+@Composable
+fun DailyQuizCard() {
+    var selectedAnswer by remember { mutableStateOf<Int?>(null) }
+    var isSubmitted by remember { mutableStateOf(false) }
+
+    val question = "Does closing an old credit card improve your CIBIL score?"
+    val answers = listOf(
+        "Yes, it removes old debt.",
+        "No, it can decrease your credit history length.",
+        "It has no effect.",
+        "Only if the card has an annual fee."
+    )
+    val correctAnswer = 1
+    val explanation = "Closing an old credit card reduces your total credit limit (increasing credit utilization) and shortens your average credit history length, both of which can negatively impact your CIBIL score."
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MinimalSurfaceVariant)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.LocalFireDepartment, // Or something else
+                    contentDescription = null,
+                    tint = Color(0xFFFFB300),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Daily Finance Quiz",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFFB300)
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = question,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            answers.forEachIndexed { index, answer ->
+                val isSelected = selectedAnswer == index
+                val isCorrect = index == correctAnswer
+
+                val backgroundColor = when {
+                    !isSubmitted && isSelected -> MinimalPurpleLightContainer
+                    isSubmitted && isCorrect -> Color(0xFFE8F5E9)
+                    isSubmitted && isSelected && !isCorrect -> Color(0xFFFFEBEE)
+                    else -> Color.White
+                }
+                
+                val borderColor = when {
+                    !isSubmitted && isSelected -> MinimalPurplePrimary
+                    isSubmitted && isCorrect -> Color(0xFF4CAF50)
+                    isSubmitted && isSelected && !isCorrect -> Color(0xFFF44336)
+                    else -> Color(0xFFE0E0E0)
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable(enabled = !isSubmitted) { selectedAnswer = index },
+                    color = backgroundColor,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = answer,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextPrimary,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+
+            if (selectedAnswer != null && !isSubmitted) {
+                Spacer(modifier = Modifier.height(8.dp))
+                androidx.compose.material3.Button(
+                    onClick = { isSubmitted = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Submit Answer")
+                }
+            }
+
+            if (isSubmitted) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    color = if (selectedAnswer == correctAnswer) Color(0xFFE8F5E9) else Color(0xFFFFEBEE),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = if (selectedAnswer == correctAnswer) "✅ Correct!" else "❌ Incorrect",
+                            fontWeight = FontWeight.Bold,
+                            color = if (selectedAnswer == correctAnswer) Color(0xFF2E7D32) else Color(0xFFC62828)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = explanation,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextPrimary
+                        )
+                    }
+                }
+            }
+        }
     }
 }

@@ -46,6 +46,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.CustomCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -82,6 +93,11 @@ fun ProfileSetupScreen(
     val currentProfileState by viewModel.userProfile.collectAsState()
     val profile = currentProfileState ?: UserProfileEntity()
 
+
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val auth = remember { FirebaseAuth.getInstance() }
+    
     var isLoggedIn by remember(profile) { mutableStateOf(profile.isLoggedIn) }
     var name by remember(profile) { mutableStateOf(profile.userName) }
     var email by remember(profile) { mutableStateOf(profile.userEmail) }
@@ -163,10 +179,43 @@ fun ProfileSetupScreen(
 
                 Button(
                     onClick = {
-                        isLoggedIn = !isLoggedIn
-                        if (isLoggedIn && name.isBlank()) {
-                            name = "Gaurav Sharma"
-                            email = "gs.gaurav0406@gmail.com"
+                        if (isLoggedIn) {
+                            auth.signOut()
+                            isLoggedIn = false
+                            name = ""
+                            email = ""
+                        } else {
+                            coroutineScope.launch {
+                                try {
+                                    val credentialManager = CredentialManager.create(context)
+                                    val googleIdOption = GetGoogleIdOption.Builder()
+                                        .setFilterByAuthorizedAccounts(false)
+                                        .setServerClientId(context.getString(com.example.R.string.default_web_client_id))
+                                        .setAutoSelectEnabled(true)
+                                        .build()
+
+                                    val request = GetCredentialRequest.Builder()
+                                        .addCredentialOption(googleIdOption)
+                                        .build()
+
+                                    val result = credentialManager.getCredential(context, request)
+                                    val credential = result.credential
+                                    
+                                    if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                                        val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                                        val firebaseCredential = GoogleAuthProvider.getCredential(googleIdTokenCredential.idToken, null)
+                                        auth.signInWithCredential(firebaseCredential)
+                                        val user = auth.currentUser
+                                        if (user != null) {
+                                            name = user.displayName ?: ""
+                                            email = user.email ?: ""
+                                            isLoggedIn = true
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                            }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(

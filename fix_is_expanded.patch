@@ -1,0 +1,7 @@
+--- app/src/main/java/com/example/ui/components/NewsItemCard.kt
++++ app/src/main/java/com/example/ui/components/NewsItemCard.kt
+@@ -74,3 +74,3 @@
+     val context = LocalContext.current
+-    var isExpanded by remember { mutableStateOf(false) }
++    var isExpanded by remember { mutableStateOf(true) }
+     var webViewUrlToOpen by remember { mutableStateOf<String?>(null) }

@@ -150,7 +150,13 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
             _isRefreshing.value = true
             _aiStatusMessage.value = "Refreshing live Indian financial feeds..."
             kotlinx.coroutines.delay(800)
+            
+            // Fetch live news from the backend
+            repository.fetchLiveNewsFromSupabase()
+            
+            // Seed sample data if database is still empty after live fetch
             repository.seedInitialDataIfEmpty()
+            
             _aiStatusMessage.value = "Feeds updated!"
             _isRefreshing.value = false
         }

@@ -46,8 +46,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import android.content.Context
 import android.content.Intent
+import android.app.Activity
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Share
+import com.example.utils.AdMobHelper
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,7 +75,7 @@ fun NewsItemCard(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var isExpanded by remember { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(true) }
     var webViewUrlToOpen by remember { mutableStateOf<String?>(null) }
     var webViewTitleToOpen by remember { mutableStateOf("Financial Action") }
 
@@ -104,7 +106,7 @@ fun NewsItemCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    color = MinimalPurpleDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     shape = RoundedCornerShape(20.dp)
                 ) {
                     Text(
@@ -130,7 +132,7 @@ fun NewsItemCard(
                     Text(
                         text = news.sourceName,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -157,7 +159,7 @@ fun NewsItemCard(
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = "Share Article",
-                            tint = MinimalPurpleDark
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
 
@@ -171,7 +173,7 @@ fun NewsItemCard(
                             Icon(
                                 imageVector = Icons.Default.Chat,
                                 contentDescription = "Comments",
-                                tint = MinimalPurpleDark
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -187,7 +189,7 @@ fun NewsItemCard(
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     lineHeight = 26.sp,
-                    color = MinimalPurpleDark
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             )
 
@@ -248,14 +250,14 @@ fun NewsItemCard(
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp,
-                        color = MinimalPurpleDark
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 )
 
                 Icon(
                     imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = "Expand/Collapse",
-                    tint = MinimalPurpleDark
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -299,8 +301,16 @@ fun NewsItemCard(
                 if (!news.financialActionUrl.isNull_or_blank_safe()) {
                     Button(
                         onClick = {
-                            webViewUrlToOpen = news.financialActionUrl
-                            webViewTitleToOpen = news.title
+                            val activity = context as? Activity
+                            if (activity != null) {
+                                AdMobHelper.showInterstitial(activity) {
+                                    webViewUrlToOpen = news.financialActionUrl
+                                    webViewTitleToOpen = news.title
+                                }
+                            } else {
+                                webViewUrlToOpen = news.financialActionUrl
+                                webViewTitleToOpen = news.title
+                            }
                         },
                         modifier = Modifier
                             .weight(1f)
@@ -326,8 +336,16 @@ fun NewsItemCard(
 
                 OutlinedButton(
                     onClick = {
-                        webViewUrlToOpen = news.sourceUrl
-                        webViewTitleToOpen = "Source: ${news.sourceName}"
+                        val activity = context as? Activity
+                        if (activity != null) {
+                            AdMobHelper.showInterstitial(activity) {
+                                webViewUrlToOpen = news.sourceUrl
+                                webViewTitleToOpen = "Source: ${news.sourceName}"
+                            }
+                        } else {
+                            webViewUrlToOpen = news.sourceUrl
+                            webViewTitleToOpen = "Source: ${news.sourceName}"
+                        }
                     },
                     modifier = Modifier
                         .weight(1f)
@@ -389,7 +407,7 @@ private fun MinimalBulletRow(
             style = MaterialTheme.typography.bodySmall.copy(
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurface
             )
         )
     }

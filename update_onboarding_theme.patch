@@ -1,0 +1,86 @@
+--- app/src/main/java/com/example/ui/components/OnboardingScreen.kt
++++ app/src/main/java/com/example/ui/components/OnboardingScreen.kt
+@@ -43,3 +43,3 @@
+         modifier = Modifier.fillMaxSize(),
+-        color = Color.White
++        color = MaterialTheme.colorScheme.background
+     ) {
+@@ -59,3 +59,3 @@
+                     fontWeight = FontWeight.Bold,
+-                    color = Color.Black
++                    color = MaterialTheme.colorScheme.onBackground
+                 )
+@@ -65,3 +65,3 @@
+                     style = MaterialTheme.typography.bodyLarge,
+-                    color = Color.Black
++                    color = MaterialTheme.colorScheme.onBackground
+                 )
+@@ -70,12 +70,12 @@
+                 val textFieldColors = OutlinedTextFieldDefaults.colors(
+-                    focusedTextColor = TextPrimary,
+-                    unfocusedTextColor = TextPrimary,
+-                    focusedContainerColor = Color.White,
+-                    unfocusedContainerColor = Color.White,
+-                    disabledContainerColor = Color.White,
+-                    focusedBorderColor = MinimalPurplePrimary,
+-                    unfocusedBorderColor = Color(0xFFB0B0B0),
+-                    focusedLabelColor = MinimalPurplePrimary,
+-                    unfocusedLabelColor = TextSecondary,
+-                    focusedLeadingIconColor = MinimalPurplePrimary,
++                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
++                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
++                    focusedContainerColor = MaterialTheme.colorScheme.surface,
++                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
++                    disabledContainerColor = MaterialTheme.colorScheme.surface,
++                    focusedBorderColor = MaterialTheme.colorScheme.primary,
++                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
++                    focusedLabelColor = MaterialTheme.colorScheme.primary,
++                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
++                    focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+                     unfocusedLeadingIconColor = TextSecondary
+@@ -85,3 +85,3 @@
+                     onValueChange = { name = it },
+-                    label = { Text("Name", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)) },
+-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = TextPrimary, fontWeight = FontWeight.Medium),
++                    label = { Text("Name", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface) },
++                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium),
+                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+@@ -101,3 +101,3 @@
+                         Icon(Icons.Default.Cake, contentDescription = null, tint = TextSecondary)
+                         Spacer(modifier = Modifier.width(16.dp))
+-                        Text("Age", style = MaterialTheme.typography.bodyLarge.copy(color = TextPrimary, fontWeight = FontWeight.Medium))
++                        Text("Age", style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium))
+                     }
+@@ -118,3 +118,3 @@
+                     onValueChange = { city = it },
+-                    label = { Text("City / Location", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)) },
+-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = TextPrimary, fontWeight = FontWeight.Medium),
++                    label = { Text("City / Location", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface) },
++                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium),
+                     leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
+@@ -134,3 +134,3 @@
+                     onValueChange = { mobile = it },
+-                    label = { Text("Mobile Number (Optional)", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)) },
+-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = TextPrimary, fontWeight = FontWeight.Medium),
++                    label = { Text("Mobile Number (Optional)", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface) },
++                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium),
+                     leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
+@@ -165,3 +165,3 @@
+                     fontWeight = FontWeight.Bold,
+-                    color = Color.Black
++                    color = MaterialTheme.colorScheme.onBackground
+                 )
+@@ -171,3 +171,3 @@
+                     style = MaterialTheme.typography.bodyLarge,
+-                    color = Color.Black
++                    color = MaterialTheme.colorScheme.onBackground
+                 )
+@@ -192,4 +192,6 @@
+                             colors = FilterChipDefaults.filterChipColors(
+-                                selectedContainerColor = MinimalPurplePrimary,
+-                                selectedLabelColor = Color.White
++                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
++                                labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
++                                selectedContainerColor = MaterialTheme.colorScheme.primary,
++                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                             )

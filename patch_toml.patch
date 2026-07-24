@@ -1,0 +1,15 @@
+--- gradle/libs.versions.toml
++++ gradle/libs.versions.toml
+@@ -43,2 +43,3 @@
+ googleid = "1.1.1"
++firebaseCrashlyticsPlugin = "3.0.3"
+ 
+@@ -98,2 +99,4 @@
+ googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
++firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
++firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+ 
+@@ -107,2 +110,3 @@
+ secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
+ google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
++firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }

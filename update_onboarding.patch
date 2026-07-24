@@ -1,0 +1,50 @@
+--- app/src/main/java/com/example/ui/components/OnboardingScreen.kt
++++ app/src/main/java/com/example/ui/components/OnboardingScreen.kt
+@@ -12,2 +12,4 @@
+ import androidx.compose.material.icons.filled.LocationOn
++import androidx.compose.material.icons.filled.Add
++import androidx.compose.material.icons.filled.Remove
+ import androidx.compose.material.icons.filled.Phone
+@@ -34,3 +36,3 @@
+     var name by remember { mutableStateOf("") }
+-    var ageStr by remember { mutableStateOf("") }
++    var age by remember { mutableStateOf(21) }
+     var city by remember { mutableStateOf("") }
+@@ -95,12 +97,22 @@
+                     
+-                OutlinedTextField(
+-                    value = ageStr,
+-                    onValueChange = { ageStr = it },
+-                    label = { Text("Age", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)) },
+-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = TextPrimary, fontWeight = FontWeight.Medium),
+-                    leadingIcon = { Icon(Icons.Default.Cake, contentDescription = null) },
+-                    modifier = Modifier.fillMaxWidth(),
+-                    shape = RoundedCornerShape(12.dp),
+-                    colors = textFieldColors,
+-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+-                    singleLine = true
++                Row(
++                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
++                    verticalAlignment = Alignment.CenterVertically,
++                    horizontalArrangement = Arrangement.SpaceBetween
+                 ) {
++                    Row(verticalAlignment = Alignment.CenterVertically) {
++                        Icon(Icons.Default.Cake, contentDescription = null, tint = TextSecondary)
++                        Spacer(modifier = Modifier.width(16.dp))
++                        Text("Age", style = MaterialTheme.typography.bodyLarge.copy(color = TextPrimary, fontWeight = FontWeight.Medium))
++                    }
++                    Row(verticalAlignment = Alignment.CenterVertically) {
++                        IconButton(onClick = { if (age > 21) age-- }) {
++                            Icon(Icons.Default.Remove, contentDescription = "Decrease Age", tint = MinimalPurplePrimary)
++                        }
++                        Text("$age", style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, color = MinimalPurplePrimary))
++                        IconButton(onClick = { age++ }) {
++                            Icon(Icons.Default.Add, contentDescription = "Increase Age", tint = MinimalPurplePrimary)
++                        }
++                    }
++                }
+                 Spacer(modifier = Modifier.height(16.dp))
+@@ -193,3 +205,2 @@
+                     onClick = { 
+-                        val age = ageStr.toIntOrNull() ?: 0
+                         onComplete(name, age, city, mobile, selectedCategories.toList()) 

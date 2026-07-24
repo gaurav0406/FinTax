@@ -243,7 +243,7 @@ object SamplePreloadedData {
             generatedList.add(
                 FinancialNewsEntity(
                     id = i,
-                    title = "Opportunities in $category",
+                    title = "Key Changes in $category",
                     summaryWhatHappened = "Recent developments in $category indicate significant shifts in the market. Experts are advising users to closely monitor the trends.",
                     summaryWhoImpacted = "Investors and consumers actively engaged in $category and related financial products.",
                     summaryActionableTakeaway = "💡 Impact: Stay informed. Review your current portfolio or spending habits and adjust according to the latest $category updates to maximize benefits and minimize costs.",

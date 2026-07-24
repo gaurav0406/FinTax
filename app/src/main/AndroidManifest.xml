@@ -22,7 +22,7 @@
         <!-- AdMob Application ID (Google Sample ID for Testing) -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="ca-app-pub-5254258369829746~9552806947" />
 
         <receiver
             android:name=".notifications.RetentionNotificationReceiver"

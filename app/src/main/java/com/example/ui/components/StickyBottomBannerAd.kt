@@ -87,7 +87,7 @@ fun StickyBottomBannerAd(
                     Spacer(modifier = Modifier.width(6.dp))
 
                     Text(
-                        text = "Google AdMob • ca-app-pub-3940256099942544/6300978111",
+                        text = "Google AdMob • ca-app-pub-5254258369829746/6926643606",
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                         color = Color.White.copy(alpha = 0.5f)
                     )

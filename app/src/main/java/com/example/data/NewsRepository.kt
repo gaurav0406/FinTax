@@ -60,6 +60,16 @@ class NewsRepository(private val dao: FinancialNewsDao) {
             dao.saveUserProfile(UserProfileEntity())
         }
     }
+    
+    suspend fun fetchLiveNewsFromSupabase() {
+        try {
+            val liveNews = com.example.network.LiveNewsClient.apiService.getLiveNews()
+            dao.insertNews(liveNews)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Optionally, handle error (e.g., fallback to SamplePreloadedData if empty)
+        }
+    }
 
     suspend fun toggleBookmark(id: Int, currentStatus: Boolean) {
         dao.updateBookmark(id, !currentStatus)

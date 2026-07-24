@@ -89,11 +89,27 @@ import com.example.ui.components.StickyBottomBannerAd
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.LocalOffer
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.HorizontalDivider
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import com.example.data.UserProfileEntity
 import com.example.ui.components.CommentSheetDialog
 import com.example.ui.components.CommunityDiscussionsTab
 import com.example.ui.components.ProfileSetupScreen
 import com.example.ui.components.DealsAndOffersTab
+import androidx.compose.ui.platform.LocalUriHandler
 
 val CATEGORIES = listOf("All", "Credit Cards", "ITR & Tax", "Loans & FDs", "Markets & Mutual Funds", "RBI & Policy", "Sports", "Cars & EV", "Education")
 
@@ -202,11 +218,94 @@ fun MainHomeScreen(
         }
     }
 
-    Scaffold(
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    val uriHandler = LocalUriHandler.current
+    val privacyPolicyUrl = "https://example.com/privacy-policy"
+    val termsOfServiceUrl = "https://example.com/terms-of-service"
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Spacer(Modifier.height(12.dp))
+                if (userProfileState != null) {
+                    Text(
+                        text = "Hello, ${userProfileState!!.userName}",
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Text(
+                        text = "Age: ${userProfileState!!.age} | ${userProfileState!!.city}",
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    label = { Text("Settings") },
+                    selected = false,
+                    onClick = { /* TODO */ }
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Notifications, contentDescription = null) },
+                    label = { Text("Notifications") },
+                    selected = false,
+                    onClick = { /* TODO */ }
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Info, contentDescription = null) },
+                    label = { Text("About") },
+                    selected = false,
+                    onClick = { /* TODO */ }
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.HelpOutline, contentDescription = null) },
+                    label = { Text("Help & Support") },
+                    selected = false,
+                    onClick = { /* TODO */ }
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Info, contentDescription = null) },
+                    label = { Text("Privacy Policy") },
+                    selected = false,
+                    onClick = { uriHandler.openUri(privacyPolicyUrl) }
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Info, contentDescription = null) },
+                    label = { Text("Terms of Service") },
+                    selected = false,
+                    onClick = { uriHandler.openUri(termsOfServiceUrl) }
+                )
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.ExitToApp, contentDescription = null) },
+                    label = { Text("Logout") },
+                    selected = false,
+                    onClick = { 
+                        if (userProfileState != null) {
+                            viewModel.saveUserProfile(userProfileState!!.copy(isLoggedIn = false, hasLoggedOut = true))
+                        }
+                    }
+                )
+            }
+        },
+    ) {
+        Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = if (useInshortsViewMode && activeTab == 0) Color(0xFF0D0E12) else MinimalBackground,
         topBar = {
             TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Menu",
+                            tint = if (useInshortsViewMode && activeTab == 0) Color.White else TextPrimary
+                        )
+                    }
+                },
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Surface(
@@ -471,6 +570,7 @@ fun MainHomeScreen(
                 )
             }
         }
+    }
     }
 }
 

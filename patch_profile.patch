@@ -1,0 +1,73 @@
+--- app/src/main/java/com/example/ui/components/ProfileSetupScreen.kt
++++ app/src/main/java/com/example/ui/components/ProfileSetupScreen.kt
+@@ -48,2 +48,4 @@
+ import androidx.compose.ui.Alignment
++import androidx.compose.runtime.rememberCoroutineScope
++import androidx.compose.ui.platform.LocalContext
+ import androidx.compose.ui.Modifier
+@@ -57,2 +59,10 @@
+ import com.example.ui.NewsViewModel
++import androidx.credentials.CredentialManager
++import androidx.credentials.GetCredentialRequest
++import androidx.credentials.CustomCredential
++import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
++import com.google.android.libraries.identity.googleid.GetGoogleIdOption
++import com.google.firebase.auth.FirebaseAuth
++import com.google.firebase.auth.GoogleAuthProvider
++import kotlinx.coroutines.launch
+ import com.example.ui.theme.MinimalBackground
+@@ -83,2 +93,5 @@
+ 
++    val context = LocalContext.current
++    val coroutineScope = rememberCoroutineScope()
++    val auth = remember { FirebaseAuth.getInstance() }
+     var isLoggedIn by remember(profile) { mutableStateOf(profile.isLoggedIn) }
+@@ -165,11 +178,35 @@
+-                // NOTE FOR PRODUCTION:
+-                // The ProfileSetupScreen currently uses mock SharedPreferences logic. 
+-                // For a production forum/community, you need real Firebase Authentication (Google Sign-in/Email).
+-                // 1. Add `implementation(platform(libs.firebase.bom))` and `implementation(libs.firebase.auth)` to build.gradle.kts.
+-                // 2. Obtain google-services.json from Firebase console and place it in the app/ directory.
+-                // 3. Integrate Google Sign-in API or FirebaseUI for actual authentication flow.
+                 Button(
+                     onClick = {
+-                        isLoggedIn = !isLoggedIn
+-                        if (isLoggedIn && name.isBlank()) {
+-                            name = "Gaurav Sharma"
+-                            email = "gs.gaurav0406@gmail.com"
++                        if (isLoggedIn) {
++                            auth.signOut()
++                            isLoggedIn = false
++                        } else {
++                            coroutineScope.launch {
++                                try {
++                                    val credentialManager = CredentialManager.create(context)
++                                    val googleIdOption = GetGoogleIdOption.Builder()
++                                        .setFilterByAuthorizedAccounts(false)
++                                        .setServerClientId(context.getString(com.example.R.string.default_web_client_id))
++                                        .setAutoSelectEnabled(true)
++                                        .build()
++
++                                    val request = GetCredentialRequest.Builder()
++                                        .addCredentialOption(googleIdOption)
++                                        .build()
++
++                                    val result = credentialManager.getCredential(context, request)
++                                    val credential = result.credential
++                                    
++                                    if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
++                                        val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
++                                        val firebaseCredential = GoogleAuthProvider.getCredential(googleIdTokenCredential.idToken, null)
++                                        auth.signInWithCredential(firebaseCredential)
++                                        val user = auth.currentUser
++                                        if (user != null) {
++                                            name = user.displayName ?: ""
++                                            email = user.email ?: ""
++                                            isLoggedIn = true
++                                        }
++                                    }
++                                } catch (e: Exception) {
++                                    e.printStackTrace()
++                                }
++                            }
+                         }

@@ -1,0 +1,28 @@
+--- app/src/main/java/com/example/ui/MainHomeScreen.kt
++++ app/src/main/java/com/example/ui/MainHomeScreen.kt
+@@ -99,2 +99,3 @@
+ import com.example.ui.components.DealsAndOffersTab
++import androidx.compose.ui.platform.LocalUriHandler
+ 
+@@ -242,2 +243,4 @@
+     val scope = rememberCoroutineScope()
++    val uriHandler = LocalUriHandler.current
++    val privacyPolicyUrl = "https://example.com/privacy-policy"
++    val termsOfServiceUrl = "https://example.com/terms-of-service"
+ 
+@@ -263,2 +266,16 @@
+                 )
++                NavigationDrawerItem(
++                    icon = { Icon(Icons.Default.Info, contentDescription = null) },
++                    label = { Text("Privacy Policy") },
++                    selected = false,
++                    onClick = { uriHandler.openUri(privacyPolicyUrl) }
++                )
++                NavigationDrawerItem(
++                    icon = { Icon(Icons.Default.Info, contentDescription = null) },
++                    label = { Text("Terms of Service") },
++                    selected = false,
++                    onClick = { uriHandler.openUri(termsOfServiceUrl) }
++                )
++
+                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
