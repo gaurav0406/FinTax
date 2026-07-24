@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install feedparser requests supabase google-genai
+          feedparser requests supabase google-genai beautifulsoup4 gtts
 
       - name: Run Scraper
         env:
