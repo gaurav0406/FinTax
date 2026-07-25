@@ -11,8 +11,10 @@ interface LiveNewsApiService {
 }
 
 object LiveNewsClient {
-    // Replace this with your actual hosted backend URL
-    private const val BASE_URL = "https://your-cloud-provider-url.com/"
+    // If you are generating a live_news.json file and committing it to your GitHub repo,
+    // you must use the "raw.githubusercontent.com" URL, NOT the normal github.com URL.
+    // Retrofit base URLs MUST also end with a trailing slash.
+    private const val BASE_URL = "https://raw.githubusercontent.com/gaurav0406/FinTax/main/"
 
     val apiService: LiveNewsApiService by lazy {
         Retrofit.Builder()
