@@ -98,6 +98,11 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         viewModelScope.launch {
+            try {
+                repository.fetchLiveNewsFromSupabase()
+            } catch (e: Exception) {
+                _aiStatusMessage.value = "Init fetch failed: ${e.message}"
+            }
             repository.seedInitialDataIfEmpty()
         }
     }
@@ -151,13 +156,17 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
             _aiStatusMessage.value = "Refreshing live Indian financial feeds..."
             kotlinx.coroutines.delay(800)
             
-            // Fetch live news from the backend
-            repository.fetchLiveNewsFromSupabase()
+            try {
+                // Fetch live news from the backend
+                repository.fetchLiveNewsFromSupabase()
+                _aiStatusMessage.value = "Feeds updated!"
+            } catch (e: Exception) {
+                _aiStatusMessage.value = "Failed to fetch live data: ${e.message}"
+            }
             
             // Seed sample data if database is still empty after live fetch
             repository.seedInitialDataIfEmpty()
             
-            _aiStatusMessage.value = "Feeds updated!"
             _isRefreshing.value = false
         }
     }

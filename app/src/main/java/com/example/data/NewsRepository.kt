@@ -50,8 +50,6 @@ class NewsRepository(private val dao: FinancialNewsDao) {
     suspend fun seedInitialDataIfEmpty() {
         val existing = dao.getAllNews().first()
         if (existing.isEmpty()) {
-            val initial = SamplePreloadedData.getInitialNewsList()
-            dao.insertNews(initial)
             val initialComments = SamplePreloadedData.getInitialComments()
             initialComments.forEach { dao.insertComment(it) }
         }
@@ -62,12 +60,10 @@ class NewsRepository(private val dao: FinancialNewsDao) {
     }
     
     suspend fun fetchLiveNewsFromSupabase() {
-        try {
-            val liveNews = com.example.network.LiveNewsClient.apiService.getLiveNews()
+        // We removed the try-catch here so the ViewModel can catch it and show the error in the UI
+        val liveNews = com.example.network.LiveNewsClient.apiService.getLiveNews()
+        if (liveNews.isNotEmpty()) {
             dao.insertNews(liveNews)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            // Optionally, handle error (e.g., fallback to SamplePreloadedData if empty)
         }
     }
 
