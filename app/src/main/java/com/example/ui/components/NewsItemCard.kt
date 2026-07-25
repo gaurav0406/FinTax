@@ -68,6 +68,8 @@ import com.example.data.FinancialNewsEntity
 import com.example.ui.theme.MinimalPurpleDark
 import com.example.ui.theme.MinimalPurpleLightContainer
 import com.example.ui.theme.MinimalPurplePrimary
+import com.example.ui.theme.TextPrimary
+import com.example.ui.theme.TextSecondary
 
 @Composable
 fun NewsItemCard(
@@ -99,6 +101,7 @@ fun NewsItemCard(
         colors = CardDefaults.cardColors(
             containerColor = MinimalPurpleLightContainer
         ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, androidx.compose.material3.MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -111,7 +114,7 @@ fun NewsItemCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MinimalPurplePrimary,
                     shape = RoundedCornerShape(20.dp)
                 ) {
                     Text(
@@ -130,20 +133,20 @@ fun NewsItemCard(
                     Icon(
                         imageVector = Icons.Default.Schedule,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = TextSecondary,
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = news.sourceName,
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = TextPrimary
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "• " + SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(news.publishedAt)),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = TextSecondary
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -157,7 +160,7 @@ fun NewsItemCard(
                         Icon(
                             imageVector = if (news.isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                             contentDescription = "Bookmark",
-                            tint = if (news.isBookmarked) MinimalPurpleDark else MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = if (news.isBookmarked) MinimalPurpleDark else TextSecondary
                         )
                     }
 
@@ -170,7 +173,7 @@ fun NewsItemCard(
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = "Share Article",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = TextPrimary
                         )
                     }
 
@@ -184,7 +187,7 @@ fun NewsItemCard(
                             Icon(
                                 imageVector = Icons.Default.Chat,
                                 contentDescription = "Comments",
-                                tint = MaterialTheme.colorScheme.onSurface
+                                tint = TextPrimary
                             )
                         }
                     }
@@ -200,7 +203,7 @@ fun NewsItemCard(
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     lineHeight = 26.sp,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = TextPrimary
                 )
             )
 
@@ -259,14 +262,66 @@ fun NewsItemCard(
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
+                text = news.summaryWhatHappened,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    color = TextPrimary
+                )
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "WHO IS IMPACTED",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = MinimalPurpleDark
+                )
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = news.summaryWhoImpacted,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    color = TextPrimary
+                )
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "HOW YOU ARE IMPACTED",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = MinimalPurpleDark
+                )
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
                 text = news.summaryText,
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontSize = 13.sp,
                     lineHeight = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis
+                    color = TextPrimary
+                )
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "WHAT ARE THE NEXT STEPS",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = MinimalPurpleDark
+                )
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = news.summaryActionableTakeaway,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    color = TextPrimary
+                )
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -384,7 +439,7 @@ private fun MinimalBulletRow(
             style = MaterialTheme.typography.bodySmall.copy(
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                color = TextPrimary
             )
         )
     }

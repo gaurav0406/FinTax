@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import com.example.ui.theme.MinimalPurpleDark
 import com.example.ui.theme.MinimalPurpleLightContainer
 import com.example.ui.theme.MinimalPurplePrimary
+import com.example.ui.theme.TextPrimary
+import com.example.ui.theme.TextSecondary
 
 @Composable
 fun AiGeneratorTab(
@@ -82,7 +84,7 @@ fun AiGeneratorTab(
                 Text(
                     text = "Paste any raw Indian tax circular, RBI press release, or financial article to generate a 3-bullet structured summary and 60-word voice audio digest.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = TextSecondary
                 )
             }
         }

@@ -9,6 +9,9 @@ import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +38,8 @@ fun DailyDigestCard(
         allNewsList.groupBy { it.category }.mapValues { it.value.size }.toList().sortedByDescending { it.second }
     }
     val maxCount = categoryCounts.maxOfOrNull { it.second } ?: 1
+    var webViewUrlToOpen by remember { mutableStateOf<String?>(null) }
+    var webViewTitleToOpen by remember { mutableStateOf("Top Story") }
 
     Card(
         modifier = modifier
@@ -147,6 +152,12 @@ fun DailyDigestCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable { 
+                            if (!news.sourceUrl.isNullOrBlank()) {
+                                webViewUrlToOpen = news.sourceUrl
+                                webViewTitleToOpen = news.sourceName
+                            }
+                        }
                         .padding(vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -191,5 +202,13 @@ fun DailyDigestCard(
                 }
             }
         }
+    }
+    
+    webViewUrlToOpen?.let { url ->
+        InAppWebViewDialog(
+            url = url,
+            title = webViewTitleToOpen,
+            onDismiss = { webViewUrlToOpen = null }
+        )
     }
 }

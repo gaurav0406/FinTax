@@ -46,6 +46,8 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.theme.MinimalPurpleDark
 import com.example.ui.theme.MinimalPurpleLightContainer
 import com.example.ui.theme.MinimalPurplePrimary
+import com.example.ui.theme.TextPrimary
+import com.example.ui.theme.TextSecondary
 
 @Composable
 fun PythonPipelineTab(
@@ -163,7 +165,7 @@ CREATE INDEX idx_financial_news_category ON public.financial_news(category);
                 Text(
                     text = "Built with feedparser, BeautifulSoup4, Gemini 2.5 Flash, gTTS audio synthesis, and Supabase PostgreSQL.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = TextSecondary
                 )
             }
         }

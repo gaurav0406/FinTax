@@ -109,6 +109,8 @@ import com.example.ui.components.CommentSheetDialog
 import com.example.ui.components.CommunityDiscussionsTab
 import com.example.ui.components.ProfileSetupScreen
 import com.example.ui.components.DealsAndOffersTab
+import com.example.ui.components.VideoEngagementTab
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.ui.platform.LocalUriHandler
 
 val CATEGORIES = listOf("All", "Credit Cards", "ITR & Tax", "Loans & FDs", "Markets & Mutual Funds", "RBI & Policy", "Sports", "Cars & EV", "Education")
@@ -250,6 +252,15 @@ fun MainHomeScreen(
                     )
                 }
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
+                    label = { Text("Profile") },
+                    selected = activeTab == 6,
+                    onClick = { 
+                        viewModel.setActiveTab(6)
+                        scope.launch { drawerState.close() }
+                    }
+                )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                     label = { Text("Settings") },
@@ -490,15 +501,15 @@ fun MainHomeScreen(
                     NavigationBarItem(
                         selected = activeTab == 5,
                         onClick = { viewModel.setActiveTab(5) },
-                        icon = { Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Profile") },
-                        label = { Text("Profile", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                        icon = { Icon(imageVector = Icons.Default.PlayCircle, contentDescription = "Videos") },
+                        label = { Text("Videos", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
                             unselectedIconColor = TextSecondary,
                             unselectedTextColor = TextSecondary
                         ),
-                        modifier = Modifier.testTag("nav_tab_profile")
+                        modifier = Modifier.testTag("nav_tab_videos")
                     )
                 }
             }
@@ -547,20 +558,16 @@ fun MainHomeScreen(
 
                 1 -> CommunityDiscussionsTab(viewModel = viewModel)
 
-                2 -> StandardCardListView(
+                2 -> InshortsFeedView(
                     newsList = bookmarkedList,
                     categories = emptyList(),
                     selectedCategory = "All",
-                    searchQuery = "",
                     playingNewsId = playbackState.activeNewsId,
                     isPlaying = playbackState.isPlaying,
                     onSelectCategory = {},
-                    onSearchQueryChange = {},
                     onPlayAudio = { viewModel.playAudio(it) },
                     onToggleBookmark = { viewModel.toggleBookmark(it) },
-                    onOpenComments = { news -> selectedNewsForComments = news },
-                    autoPlayAudio = userProfileState?.autoPlayAudio == true,
-                    emptyMessage = "No saved articles yet! Tap the bookmark icon on any news card to save for offline reading."
+                    onOpenComments = { news -> selectedNewsForComments = news }
                 )
 
                 3 -> TaxCalculatorTab()

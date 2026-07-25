@@ -50,7 +50,8 @@ fun TrendingTweetsRow() {
                     modifier = Modifier.width(280.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MinimalPurpleLightContainer),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                            border = androidx.compose.foundation.BorderStroke(1.dp, androidx.compose.material3.MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(

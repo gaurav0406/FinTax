@@ -60,6 +60,8 @@ import com.example.ui.theme.MinimalBorder
 import com.example.ui.theme.MinimalPurpleDark
 import com.example.ui.theme.MinimalPurpleLightContainer
 import com.example.ui.theme.MinimalPurplePrimary
+import com.example.ui.theme.TextPrimary
+import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.MinimalSecondaryContainer
 import java.text.NumberFormat
 import java.util.Locale
@@ -162,7 +164,7 @@ fun TaxCalculatorTab(
                     Text(
                         text = "FY 2024-25 & FY 2025-26 Budget Slabs",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = TextSecondary
                     )
                 }
             }
@@ -450,7 +452,7 @@ fun TaxCalculatorTab(
                     Text(
                         text = "• Standard Deduction of ₹75,000 available for salaried individuals.\n• Full Section 87A Tax Rebate for taxable income up to ₹7 Lakhs (no tax up to ₹7.75 Lakhs gross salary).\n• Revised Slabs: 0-3L (0%), 3-7L (5%), 7-10L (10%), 10-12L (15%), 12-15L (20%), >15L (30%).",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = TextSecondary,
                         lineHeight = 18.sp
                     )
                 }

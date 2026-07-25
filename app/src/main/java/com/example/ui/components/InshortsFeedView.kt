@@ -599,6 +599,12 @@ fun InshortsNewsCardItem(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     InshortsBulletPoint(
+                        icon = Icons.Default.Newspaper,
+                        iconColor = Color(0xFFCE93D8),
+                        label = "Summary",
+                        content = news.summaryText
+                    )
+                    InshortsBulletPoint(
                         icon = Icons.Default.Group,
                         iconColor = Color(0xFF81D4FA),
                         label = "Who is Impacted",
