@@ -1,6 +1,8 @@
 package com.example.data
 
-import com.example.network.GeminiNewsService
+import com.example.network.NewsProcessorService
+import com.example.network.YouTubeClient
+
 import com.example.network.SamplePreloadedData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -48,10 +50,23 @@ class NewsRepository(private val dao: FinancialNewsDao) {
     }
 
     suspend fun seedInitialDataIfEmpty() {
+        val initialNews = SamplePreloadedData.getInitialNewsList()
         val existing = dao.getAllNews().first()
         if (existing.isEmpty()) {
+            dao.insertNews(initialNews)
             val initialComments = SamplePreloadedData.getInitialComments()
             initialComments.forEach { dao.insertComment(it) }
+        } else {
+            // Update any existing records that have null financialImpactBullets
+            val preloadedMap = initialNews.associateBy { it.title }
+            existing.forEach { item ->
+                if (item.financialImpactBullets.isNullOrBlank()) {
+                    val preloaded = preloadedMap[item.title]
+                    val impactToSet = preloaded?.financialImpactBullets 
+                        ?: NewsProcessorService.generateFallbackImpact(item.category)
+                    dao.updateNews(item.copy(financialImpactBullets = impactToSet))
+                }
+            }
         }
         val profile = dao.getUserProfile().first()
         if (profile == null) {
@@ -69,6 +84,7 @@ class NewsRepository(private val dao: FinancialNewsDao) {
                 val what = dto.summary?.getOrNull(0) ?: ""
                 val who = dto.summary?.getOrNull(1) ?: ""
                 val action = dto.summary?.getOrNull(2) ?: ""
+                val category = dto.category ?: "ITR & Tax"
                 
                 FinancialNewsEntity(
                     title = dto.title,
@@ -76,11 +92,12 @@ class NewsRepository(private val dao: FinancialNewsDao) {
                     summaryWhoImpacted = who,
                     summaryActionableTakeaway = action,
                     summaryText = dto.summaryText ?: dto.summary?.joinToString(" ") ?: "",
-                    category = dto.category ?: "ITR & Tax",
+                    category = category,
                     financialActionUrl = dto.financialActionUrl,
                     sourceUrl = dto.sourceUrl,
                     sourceName = dto.sourceName ?: "Indian Financial Feed",
-                    audioUrl = dto.audioUrl
+                    audioUrl = dto.audioUrl,
+                    financialImpactBullets = NewsProcessorService.generateFallbackImpact(category)
                 )
             }
             if (entities.isNotEmpty()) {
@@ -89,12 +106,64 @@ class NewsRepository(private val dao: FinancialNewsDao) {
         }
     }
 
+
+    suspend fun fetchYouTubeVideos(apiKey: String) {
+        val categories = listOf(
+            "ITR & Tax" to "Indian income tax ITR",
+            "Credit Cards" to "Indian credit cards best",
+            "Loans & FDs" to "Indian home loans fixed deposits",
+            "Markets & Mutual Funds" to "Indian stock market mutual funds",
+            "RBI & Policy" to "RBI monetary policy updates"
+        )
+        
+        try {
+            val existingVideos = dao.getNewsByCategory("Video Shorts").first()
+            if (existingVideos.size > 20) return // Already populated
+            
+            categories.forEach { (catName, query) ->
+                val response = YouTubeClient.apiService.searchVideos(
+                    query = query,
+                    maxResults = 10,
+                    apiKey = apiKey
+                )
+                val items = response.items ?: return@forEach
+                val entities = items.mapNotNull { item ->
+                    val videoId = item.id?.videoId ?: return@mapNotNull null
+                    val snippet = item.snippet ?: return@mapNotNull null
+                    val title = snippet.title ?: "Finance Video"
+                    val desc = snippet.description ?: ""
+                    val imageUrl = snippet.thumbnails?.high?.url
+                    val channel = snippet.channelTitle ?: "YouTube"
+                    
+                    FinancialNewsEntity(
+                        title = title,
+                        summaryWhatHappened = desc.take(100),
+                        summaryWhoImpacted = channel,
+                        summaryActionableTakeaway = "Watch this video for financial insights.",
+                        summaryText = desc,
+                        category = "Video Shorts",
+                        sourceUrl = "https://www.youtube.com/watch?v=$videoId",
+                        sourceName = channel,
+                        imageUrl = imageUrl,
+                        financialImpactBullets = NewsProcessorService.generateFallbackImpact(catName)
+                    )
+                }.map { it.copy(category = catName, isBookmarked = false) }
+                
+                if (entities.isNotEmpty()) {
+                    dao.insertNews(entities)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     suspend fun toggleBookmark(id: Int, currentStatus: Boolean) {
         dao.updateBookmark(id, !currentStatus)
     }
 
     suspend fun processAndInsertNews(rawText: String, sourceUrl: String): Result<FinancialNewsEntity> {
-        val result = GeminiNewsService.summarizeNewsWithGemini(rawText, sourceUrl)
+        val result = NewsProcessorService.summarizeNews(rawText, sourceUrl)
         result.getOrNull()?.let { news ->
             dao.insertSingleNews(news)
         }

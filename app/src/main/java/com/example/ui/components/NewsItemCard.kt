@@ -28,6 +28,10 @@ import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.PauseCircle
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Visibility
+
+import com.example.ui.theme.MinimalPurplePrimary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -65,11 +69,31 @@ import java.util.Locale
 import androidx.compose.ui.text.style.TextOverflow
 
 import com.example.data.FinancialNewsEntity
-import com.example.ui.theme.MinimalPurpleDark
-import com.example.ui.theme.MinimalPurpleLightContainer
 import com.example.ui.theme.MinimalPurplePrimary
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
+
+private fun formatSocialCount(count: Int): String {
+    return when {
+        count >= 1_000_000 -> String.format("%.1fM", count / 1_000_000.0)
+        count >= 1_000 -> String.format("%.1fk", count / 1_000.0)
+        else -> count.toString()
+    }
+}
+
+private fun formatRelativeDate(timestamp: Long): String {
+    val diff = System.currentTimeMillis() - timestamp
+    val seconds = diff / 1000
+    val minutes = seconds / 60
+    val hours = minutes / 60
+    val days = hours / 24
+
+    return when {
+        minutes < 1 -> "Just now"
+        minutes < 60 -> "${minutes}m ago"
+        hours < 24 -> "${hours}h ago"
+        days < 7 -> "${days}d ago"
+        else -> SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(timestamp))
+    }
+}
 
 @Composable
 fun NewsItemCard(
@@ -99,7 +123,7 @@ fun NewsItemCard(
             .testTag("news_card_${news.id}"),
         shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MinimalPurpleLightContainer
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
                 border = androidx.compose.foundation.BorderStroke(1.dp, androidx.compose.material3.MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -122,7 +146,7 @@ fun NewsItemCard(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 10.sp,
                             letterSpacing = 1.sp
                         )
@@ -133,20 +157,20 @@ fun NewsItemCard(
                     Icon(
                         imageVector = Icons.Default.Schedule,
                         contentDescription = null,
-                        tint = TextSecondary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.7f),
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = news.sourceName,
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = TextPrimary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "• " + SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(news.publishedAt)),
+                        text = "• " + formatRelativeDate(news.publishedAt),
                         style = MaterialTheme.typography.labelSmall,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.7f)
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -160,7 +184,7 @@ fun NewsItemCard(
                         Icon(
                             imageVector = if (news.isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                             contentDescription = "Bookmark",
-                            tint = if (news.isBookmarked) MinimalPurpleDark else TextSecondary
+                            tint = if (news.isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.7f)
                         )
                     }
 
@@ -173,7 +197,7 @@ fun NewsItemCard(
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = "Share Article",
-                            tint = TextPrimary
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -187,14 +211,75 @@ fun NewsItemCard(
                             Icon(
                                 imageVector = Icons.Default.Chat,
                                 contentDescription = "Comments",
-                                tint = TextPrimary
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Social Proof Bar (Reads & Shares Counters)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Surface(
+                    color = MinimalPurplePrimary.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Visibility,
+                            contentDescription = "Reads",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Text(
+                            text = "${formatSocialCount(news.readCount)} reads",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        )
+                    }
+                }
+
+                Surface(
+                    color = MinimalPurplePrimary.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Shares",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Text(
+                            text = "${formatSocialCount(news.shareCount)} shares",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Catchy Headline
             Text(
@@ -203,7 +288,7 @@ fun NewsItemCard(
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     lineHeight = 26.sp,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
 
@@ -216,7 +301,7 @@ fun NewsItemCard(
                     .clip(RoundedCornerShape(50))
                     .clickable { onPlayAudio() }
                     .testTag("play_audio_button_${news.id}"),
-                color = if (isPlaying) MinimalPurpleDark else MinimalPurplePrimary
+                color = if (isPlaying) MaterialTheme.colorScheme.primary else MinimalPurplePrimary
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -227,7 +312,7 @@ fun NewsItemCard(
                         Icon(
                             imageVector = if (isPlaying) Icons.Default.PauseCircle else Icons.Default.PlayCircle,
                             contentDescription = "Play Audio Digest",
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -235,7 +320,7 @@ fun NewsItemCard(
                             text = if (isPlaying) "Playing Audio Summary..." else "Listen Now (60s Digest)",
                             style = MaterialTheme.typography.labelLarge.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
                         )
                     }
@@ -243,7 +328,7 @@ fun NewsItemCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -257,7 +342,7 @@ fun NewsItemCard(
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
-                    color = MinimalPurpleDark
+                    color = MaterialTheme.colorScheme.primary
                 )
             )
             Spacer(modifier = Modifier.height(6.dp))
@@ -266,7 +351,7 @@ fun NewsItemCard(
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontSize = 13.sp,
                     lineHeight = 18.sp,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
             Spacer(modifier = Modifier.height(10.dp))
@@ -275,7 +360,7 @@ fun NewsItemCard(
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
-                    color = MinimalPurpleDark
+                    color = MaterialTheme.colorScheme.primary
                 )
             )
             Spacer(modifier = Modifier.height(4.dp))
@@ -284,7 +369,7 @@ fun NewsItemCard(
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontSize = 13.sp,
                     lineHeight = 18.sp,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
             Spacer(modifier = Modifier.height(10.dp))
@@ -293,7 +378,7 @@ fun NewsItemCard(
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
-                    color = MinimalPurpleDark
+                    color = MaterialTheme.colorScheme.primary
                 )
             )
             Spacer(modifier = Modifier.height(4.dp))
@@ -302,7 +387,44 @@ fun NewsItemCard(
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontSize = 13.sp,
                     lineHeight = 18.sp,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = news.impactSectionTitle,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            val cardImpact = news.financialImpactBullets ?: if (news.isFinancialCategory) {
+                when (news.category) {
+                    "ITR & Tax" -> "• Est. Tax Savings: ₹15,600 - ₹25,000/yr for ₹7L-15L bracket\n• Cashflow Impact: +₹2,083/mo net take-home salary boost"
+                    "Credit Cards" -> "• Direct Cash Impact: -₹350/mo on utility caps or +5% (₹400/mo) on fuel\n• Net Card Yield: ~₹4,800/yr optimized cashback return"
+                    "Loans & FDs" -> "• Interest Yield: 8.25% p.a. (+₹8,250/yr per ₹1L deposit)\n• Loan EMI Impact: +₹320/mo on ₹50L Home Loan reset"
+                    "Markets & Mutual Funds" -> "• Liquidity Boost: T+0 payout frees funds 48 hrs faster\n• Expected Yield: +1.2% CAGR boost from faster reinvestment"
+                    "Cars & EV" -> "• Operational Savings: ~₹7,000/mo (₹84,000/yr) vs Petrol vehicle\n• Tax Incentive: Sec 80EEB tax deduction up to ₹1.5 Lakhs"
+                    else -> "• Financial Gain: Estimated ₹5,000 - ₹12,000 annual net benefit by optimizing financial options."
+                }
+            } else {
+                when (news.category) {
+                    "Sports" -> "• Championship Standing: India leads WTC table with strong performance\n• Key Highlight: Record-breaking performance in recent fixtures"
+                    "Education" -> "• Curriculum Shift: Dual-board exam structure & updated entrance syllabi\n• Practical Takeaway: Skill integration across vocational streams"
+                    "Entertainment" -> "• Streaming Rights: Major platform licensing and high viewer engagement\n• Audience Value: Broader access to premium digital content bundles"
+                    "Technology Insights" -> "• Infrastructure Boost: Domestic manufacturing expansion and supply chain growth\n• Tech Efficiency: Lower reliance on component imports"
+                    "AI & New Happenings" -> "• Workflow Automation: Accelerated developer productivity & AI deployment\n• Career Advantage: High demand for generative AI skills"
+                    else -> "• Key Highlight: Major developments and strategic updates in this domain\n• Practical Takeaway: Core insights and essential knowledge for readers"
+                }
+            }
+            Text(
+                text = cardImpact,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
             Spacer(modifier = Modifier.height(10.dp))
@@ -311,7 +433,7 @@ fun NewsItemCard(
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
-                    color = MinimalPurpleDark
+                    color = MaterialTheme.colorScheme.primary
                 )
             )
             Spacer(modifier = Modifier.height(4.dp))
@@ -320,7 +442,7 @@ fun NewsItemCard(
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontSize = 13.sp,
                     lineHeight = 18.sp,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -328,7 +450,8 @@ fun NewsItemCard(
             // Action Buttons Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 if (!news.financialActionUrl.isNull_or_blank_safe()) {
                     Button(
@@ -345,18 +468,19 @@ fun NewsItemCard(
                             }
                         },
                         modifier = Modifier
-                            .weight(1f)
+                            .height(40.dp)
                             .testTag("action_link_${news.id}"),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MinimalPurplePrimary,
-                            contentColor = Color.White
+                            contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                         shape = RoundedCornerShape(50)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Launch,
                             contentDescription = null,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
@@ -364,6 +488,8 @@ fun NewsItemCard(
                             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }
+
+                    Spacer(modifier = Modifier.width(10.dp))
                 }
 
                 OutlinedButton(
@@ -380,21 +506,22 @@ fun NewsItemCard(
                         }
                     },
                     modifier = Modifier
-                        .weight(1f)
+                        .height(40.dp)
                         .testTag("source_link_${news.id}"),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MinimalPurplePrimary
                     ),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 8.dp),
                     shape = RoundedCornerShape(50)
                 ) {
                     Icon(
                         imageVector = Icons.Default.OpenInNew,
                         contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(14.dp)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Source Article",
+                        text = "Source",
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
                     )
                 }
@@ -439,7 +566,7 @@ private fun MinimalBulletRow(
             style = MaterialTheme.typography.bodySmall.copy(
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
-                color = TextPrimary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         )
     }

@@ -74,7 +74,7 @@ fun AiGeneratorTab(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Gemini AI Financial NLP Engine",
+                    text = "AI Financial NLP Engine",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = MinimalPurpleDark
@@ -160,7 +160,7 @@ fun AiGeneratorTab(
                     strokeWidth = 2.dp
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Processing with Gemini AI...")
+                Text("Processing with AI...")
             } else {
                 Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))

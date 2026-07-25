@@ -18,6 +18,26 @@ data class FinancialNewsEntity(
     val sourceName: String = "Indian Financial Feed",
     val audioUrl: String? = null,
     val imageUrl: String? = null,
+    val financialImpactBullets: String? = null,
     val publishedAt: Long = System.currentTimeMillis(),
-    val isBookmarked: Boolean = false
-)
+    val isBookmarked: Boolean = false,
+    val readCount: Int = 1250,
+    val shareCount: Int = 180
+) {
+    val commentCount: Int
+        get() = (id * 17) % 150 + 5
+
+    val isFinancialCategory: Boolean
+        get() = when (category.trim()) {
+            "ITR & Tax", "Credit Cards", "Loans & FDs", "Markets & Mutual Funds",
+            "RBI & Policy", "FinTech & Crypto", "Smart Investing", "Personal Finance",
+            "Cars & EV", "Video Shorts" -> true
+            else -> false
+        }
+
+    val impactSectionTitle: String
+        get() = if (isFinancialCategory) "QUANTIFIABLE FINANCIAL IMPACT" else "KEY TAKEAWAYS"
+
+    val impactSectionTitleMixedCase: String
+        get() = if (isFinancialCategory) "Quantifiable Financial Impact" else "Key Takeaways"
+}

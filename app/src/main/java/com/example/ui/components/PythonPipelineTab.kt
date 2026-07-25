@@ -96,7 +96,7 @@ def run_pipeline():
             soup = BeautifulSoup(item.description, 'html.parser')
             text = soup.get_text()
             
-            # Gemini NLP Structured Output
+            # AI NLP Structured Output
             res = model.generate_content(
                 f"Title: {item.title}\nContent: {text}",
                 generation_config={"response_mime_type": "application/json"}
@@ -163,7 +163,7 @@ CREATE INDEX idx_financial_news_category ON public.financial_news(category);
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Built with feedparser, BeautifulSoup4, Gemini 2.5 Flash, gTTS audio synthesis, and Supabase PostgreSQL.",
+                    text = "Built with feedparser, BeautifulSoup4, AI NLP, gTTS audio synthesis, and Supabase PostgreSQL.",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary
                 )
@@ -209,7 +209,7 @@ CREATE INDEX idx_financial_news_category ON public.financial_news(category);
                     isSimulatingPipeline = true
                     simulationLogs.add("🚀 Starting Python Pipeline Execution...")
                     simulationLogs.add("📡 Scraping Economic Times Wealth RSS Feed...")
-                    simulationLogs.add("🤖 Invoking Gemini 2.5 Flash with System Prompt (JSON Schema)...")
+                    simulationLogs.add("🤖 Invoking AI NLP with System Prompt (JSON Schema)...")
                     simulationLogs.add("✅ Title: 'ITR Filing Deadline & New Section 87A Rebate Rules'")
                     simulationLogs.add("🔊 Generating gTTS audio (en-IN) -> audio/news_a3f89d.mp3")
                     simulationLogs.add("💾 Upserting into Supabase PostgreSQL table 'financial_news'...")

@@ -7,6 +7,7 @@ import com.example.audio.AudioSpeechManager
 import com.example.data.AppDatabase
 import com.example.data.FinancialNewsEntity
 import com.example.data.NewsRepository
+import com.example.BuildConfig
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -103,7 +104,15 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
             } catch (e: Exception) {
                 _aiStatusMessage.value = "Init fetch failed: ${e.message}"
             }
-            repository.seedInitialDataIfEmpty()
+            // repository.seedInitialDataIfEmpty() // Sample data removed
+            try {
+                val apiKey = BuildConfig.YOUTUBE_API_KEY
+                if (apiKey.isNotBlank() && apiKey != "dummy") {
+                    repository.fetchYouTubeVideos(apiKey)
+                }
+            } catch (e: Exception) {
+                _aiStatusMessage.value = "Init YouTube fetch failed: ${e.message}"
+            }
         }
     }
 
@@ -134,7 +143,7 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
-    fun processRawNewsWithGemini(rawText: String, sourceUrl: String) {
+    fun processRawNews(rawText: String, sourceUrl: String) {
         if (rawText.isBlank()) return
         viewModelScope.launch {
             _isGeneratingAi.value = true
@@ -165,7 +174,15 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
             }
             
             // Seed sample data if database is still empty after live fetch
-            repository.seedInitialDataIfEmpty()
+            // repository.seedInitialDataIfEmpty() // Sample data removed
+            try {
+                val apiKey = BuildConfig.YOUTUBE_API_KEY
+                if (apiKey.isNotBlank() && apiKey != "dummy") {
+                    repository.fetchYouTubeVideos(apiKey)
+                }
+            } catch (e: Exception) {
+                _aiStatusMessage.value = "Init YouTube fetch failed: ${e.message}"
+            }
             
             _isRefreshing.value = false
         }

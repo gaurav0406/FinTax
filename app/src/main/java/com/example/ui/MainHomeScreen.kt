@@ -113,7 +113,24 @@ import com.example.ui.components.VideoEngagementTab
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.ui.platform.LocalUriHandler
 
-val CATEGORIES = listOf("All", "Credit Cards", "ITR & Tax", "Loans & FDs", "Markets & Mutual Funds", "RBI & Policy", "Sports", "Cars & EV", "Education")
+val CATEGORIES = listOf(
+    "All",
+    "Credit Cards",
+    "ITR & Tax",
+    "Loans & FDs",
+    "Markets & Mutual Funds",
+    "RBI & Policy",
+    "Entertainment",
+    "Technology Insights",
+    "AI & New Happenings",
+    "FinTech & Crypto",
+    "Startup Ecosystem",
+    "Smart Investing",
+    "Personal Finance",
+    "Sports",
+    "Cars & EV",
+    "Education"
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -313,7 +330,7 @@ fun MainHomeScreen(
     ) {
         Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = if (useInshortsViewMode && activeTab == 0) Color(0xFF0D0E12) else MinimalBackground,
+        containerColor = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color(0xFF0D0E12) else MinimalBackground,
         topBar = {
             TopAppBar(
                 navigationIcon = {
@@ -321,7 +338,7 @@ fun MainHomeScreen(
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Menu",
-                            tint = if (useInshortsViewMode && activeTab == 0) Color.White else TextPrimary
+                            tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else TextPrimary
                         )
                     }
                 },
@@ -348,16 +365,16 @@ fun MainHomeScreen(
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 19.sp,
-                                    color = if (useInshortsViewMode && activeTab == 0) Color.White else TextPrimary
+                                    color = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else TextPrimary
                                 )
                             )
                             Text(
-                                text = "60-Sec Personal Finance Digest",
+                                text = if (activeTab == 5) "60-Sec Financial Video Reels" else "60-Sec Personal Finance Digest",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 10.sp,
                                     letterSpacing = 1.sp,
-                                    color = if (useInshortsViewMode && activeTab == 0) MinimalPurpleLightContainer else TextSecondary
+                                    color = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) MinimalPurpleLightContainer else TextSecondary
                                 )
                             )
                         }
@@ -384,13 +401,13 @@ fun MainHomeScreen(
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Refresh Feeds",
-                            tint = if (useInshortsViewMode && activeTab == 0) Color.White else TextPrimary
+                            tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else TextPrimary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (useInshortsViewMode && activeTab == 0) Color(0xFF0D0E12) else MinimalBackground,
-                    titleContentColor = if (useInshortsViewMode && activeTab == 0) Color.White else TextPrimary
+                    containerColor = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color(0xFF0D0E12) else MinimalBackground,
+                    titleContentColor = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else TextPrimary
                 )
             )
         },
@@ -423,9 +440,11 @@ fun MainHomeScreen(
                     StickyBottomBannerAd()
                 }
 
+                val isDarkTab = (useInshortsViewMode && activeTab == 0) || activeTab == 5
+
                 // Bottom Navigation Bar
                 NavigationBar(
-                    containerColor = if (useInshortsViewMode && activeTab == 0) Color(0xFF16171E) else MinimalSurfaceVariant,
+                    containerColor = if (isDarkTab) Color(0xFF16171E) else MinimalSurfaceVariant,
                     tonalElevation = 2.dp
                 ) {
                     NavigationBarItem(
@@ -434,10 +453,10 @@ fun MainHomeScreen(
                         icon = { Icon(imageVector = Icons.Default.Newspaper, contentDescription = "Feed") },
                         label = { Text("Feed", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (useInshortsViewMode && activeTab == 0) Color.White else MinimalPurplePrimary,
+                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (useInshortsViewMode && activeTab == 0) Color.Gray else TextSecondary,
-                            unselectedTextColor = if (useInshortsViewMode && activeTab == 0) Color.Gray else TextSecondary
+                            unselectedIconColor = if (isDarkTab) Color.Gray else TextSecondary,
+                            unselectedTextColor = if (isDarkTab) Color.Gray else TextSecondary
                         ),
                         modifier = Modifier.testTag("nav_tab_feed")
                     )
@@ -448,10 +467,10 @@ fun MainHomeScreen(
                         icon = { Icon(imageVector = Icons.Default.Forum, contentDescription = "Community") },
                         label = { Text("Forum", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = MinimalPurplePrimary,
+                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = TextSecondary,
-                            unselectedTextColor = TextSecondary
+                            unselectedIconColor = if (isDarkTab) Color.Gray else TextSecondary,
+                            unselectedTextColor = if (isDarkTab) Color.Gray else TextSecondary
                         ),
                         modifier = Modifier.testTag("nav_tab_community")
                     )
@@ -462,10 +481,10 @@ fun MainHomeScreen(
                         icon = { Icon(imageVector = Icons.Default.Bookmark, contentDescription = "Saved") },
                         label = { Text("Saved", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = MinimalPurplePrimary,
+                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = TextSecondary,
-                            unselectedTextColor = TextSecondary
+                            unselectedIconColor = if (isDarkTab) Color.Gray else TextSecondary,
+                            unselectedTextColor = if (isDarkTab) Color.Gray else TextSecondary
                         ),
                         modifier = Modifier.testTag("nav_tab_saved")
                     )
@@ -476,10 +495,10 @@ fun MainHomeScreen(
                         icon = { Icon(imageVector = Icons.Default.Calculate, contentDescription = "Tax Calc") },
                         label = { Text("Taxes", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = MinimalPurplePrimary,
+                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = TextSecondary,
-                            unselectedTextColor = TextSecondary
+                            unselectedIconColor = if (isDarkTab) Color.Gray else TextSecondary,
+                            unselectedTextColor = if (isDarkTab) Color.Gray else TextSecondary
                         ),
                         modifier = Modifier.testTag("nav_tab_tax_calc")
                     )
@@ -490,10 +509,10 @@ fun MainHomeScreen(
                         icon = { Icon(imageVector = Icons.Default.LocalOffer, contentDescription = "Deals") },
                         label = { Text("Deals", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = MinimalPurplePrimary,
+                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = TextSecondary,
-                            unselectedTextColor = TextSecondary
+                            unselectedIconColor = if (isDarkTab) Color.Gray else TextSecondary,
+                            unselectedTextColor = if (isDarkTab) Color.Gray else TextSecondary
                         ),
                         modifier = Modifier.testTag("nav_tab_deals")
                     )
@@ -504,10 +523,10 @@ fun MainHomeScreen(
                         icon = { Icon(imageVector = Icons.Default.PlayCircle, contentDescription = "Videos") },
                         label = { Text("Videos", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = MinimalPurplePrimary,
+                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = TextSecondary,
-                            unselectedTextColor = TextSecondary
+                            unselectedIconColor = if (isDarkTab) Color.Gray else TextSecondary,
+                            unselectedTextColor = if (isDarkTab) Color.Gray else TextSecondary
                         ),
                         modifier = Modifier.testTag("nav_tab_videos")
                     )
@@ -574,7 +593,9 @@ fun MainHomeScreen(
 
                 4 -> DealsAndOffersTab()
 
-                5 -> ProfileSetupScreen(viewModel = viewModel)
+                5 -> com.example.ui.components.VideoEngagementTab(viewModel = viewModel)
+
+                6 -> ProfileSetupScreen(viewModel = viewModel)
             }
 
             selectedNewsForComments?.let { news ->

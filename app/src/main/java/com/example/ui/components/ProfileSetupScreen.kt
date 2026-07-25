@@ -79,6 +79,13 @@ val ALL_INTEREST_CATEGORIES = listOf(
     "Loans & FDs",
     "Markets & Mutual Funds",
     "RBI & Policy",
+    "Entertainment",
+    "Technology Insights",
+    "AI & New Happenings",
+    "FinTech & Crypto",
+    "Startup Ecosystem",
+    "Smart Investing",
+    "Personal Finance",
     "Sports",
     "Cars & EV",
     "Education"
