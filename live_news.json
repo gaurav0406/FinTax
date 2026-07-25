@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "title": "RBI keeps repo rate unchanged at 6.5%",
+    "summaryWhatHappened": "The Reserve Bank of India has maintained the status quo on interest rates for the 8th consecutive time.",
+    "summaryWhoImpacted": "Home loan borrowers and deposit holders.",
+    "summaryActionableTakeaway": "Continue with current EMI plans, FD rates are likely to remain stable.",
+    "summaryText": "The Monetary Policy Committee decided to keep the repo rate unchanged...",
+    "category": "RBI & Policy",
+    "sourceUrl": "https://example.com/rbi-news",
+    "sourceName": "Mint",
+    "imageUrl": "https://example.com/image.jpg",
+    "publishedAt": 1718200000000
+  },
+  {
+    "id": 2,
+    "title": "New Tax Rules for Mutual Funds starting July",
+    "summaryWhatHappened": "Capital gains taxation on debt mutual funds is seeing a major overhaul.",
+    "summaryWhoImpacted": "Investors heavily reliant on Debt Mutual Funds.",
+    "summaryActionableTakeaway": "Consult your CA to rebalance your portfolio.",
+    "summaryText": "The finance ministry announced...",
+    "category": "Markets & Mutual Funds",
+    "sourceUrl": "https://example.com/tax-news",
+    "sourceName": "Economic Times",
+    "imageUrl": null,
+    "publishedAt": 1718205000000
+  }
+]
