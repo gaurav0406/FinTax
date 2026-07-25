@@ -192,8 +192,14 @@ fun MainHomeScreen(
                 )
             } else {
                 com.example.ui.components.LoginScreen(
-                    onLoginSuccess = {
-                        viewModel.saveUserProfile(userProfileState!!.copy(isLoggedIn = true, hasLoggedOut = false))
+                    onLoginSuccess = { name, city ->
+                        val updatedProfile = userProfileState!!.copy(
+                            isLoggedIn = true, 
+                            hasLoggedOut = false,
+                            userName = name ?: userProfileState!!.userName,
+                            city = city ?: userProfileState!!.city
+                        )
+                        viewModel.saveUserProfile(updatedProfile)
                     }
                 )
             }
@@ -202,6 +208,8 @@ fun MainHomeScreen(
         
         if (!userProfileState!!.isOnboarded) {
             com.example.ui.components.OnboardingScreen(
+                initialName = userProfileState!!.userName,
+                initialCity = userProfileState!!.city,
                 onComplete = { name, age, city, mobile, categories ->
                     val profile = userProfileState!!.copy(
                         isOnboarded = true,
@@ -415,7 +423,7 @@ fun MainHomeScreen(
                         icon = { Icon(imageVector = Icons.Default.Newspaper, contentDescription = "Feed") },
                         label = { Text("Feed", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer,
+                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (useInshortsViewMode && activeTab == 0) Color.White else MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
                             unselectedIconColor = if (useInshortsViewMode && activeTab == 0) Color.Gray else TextSecondary,
                             unselectedTextColor = if (useInshortsViewMode && activeTab == 0) Color.Gray else TextSecondary
@@ -429,7 +437,7 @@ fun MainHomeScreen(
                         icon = { Icon(imageVector = Icons.Default.Forum, contentDescription = "Community") },
                         label = { Text("Forum", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer,
+                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
                             unselectedIconColor = TextSecondary,
                             unselectedTextColor = TextSecondary
@@ -443,7 +451,7 @@ fun MainHomeScreen(
                         icon = { Icon(imageVector = Icons.Default.Bookmark, contentDescription = "Saved") },
                         label = { Text("Saved", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer,
+                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
                             unselectedIconColor = TextSecondary,
                             unselectedTextColor = TextSecondary
@@ -457,7 +465,7 @@ fun MainHomeScreen(
                         icon = { Icon(imageVector = Icons.Default.Calculate, contentDescription = "Tax Calc") },
                         label = { Text("Taxes", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer,
+                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
                             unselectedIconColor = TextSecondary,
                             unselectedTextColor = TextSecondary
@@ -471,7 +479,7 @@ fun MainHomeScreen(
                         icon = { Icon(imageVector = Icons.Default.LocalOffer, contentDescription = "Deals") },
                         label = { Text("Deals", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer,
+                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
                             unselectedIconColor = TextSecondary,
                             unselectedTextColor = TextSecondary
@@ -485,7 +493,7 @@ fun MainHomeScreen(
                         icon = { Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Profile") },
                         label = { Text("Profile", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer,
+                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
                             unselectedIconColor = TextSecondary,
                             unselectedTextColor = TextSecondary
@@ -713,6 +721,9 @@ private fun StandardCardListView(
                         onOpenComments = if (onOpenComments != null) { { onOpenComments(item) } } else null,
                         autoPlayAudio = autoPlayAudio
                     )
+                }
+                item {
+                    com.example.ui.components.TrendingTweetsRow()
                 }
             }
         }

@@ -38,7 +38,7 @@ val introBanners = listOf(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: (name: String?, city: String?) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
@@ -135,7 +135,7 @@ fun LoginScreen(
                         isLoading = true
                         delay(1000) // Simulate OTP verify
                         isLoading = false
-                        onLoginSuccess()
+                        onLoginSuccess(null, null)
                     }
                 },
                 isLoading = isLoading
@@ -157,7 +157,7 @@ fun LoginScreen(
                         isLoading = true
                         delay(1000)
                         isLoading = false
-                        onLoginSuccess()
+                        onLoginSuccess("Gaurav Sharma", "Mumbai")
                     }
                 },
                 modifier = Modifier

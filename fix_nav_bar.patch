@@ -1,0 +1,56 @@
+--- app/src/main/java/com/example/ui/MainHomeScreen.kt
++++ app/src/main/java/com/example/ui/MainHomeScreen.kt
+@@ -415,8 +415,9 @@
+                         icon = { Icon(imageVector = Icons.Default.Newspaper, contentDescription = "Feed") },
+                         label = { Text("Feed", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                         colors = NavigationBarItemDefaults.colors(
+                             selectedIconColor = MinimalPurpleLightContainer,
++                            selectedTextColor = if (useInshortsViewMode && activeTab == 0) Color.White else MinimalPurplePrimary,
+                             indicatorColor = MinimalPurplePrimary,
+                             unselectedIconColor = if (useInshortsViewMode && activeTab == 0) Color.Gray else TextSecondary,
+                             unselectedTextColor = if (useInshortsViewMode && activeTab == 0) Color.Gray else TextSecondary
+@@ -430,7 +431,8 @@
+                         icon = { Icon(imageVector = Icons.Default.Forum, contentDescription = "Community") },
+                         label = { Text("Forum", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                         colors = NavigationBarItemDefaults.colors(
+                             selectedIconColor = MinimalPurpleLightContainer,
++                            selectedTextColor = MinimalPurplePrimary,
+                             indicatorColor = MinimalPurplePrimary,
+                             unselectedIconColor = TextSecondary,
+                             unselectedTextColor = TextSecondary
+@@ -444,7 +446,8 @@
+                         icon = { Icon(imageVector = Icons.Default.Bookmark, contentDescription = "Saved") },
+                         label = { Text("Saved", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                         colors = NavigationBarItemDefaults.colors(
+                             selectedIconColor = MinimalPurpleLightContainer,
++                            selectedTextColor = MinimalPurplePrimary,
+                             indicatorColor = MinimalPurplePrimary,
+                             unselectedIconColor = TextSecondary,
+                             unselectedTextColor = TextSecondary
+@@ -458,7 +461,8 @@
+                         icon = { Icon(imageVector = Icons.Default.Calculate, contentDescription = "Tax Calc") },
+                         label = { Text("Taxes", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                         colors = NavigationBarItemDefaults.colors(
+                             selectedIconColor = MinimalPurpleLightContainer,
++                            selectedTextColor = MinimalPurplePrimary,
+                             indicatorColor = MinimalPurplePrimary,
+                             unselectedIconColor = TextSecondary,
+                             unselectedTextColor = TextSecondary
+@@ -472,7 +476,8 @@
+                         icon = { Icon(imageVector = Icons.Default.LocalOffer, contentDescription = "Deals") },
+                         label = { Text("Deals", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                         colors = NavigationBarItemDefaults.colors(
+                             selectedIconColor = MinimalPurpleLightContainer,
++                            selectedTextColor = MinimalPurplePrimary,
+                             indicatorColor = MinimalPurplePrimary,
+                             unselectedIconColor = TextSecondary,
+                             unselectedTextColor = TextSecondary
+@@ -486,7 +491,8 @@
+                         icon = { Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Profile") },
+                         label = { Text("Profile", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                         colors = NavigationBarItemDefaults.colors(
+                             selectedIconColor = MinimalPurpleLightContainer,
++                            selectedTextColor = MinimalPurplePrimary,
+                             indicatorColor = MinimalPurplePrimary,
+                             unselectedIconColor = TextSecondary,
+                             unselectedTextColor = TextSecondary

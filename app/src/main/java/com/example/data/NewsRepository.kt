@@ -60,10 +60,32 @@ class NewsRepository(private val dao: FinancialNewsDao) {
     }
     
     suspend fun fetchLiveNewsFromSupabase() {
-        // We removed the try-catch here so the ViewModel can catch it and show the error in the UI
-        val liveNews = com.example.network.LiveNewsClient.apiService.getLiveNews()
-        if (liveNews.isNotEmpty()) {
-            dao.insertNews(liveNews)
+        val dtos = com.example.network.LiveNewsClient.apiService.getLiveNews()
+        if (dtos.isNotEmpty()) {
+            val entities = dtos.mapNotNull { dto ->
+                if (dto.title == null || dto.sourceUrl == null) return@mapNotNull null
+                
+                // Parse bullet points
+                val what = dto.summary?.getOrNull(0) ?: ""
+                val who = dto.summary?.getOrNull(1) ?: ""
+                val action = dto.summary?.getOrNull(2) ?: ""
+                
+                FinancialNewsEntity(
+                    title = dto.title,
+                    summaryWhatHappened = what,
+                    summaryWhoImpacted = who,
+                    summaryActionableTakeaway = action,
+                    summaryText = dto.summaryText ?: dto.summary?.joinToString(" ") ?: "",
+                    category = dto.category ?: "ITR & Tax",
+                    financialActionUrl = dto.financialActionUrl,
+                    sourceUrl = dto.sourceUrl,
+                    sourceName = dto.sourceName ?: "Indian Financial Feed",
+                    audioUrl = dto.audioUrl
+                )
+            }
+            if (entities.isNotEmpty()) {
+                dao.insertNews(entities)
+            }
         }
     }
 

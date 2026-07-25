@@ -2,11 +2,11 @@ name: Scrape Financial News
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
-  workflow_dispatch:
+    - cron: '0 * * * *' # This runs the script automatically every 6 hours
+  workflow_dispatch: # This allows you to click a button to run it manually
 
 permissions:
-  contents: write
+  contents: write # Allows the bot to commit the new JSON file
 
 jobs:
   scrape-and-update:
@@ -25,6 +25,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4 feedparser google-generativeai gTTS supabase
 
+      - name: Create or Touch live_news.json
+        run: |
+          if [ ! -f live_news.json ]; then echo "[]" > live_news.json; fi
+
       - name: Run Scraper
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -38,5 +42,5 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add live_news.json
-          git commit -m "Auto-update live_news.json" || exit 0
+          git commit -m "Auto-update live_news.json" || echo "No changes to commit"
           git push

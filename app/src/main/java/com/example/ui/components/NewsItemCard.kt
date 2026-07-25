@@ -59,6 +59,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import androidx.compose.ui.text.style.TextOverflow
+
 import com.example.data.FinancialNewsEntity
 import com.example.ui.theme.MinimalPurpleDark
 import com.example.ui.theme.MinimalPurpleLightContainer
@@ -131,8 +136,14 @@ fun NewsItemCard(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = news.sourceName,
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "• " + SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(news.publishedAt)),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -237,60 +248,26 @@ fun NewsItemCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Expand/Collapse Toggle
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { isExpanded = !isExpanded },
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "SUMMARY BREAKDOWN",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+            // Summary Breakdown
+            Text(
+                text = "SUMMARY",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = MinimalPurpleDark
                 )
-
-                Icon(
-                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = "Expand/Collapse",
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // 3 Bullet Points Breakdown
-            AnimatedVisibility(
-                visible = isExpanded,
-                enter = expandVertically(),
-                exit = shrinkVertically()
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    MinimalBulletRow(
-                        label = "👥 Who is impacted:",
-                        text = news.summaryWhoImpacted
-                    )
-
-                    if (news.category in listOf("ITR & Tax", "Loans & FDs", "Credit Cards", "Tax")) {
-                        MinimalBulletRow(
-                            label = "💡 How you're impacted (Tangible/Intangible):",
-                            text = news.summaryWhatHappened
-                        )
-
-                        MinimalBulletRow(
-                            label = "🎯 Action to take (Risk & Benefits):",
-                            text = news.summaryActionableTakeaway
-                        )
-                    }
-                }
-            }
-
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = news.summaryText,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis
+            )
             Spacer(modifier = Modifier.height(16.dp))
 
             // Action Buttons Row

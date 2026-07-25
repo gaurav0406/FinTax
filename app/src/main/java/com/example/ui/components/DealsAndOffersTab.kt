@@ -76,7 +76,7 @@ fun DealsAndOffersTab() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MinimalBackground)
+            .background(androidx.compose.ui.graphics.Color.White)
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
@@ -95,6 +95,15 @@ fun DealsAndOffersTab() {
             contentPadding = PaddingValues(bottom = 80.dp),
             modifier = Modifier.fillMaxSize()
         ) {
+            item {
+                AdMobNativeExpressCard(
+                    slideIndex = 0,
+                    onOpenAd = { url ->
+                        webViewUrlToOpen = url
+                        webViewTitleToOpen = "Sponsored Offer"
+                    }
+                )
+            }
             items(sampleDeals) { deal ->
                 DealCard(
                     deal = deal,

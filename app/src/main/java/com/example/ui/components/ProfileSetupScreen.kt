@@ -116,6 +116,7 @@ fun ProfileSetupScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(androidx.compose.ui.graphics.Color.White)
             .background(MinimalBackground)
             .verticalScroll(rememberScrollState())
             .padding(16.dp)

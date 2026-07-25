@@ -30,12 +30,14 @@ import com.example.ui.theme.TextSecondary
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun OnboardingScreen(
+    initialName: String = "",
+    initialCity: String = "",
     onComplete: (String, Int, String, String, List<String>) -> Unit
 ) {
     var step by remember { mutableStateOf(1) }
-    var name by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf(initialName) }
     var age by remember { mutableStateOf(21) }
-    var city by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf(initialCity) }
     var mobile by remember { mutableStateOf("") }
     var selectedCategories by remember { mutableStateOf(setOf<String>()) }
     
