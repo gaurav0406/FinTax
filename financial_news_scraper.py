@@ -358,4 +358,4 @@ Raw Content:
 
 if __name__ == "__main__":
     pipeline = FinancialNewsScraperPipeline()
-    pipeline.run_pipeline(max_items_per_feed=2)
+    pipeline.run_pipeline(max_items_per_feed=15)
