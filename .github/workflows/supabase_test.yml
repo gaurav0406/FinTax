@@ -1,4 +1,4 @@
-yamlname: Supabase Integration
+name: Supabase Integration
 
 on: [push, pull_request]
 
