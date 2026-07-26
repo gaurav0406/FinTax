@@ -24,6 +24,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Card

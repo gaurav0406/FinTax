@@ -219,7 +219,7 @@ fun InshortsFeedView(
                 kotlinx.coroutines.delay(1000)
                 timeRemainingMs -= 1000
             }
-            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+            pagerState.scrollToPage(pagerState.currentPage + 1)
         }
     }
 
@@ -549,20 +549,20 @@ fun InshortsNewsCardItem(
                     InshortsBulletPoint(
                         icon = Icons.Default.Newspaper,
                         iconColor = Color(0xFFCE93D8),
-                        label = "Overview",
-                        content = news.summaryText
+                        label = "Summary",
+                        content = news.summaryWhatHappened
                     )
                     InshortsBulletPoint(
                         icon = Icons.Default.Group,
                         iconColor = Color(0xFF81D4FA),
-                        label = "Direct Outcome",
+                        label = "Impacted Users",
                         content = news.summaryWhoImpacted
                     )
                     InshortsBulletPoint(
                         icon = Icons.Default.Info,
                         iconColor = Color(0xFFFFD54F),
-                        label = "Direct Message",
-                        content = news.summaryWhatHappened
+                        label = "Reason",
+                        content = news.summaryText
                     )
                     val calculatedImpact = news.financialImpactBullets ?: if (news.isFinancialCategory) {
                         when (news.category) {
@@ -586,13 +586,13 @@ fun InshortsNewsCardItem(
                     InshortsBulletPoint(
                         icon = if (news.isFinancialCategory) Icons.Default.Calculate else Icons.Default.Info,
                         iconColor = if (news.isFinancialCategory) Color(0xFF81C784) else Color(0xFFFFB74D),
-                        label = news.impactSectionTitleMixedCase,
+                        label = "Financial Impact/Benefits",
                         content = calculatedImpact
                     )
                     InshortsBulletPoint(
                         icon = Icons.Default.CheckCircle,
                         iconColor = Color(0xFFA5D6A7),
-                        label = "Next Step",
+                        label = "Action",
                         content = news.summaryActionableTakeaway
                     )
                 }

@@ -80,6 +80,7 @@ fun CommentSheetDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = 440.dp)
+                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(20.dp))
                 .clip(RoundedCornerShape(20.dp)),
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp,
@@ -101,12 +102,12 @@ fun CommentSheetDialog(
                             text = "Comments & Discussions",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = TextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = news.title,
                             style = MaterialTheme.typography.bodySmall,
-                            color = TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1
                         )
                     }
@@ -135,7 +136,7 @@ fun CommentSheetDialog(
                     Text(
                         text = "No comments yet. Be the first to share your opinion or tag a friend!",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(24.dp)
                     )
                 }
@@ -222,6 +223,8 @@ fun CommentSheetDialog(
                         .testTag("comment_input_field"),
                     shape = RoundedCornerShape(24.dp),
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                         focusedBorderColor = MinimalPurplePrimary,
                         unfocusedBorderColor = Color.LightGray
                     ),
@@ -278,8 +281,19 @@ fun CommentItemRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = if (isReply) 28.dp else 0.dp)
+            .padding(start = if (isReply) 16.dp else 0.dp)
     ) {
+        if (isReply) {
+            // Thread line / "Train line" for nested comments
+            Box(
+                modifier = Modifier
+                    .padding(end = 12.dp, top = 8.dp)
+                    .width(2.dp)
+                    .height(40.dp)
+                    .background(Color.LightGray)
+            )
+        }
+
         // Avatar circle
         Surface(
             modifier = Modifier.size(if (isReply) 28.dp else 36.dp),
@@ -289,7 +303,7 @@ fun CommentItemRow(
             Box(contentAlignment = Alignment.Center) {
                 Text(
                     text = comment.userName.take(1).uppercase(),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.surface,
                     fontWeight = FontWeight.Bold,
                     fontSize = if (isReply) 12.sp else 15.sp
                 )
@@ -309,19 +323,19 @@ fun CommentItemRow(
                         text = comment.userName,
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "• ${comment.userCity}",
                         style = MaterialTheme.typography.labelSmall,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Text(
                     text = dateStr,
                     style = MaterialTheme.typography.labelSmall,
-                    color = TextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 10.sp
                 )
             }
@@ -331,7 +345,7 @@ fun CommentItemRow(
             Text(
                 text = comment.commentText,
                 style = MaterialTheme.typography.bodySmall,
-                color = TextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(4.dp))

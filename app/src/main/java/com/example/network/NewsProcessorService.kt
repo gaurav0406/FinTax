@@ -3,11 +3,58 @@ package com.example.network
 import com.example.data.FinancialNewsEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 
 object NewsProcessorService {
 
     suspend fun summarizeNews(rawText: String, sourceUrl: String = "https://eportal.incometax.gov.in"): Result<FinancialNewsEntity> = withContext(Dispatchers.IO) {
-        Result.success(createFallbackEntity(rawText, sourceUrl))
+        val apiKey = com.example.BuildConfig.GEMINI_API_KEY
+        if (apiKey.isNotBlank()) {
+            try {
+                val prompt = """
+                                                                                You are an expert financial news summarizer. Extract and structure the following news into this exact JSON format. Keep it concise. All output MUST be in English.
+                    News: $rawText
+                    
+                    Respond ONLY with JSON:
+                    {
+                      "summary": "Provide a 6 to 7-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
+                      "impacted_users": "Provide 2 to 3 lines explaining who are the users impacted in English. Do NOT include prefixes like 'Who is impacted:'.",
+                      "reason": "Provide 2 to 3 lines explaining why the government or entity has taken this decision in English. Do NOT include prefixes like 'Reason:'.",
+                      "financial_impact": "What is the financial impact or the benefits users can gain in English? Use crisp, quantifiable numbers and bullet points.",
+                      "action": "Provide actionable steps (2 to 3 lines) users should take in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
+                      "category": "One of: ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
+                    }
+                """.trimIndent()
+
+                val textResponse = GeminiClient.generateContent(apiKey, prompt) ?: ""
+                
+                // Clean markdown JSON formatting if present
+                val cleanedJson = textResponse.replace("```json", "").replace("```", "").trim()
+                
+                val llmResult = JSONObject(cleanedJson)
+                
+                Result.success(
+                    FinancialNewsEntity(
+                        title = "Key ${llmResult.optString("category", "Finance")} Update",
+                        summaryWhatHappened = llmResult.optString("summary", ""),
+                        summaryWhoImpacted = llmResult.optString("impacted_users", ""),
+                        summaryActionableTakeaway = llmResult.optString("action", ""),
+                        summaryText = llmResult.optString("reason", ""),
+                        category = llmResult.optString("category", "ITR & Tax"),
+                        financialActionUrl = sourceUrl,
+                        sourceUrl = sourceUrl,
+                        sourceName = "AI Summarized News",
+                        financialImpactBullets = llmResult.optString("financial_impact", ""),
+                        publishedAt = System.currentTimeMillis()
+                    )
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Result.success(createFallbackEntity(rawText, sourceUrl))
+            }
+        } else {
+            Result.success(createFallbackEntity(rawText, sourceUrl))
+        }
     }
 
     fun generateFallbackImpact(category: String): String {
@@ -32,11 +79,15 @@ object NewsProcessorService {
 
     private fun createFallbackEntity(rawText: String, sourceUrl: String): FinancialNewsEntity {
         val snippet = rawText.take(150).replace("\n", " ")
-        val category = when {
+                val category = when {
             rawText.contains("credit card", true) || rawText.contains("reward", true) -> "Credit Cards"
             rawText.contains("fd", true) || rawText.contains("loan", true) || rawText.contains("interest", true) -> "Loans & FDs"
             rawText.contains("mutual fund", true) || rawText.contains("market", true) || rawText.contains("sip", true) -> "Markets & Mutual Funds"
             rawText.contains("rbi", true) || rawText.contains("repo rate", true) || rawText.contains("policy", true) -> "RBI & Policy"
+            rawText.contains("movie", true) || rawText.contains("entertainment", true) || rawText.contains("box office", true) -> "Entertainment"
+            rawText.contains("sport", true) || rawText.contains("cricket", true) || rawText.contains("match", true) -> "Sports"
+            rawText.contains("startup", true) || rawText.contains("funding", true) || rawText.contains("founder", true) -> "Startup Ecosystem"
+            rawText.contains("crypto", true) || rawText.contains("bitcoin", true) || rawText.contains("fintech", true) -> "FinTech & Crypto"
             else -> "ITR & Tax"
         }
 
@@ -47,10 +98,10 @@ object NewsProcessorService {
             else -> "https://www.moneycontrol.com"
         }
 
-        val p1 = "What Happened: New guidelines announced for $category regarding $snippet..."
-        val p2 = "Who is Impacted: Salaried individuals, individual taxpayers, and retail investors."
-        val p3 = "Actionable Takeaway: Review official portal notices before the next tax quarter deadline."
-
+        val p1 = "New guidelines announced for $category regarding $snippet..."
+        val p2 = "Salaried individuals, individual taxpayers, and retail investors."
+        val p3 = "Review official portal notices before the next tax quarter deadline."
+        
         val fallbackImpact = when (category) {
             "ITR & Tax" -> "• Estimated Tax Savings: ₹15,600 - ₹25,000/yr for ₹7L-15L bracket\n• Cash Flow Impact: +₹2,083/mo net take-home salary increase"
             "Credit Cards" -> "• Direct Cash Impact: -₹350/mo on utility fees or +5% (₹400/mo) fuel waiver\n• Net Annual Return: ~₹4,800/yr optimized card savings"
@@ -59,7 +110,7 @@ object NewsProcessorService {
             else -> "• Quantifiable Benefit: Estimated ₹5,000 - ₹12,000 annual net gain by optimizing financial strategy."
         }
 
-        val summaryText = "$p1 $p2 $p3"
+        val summaryText = "Reason for change: The government has introduced these rules to streamline operations."
 
         return FinancialNewsEntity(
             title = "Key $category Update for Indian Taxpayers",

@@ -356,7 +356,7 @@ fun NewsItemCard(
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = "WHO IS IMPACTED",
+                text = "IMPACTED USERS",
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
@@ -374,7 +374,7 @@ fun NewsItemCard(
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = "HOW YOU ARE IMPACTED",
+                text = "REASON",
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
@@ -392,7 +392,7 @@ fun NewsItemCard(
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = news.impactSectionTitle,
+                text = "FINANCIAL IMPACT/BENEFITS",
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
@@ -429,7 +429,7 @@ fun NewsItemCard(
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = "WHAT ARE THE NEXT STEPS",
+                text = "ACTION",
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
