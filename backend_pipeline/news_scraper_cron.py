@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import requests
+import feedparser
 from bs4 import BeautifulSoup
 import google.generativeai as genai
 from supabase import create_client, Client
@@ -52,23 +53,45 @@ except Exception as e:
 
 def fetch_financial_news():
     """
-    Scrapes the latest financial news from a public portal.
+    Scrapes the latest financial news from RSS feeds.
+    Fetches 10-15 articles per category.
     """
     logging.info("Scraping financial news...")
-    return [
-        {
-            "title": "BSE Sensex Crosses 82,000 Landmark Milestone Led by Banking & IT Bluechips",
-            "url": "https://www.moneycontrol.com/news/business/markets/",
-            "text": "Indian equity markets scaled new all-time highs as the BSE Sensex surged past 82,000 points and Nifty 50 touched 25,100, driven by heavy buying in HDFC Bank, ICICI Bank, and Infosys. Domestic Institutional Investors recorded net purchases of over ₹3,800 Crore.",
-            "category": "Stock Market India"
-        },
-        {
-            "title": "RBI mandates new credit card billing cycle rules",
-            "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx",
-            "text": "The Reserve Bank of India has announced new guidelines allowing credit card users to modify their billing cycles multiple times to align with their salary dates, effectively helping them manage cash flows better. This change will affect all public and private sector banks issuing credit cards.",
-            "category": "Credit Cards"
-        }
+    
+    # We will use public RSS feeds for financial news (e.g., Economic Times)
+    feeds = [
+        {"category": "Stock Market India", "url": "https://economictimes.indiatimes.com/markets/rssfeeds/2146842.cms"},
+        {"category": "Credit Cards", "url": "https://economictimes.indiatimes.com/wealth/borrow/rssfeeds/83756073.cms"},
+        {"category": "ITR & Tax", "url": "https://economictimes.indiatimes.com/wealth/tax/rssfeeds/83755913.cms"},
+        {"category": "Markets & Mutual Funds", "url": "https://economictimes.indiatimes.com/mf/rssfeeds/83756208.cms"}
     ]
+    
+    articles = []
+    for feed in feeds:
+        try:
+            parsed = feedparser.parse(feed["url"])
+            # Get up to 15 articles per category
+            for entry in parsed.entries[:15]:
+                # Parse HTML content from summary using BeautifulSoup
+                summary_html = entry.get("summary", "")
+                soup = BeautifulSoup(summary_html, 'html.parser')
+                clean_text = soup.get_text(strip=True)
+                
+                # Fallback to title if summary is empty
+                if not clean_text:
+                    clean_text = entry.get("title", "")
+                
+                articles.append({
+                    "title": entry.get("title", ""),
+                    "url": entry.get("link", ""),
+                    "text": clean_text,
+                    "category": feed["category"]
+                })
+            logging.info(f"Fetched {len(parsed.entries[:15])} articles for category: {feed['category']}")
+        except Exception as e:
+            logging.error(f"Error fetching RSS feed {feed['url']}: {e}")
+            
+    return articles
 
 def fetch_youtube_shorts():
     """
@@ -91,7 +114,7 @@ def fetch_youtube_shorts():
             request = youtube.search().list(
                 part="snippet",
                 q=cat["query"],
-                maxResults=5,
+                maxResults=15,
                 type="video"
             )
             response = request.execute()
@@ -119,9 +142,9 @@ News: {raw_text}
 Respond ONLY with JSON:
 {{
     "summary": "Provide a detailed 7 to 8-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
-    "reason": "Provide 2 to 4 lines explaining why the government, entity, or individual has taken this decision/action in English. Do NOT include prefixes like 'Reason:'.",
-    "financial_impact": "What is the financial impact or the benefits users can gain in English? Use 2 to 3 lines. Use crisp, quantifiable numbers and bullet points.",
-    "action": "Provide actionable steps (2 to 3 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
+    "reason": "Provide 4 to 5 lines explaining why the government, entity, or individual has taken this decision/action in English. Do NOT include prefixes like 'Reason:'.",
+    "financial_impact": "What is the financial impact or the benefits users like TaxPayers, Investors, and other users can gain in English? Use 3 to 4 lines. Use crisp, quantifiable numbers and bullet points.",
+    "action": "Provide actionable steps (3 to 4 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
     "category": "One of: Stock Market India, ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
 }}"""
     try:

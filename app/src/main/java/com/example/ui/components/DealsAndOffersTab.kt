@@ -35,38 +35,7 @@ data class DealItem(
     val category: String
 )
 
-val sampleDeals = listOf(
-    DealItem(
-        id = "1",
-        brandName = "Amazon",
-        title = "Flat 10% Off on Electronics",
-        description = "Get a flat 10% discount on all electronics up to ₹1,500 using SBI Credit Cards.",
-        offerCode = "SBI10",
-        linkUrl = "https://amazon.in",
-        imageUrl = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
-        category = "Technology"
-    ),
-    DealItem(
-        id = "2",
-        brandName = "Cleartrip",
-        title = "Up to 15% off on Domestic Flights",
-        description = "Book your next holiday with HDFC bank cards and get up to 15% off on domestic flights.",
-        offerCode = "CTHDFC",
-        linkUrl = "https://cleartrip.com",
-        imageUrl = "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=600&q=80",
-        category = "Travel"
-    ),
-    DealItem(
-        id = "3",
-        brandName = "Zerodha",
-        title = "Zero Brokerage on Equity Delivery",
-        description = "Open a free Demat account today and enjoy zero brokerage on equity delivery investments for life.",
-        offerCode = null,
-        linkUrl = "https://zerodha.com",
-        imageUrl = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=600&q=80",
-        category = "Finance"
-    )
-)
+val sampleDeals = emptyList<DealItem>()
 
 @Composable
 fun DealsAndOffersTab() {

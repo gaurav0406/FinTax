@@ -25,12 +25,7 @@ import com.example.ui.theme.TextSecondary
 
 data class MockTweet(val handle: String, val content: String, val time: String)
 
-val sampleTweets = listOf(
-    MockTweet("@FinTwit_IN", "RBI holds repo rate steady. What does it mean for your home loans? Expect rates to remain stable for now! #RBI #HomeLoan", "2h"),
-    MockTweet("@TaxUpdates", "Reminder: Advance tax deadline is approaching. Ensure you pay the installment to avoid interest under Section 234C. #IncomeTax #India", "4h"),
-    MockTweet("@MarketGossip", "Nifty breaches new highs! IT and Banking stocks leading the rally today. Bull run continues? 🚀 #StockMarket #Nifty50", "5h"),
-    MockTweet("@TechStartupsIN", "AI startup funding triples this quarter. Generative AI is reshaping the landscape of Indian tech. #AI #Startups", "6h")
-)
+val sampleTweets = emptyList<MockTweet>()
 
 @Composable
 fun TrendingTweetsRow() {

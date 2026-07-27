@@ -49,8 +49,6 @@ fun AiGeneratorTab(
     var rawText by remember { mutableStateOf("") }
     var sourceUrl by remember { mutableStateOf("https://eportal.incometax.gov.in") }
 
-    val sampleTextPrompt = """CBDT Notification 2026: The Central Board of Direct Taxes has updated filing requirements for Section 80C deductions and Section 87A rebate applicability for taxpayers choosing the New Tax Regime. Salaried individuals earning up to Rs 7.5 Lakhs can claim full rebate. Online verification through Aadhaar OTP is required before July 31."""
-
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -87,25 +85,6 @@ fun AiGeneratorTab(
                     color = TextSecondary
                 )
             }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Sample Fill Button
-        Surface(
-            onClick = { rawText = sampleTextPrompt },
-            shape = RoundedCornerShape(50),
-            color = MinimalPurpleLightContainer.copy(alpha = 0.5f),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "⚡ Load Sample CBDT Circular Text",
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = MinimalPurpleDark
-                )
-            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))

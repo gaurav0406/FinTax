@@ -3,7 +3,6 @@ package com.example.data
 import com.example.network.NewsProcessorService
 import com.example.network.YouTubeClient
 
-import com.example.network.SamplePreloadedData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
@@ -50,24 +49,6 @@ class NewsRepository(private val dao: FinancialNewsDao) {
     }
 
     suspend fun seedInitialDataIfEmpty() {
-        val initialNews = SamplePreloadedData.getInitialNewsList()
-        val existing = dao.getAllNews().first()
-        if (existing.isEmpty()) {
-            dao.insertNews(initialNews)
-            val initialComments = SamplePreloadedData.getInitialComments()
-            initialComments.forEach { dao.insertComment(it) }
-        } else {
-            // Update any existing records that have null financialImpactBullets
-            val preloadedMap = initialNews.associateBy { it.title }
-            existing.forEach { item ->
-                if (item.financialImpactBullets.isNullOrBlank()) {
-                    val preloaded = preloadedMap[item.title]
-                    val impactToSet = preloaded?.financialImpactBullets 
-                        ?: NewsProcessorService.generateFallbackImpact(item.category)
-                    dao.updateNews(item.copy(financialImpactBullets = impactToSet))
-                }
-            }
-        }
         val profile = dao.getUserProfile().first()
         if (profile == null) {
             dao.saveUserProfile(UserProfileEntity())
