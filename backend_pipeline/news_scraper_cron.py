@@ -5,6 +5,7 @@ import requests
 import feedparser
 from bs4 import BeautifulSoup
 import google.generativeai as genai
+from supabase import create_client, Client
 from googleapiclient.discovery import build
 
 # Configure Logging
@@ -25,14 +26,18 @@ try:
 except Exception as e:
     logging.error(f"Error configuring Gemini API: {e}")
 
-# Check Supabase Credentials
-if (SUPABASE_URL and SUPABASE_URL.startswith("http") and "YOUR_" not in SUPABASE_URL and
-    SUPABASE_KEY and len(SUPABASE_KEY) > 20 and "YOUR_" not in SUPABASE_KEY):
-    logging.info("Supabase configuration found. Using REST API for insertions.")
-    USE_SUPABASE = True
-else:
-    logging.warning("Supabase URL or Key missing or placeholder. Skipping DB connection.")
-    USE_SUPABASE = False
+# Initialize Supabase safely
+supabase: Client = None
+try:
+    if (SUPABASE_URL and SUPABASE_URL.startswith("http") and "YOUR_" not in SUPABASE_URL and
+        SUPABASE_KEY and len(SUPABASE_KEY) > 20 and "YOUR_" not in SUPABASE_KEY):
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        logging.info("Supabase client initialized successfully.")
+    else:
+        logging.warning("Supabase URL or Key missing or placeholder. Skipping DB connection.")
+except Exception as e:
+    logging.warning(f"Failed to initialize Supabase client (check your SUPABASE_URL and SUPABASE_KEY secrets): {e}")
+    supabase = None
 
 # Initialize YouTube Client safely
 youtube = None
@@ -45,7 +50,6 @@ try:
 except Exception as e:
     logging.warning(f"Failed to initialize YouTube client: {e}")
     youtube = None
-
 
 def fetch_financial_news():
     """
@@ -147,8 +151,6 @@ Respond ONLY with JSON:
     "category": "One of: Stock Market India, ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
 }}"""
     try:
-        # Using a reliable model name available for developers. 
-        # Fallback to flash-8b or standard flash if needed
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt)
         
@@ -183,27 +185,15 @@ def push_to_supabase(article_data: dict, llm_data: dict, is_video: bool = False)
     if is_video:
         payload["category"] = "Video Shorts"
         
-    if not USE_SUPABASE:
+    if not supabase:
         logging.warning("Supabase client not initialized. Skipping database insertion for: " + article_data["title"])
         return
         
     try:
-        headers = {
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": "application/json",
-            "Prefer": "return=minimal"
-        }
-        # Using REST API call to completely bypass the python supabase client proxy issue
-        endpoint = f"{SUPABASE_URL.rstrip('/')}/rest/v1/financial_news"
-        response = requests.post(endpoint, headers=headers, json=payload)
-        
-        if response.status_code in [200, 201, 204]:
-            logging.info(f"Successfully inserted: {article_data['title']}")
-        else:
-            logging.error(f"Failed to insert into Supabase: {response.status_code} - {response.text}")
+        supabase.table("financial_news").insert(payload).execute()
+        logging.info(f"Successfully inserted: {article_data['title']}")
     except Exception as e:
-        logging.error(f"Error inserting into Supabase via REST: {e}")
+        logging.error(f"Error inserting into Supabase: {e}")
 
 def main():
     logging.info("Starting unified background scraping pipeline...")

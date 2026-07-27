@@ -3,3 +3,6 @@ beautifulsoup4>=4.12.2
 google-generativeai>=0.5.2
 google-api-python-client>=2.115.0
 feedparser>=6.0.10
+supabase==2.8.2
+gotrue==2.9.2
+httpx>=0.24,<0.26
