@@ -12,16 +12,15 @@ object NewsProcessorService {
         if (apiKey.isNotBlank()) {
             try {
                 val prompt = """
-                                                                                You are an expert financial news summarizer. Extract and structure the following news into this exact JSON format. Keep it concise. All output MUST be in English.
+                    You are an expert financial news summarizer. Extract and structure the following news into this exact JSON format. Keep it concise, insightful, and actionable. All output MUST be in English.
                     News: $rawText
                     
                     Respond ONLY with JSON:
                     {
-                      "summary": "Provide a 6 to 7-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
-                      "impacted_users": "Provide 2 to 3 lines explaining who are the users impacted in English. Do NOT include prefixes like 'Who is impacted:'.",
-                      "reason": "Provide 2 to 3 lines explaining why the government or entity has taken this decision in English. Do NOT include prefixes like 'Reason:'.",
-                      "financial_impact": "What is the financial impact or the benefits users can gain in English? Use crisp, quantifiable numbers and bullet points.",
-                      "action": "Provide actionable steps (2 to 3 lines) users should take in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
+                      "summary": "Provide a detailed 7 to 8-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
+                      "reason": "Provide 2 to 4 lines explaining why the government, entity, or individual has taken this decision/action in English. Do NOT include prefixes like 'Reason:'.",
+                      "financial_impact": "What is the financial impact or the benefits users can gain in English? Use 2 to 3 lines. Use crisp, quantifiable numbers and bullet points.",
+                      "action": "Provide actionable steps (2 to 3 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
                       "category": "One of: ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
                     }
                 """.trimIndent()

@@ -552,12 +552,7 @@ fun InshortsNewsCardItem(
                         label = "Summary",
                         content = news.summaryWhatHappened
                     )
-                    InshortsBulletPoint(
-                        icon = Icons.Default.Group,
-                        iconColor = Color(0xFF81D4FA),
-                        label = "Impacted Users",
-                        content = news.summaryWhoImpacted
-                    )
+                    
                     InshortsBulletPoint(
                         icon = Icons.Default.Info,
                         iconColor = Color(0xFFFFD54F),

@@ -108,7 +108,7 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val apiKey = BuildConfig.YOUTUBE_API_KEY
                 if (apiKey.isNotBlank() && apiKey != "dummy") {
-                    repository.fetchYouTubeVideos(apiKey)
+                    // repository.fetchYouTubeVideos(apiKey)
                 }
             } catch (e: Exception) {
                 _aiStatusMessage.value = "Init YouTube fetch failed: ${e.message}"
@@ -178,7 +178,7 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val apiKey = BuildConfig.YOUTUBE_API_KEY
                 if (apiKey.isNotBlank() && apiKey != "dummy") {
-                    repository.fetchYouTubeVideos(apiKey)
+                    // repository.fetchYouTubeVideos(apiKey)
                 }
             } catch (e: Exception) {
                 _aiStatusMessage.value = "Init YouTube fetch failed: ${e.message}"

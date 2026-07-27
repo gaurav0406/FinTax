@@ -17,21 +17,37 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY", "YOUR_SUPABASE_SERVICE_ROLE_KEY")
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "YOUR_YOUTUBE_API_KEY")
 
 # Initialize Clients
-genai.configure(api_key=GEMINI_API_KEY)
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+try:
+    genai.configure(api_key=GEMINI_API_KEY)
+    
+    # Simple check for placeholder or empty keys
+    if SUPABASE_URL and "YOUR_" not in SUPABASE_URL and SUPABASE_KEY and "YOUR_" not in SUPABASE_KEY:
+        supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    else:
+        logging.warning("Supabase URL or Key not set/invalid. Skipping DB connection.")
+        supabase = None
+        
+    if YOUTUBE_API_KEY and "YOUR_" not in YOUTUBE_API_KEY:
+        youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+    else:
+        logging.warning("YouTube API Key not set/invalid. Skipping YouTube connection.")
+        youtube = None
+except Exception as e:
+    logging.error(f"Error initializing clients: {e}")
+    supabase = None
+    youtube = None
 
 def fetch_financial_news():
     """
-    Scrapes the latest financial news from a public portal (Example: moneycontrol/economictimes).
+    Scrapes the latest financial news from a public portal.
     """
     logging.info("Scraping financial news...")
-    # MOCK implementation
+    # Example MOCK implementation
     return [
         {
             "title": "RBI mandates new credit card billing cycle rules",
             "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx",
-            "text": "The Reserve Bank of India has announced new guidelines allowing credit card users to modify their billing cycles multiple times to align with their salary dates, effectively helping them manage cash flows better."
+            "text": "The Reserve Bank of India has announced new guidelines allowing credit card users to modify their billing cycles multiple times to align with their salary dates, effectively helping them manage cash flows better. This change will affect all public and private sector banks issuing credit cards."
         }
     ]
 
@@ -40,6 +56,10 @@ def fetch_youtube_shorts():
     Fetches the latest YouTube Shorts or videos related to Indian Finance.
     """
     logging.info("Fetching YouTube Finance Videos...")
+    if not youtube:
+        logging.warning("YouTube API client not initialized. Skipping fetch.")
+        return []
+        
     categories = [
         {"category": "ITR & Tax", "query": "Indian income tax ITR latest"},
         {"category": "Credit Cards", "query": "Indian credit cards tips 2026"},
@@ -61,7 +81,7 @@ def fetch_youtube_shorts():
                 videos.append({
                     "title": snippet["title"],
                     "url": f"https://www.youtube.com/watch?v={item['id']['videoId']}",
-                    "text": snippet["description"], # We can pass description to Gemini
+                    "text": snippet["description"], # Pass description to Gemini
                     "channel": snippet["channelTitle"],
                     "category": cat["category"],
                     "imageUrl": snippet["thumbnails"]["high"]["url"]
@@ -72,19 +92,18 @@ def fetch_youtube_shorts():
     return videos
 
 def summarize_with_gemini(raw_text: str) -> dict:
-    prompt = f"""You are an expert financial news summarizer. Extract and structure the following news into this exact JSON format. Keep it concise. All output MUST be in English.
+    prompt = f"""You are an expert financial news summarizer. Extract and structure the following news into this exact JSON format. Keep it concise, but ensure the content is very insightful and useful. All output MUST be in English.
+
 News: {raw_text}
 
 Respond ONLY with JSON:
 {{
-    "summary": "Provide a 6 to 7-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
-    "impacted_users": "Provide 2 to 3 lines explaining who are the users impacted in English. Do NOT include prefixes like 'Who is impacted:'.",
-    "reason": "Provide 2 to 3 lines explaining why the government or entity has taken this decision in English. Do NOT include prefixes like 'Reason:'.",
-    "financial_impact": "What is the financial impact or the benefits users can gain in English? Use crisp, quantifiable numbers and bullet points.",
-    "action": "Provide actionable steps (2 to 3 lines) users should take in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
+    "summary": "Provide a detailed 7 to 8-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
+    "reason": "Provide 2 to 4 lines explaining why the government, entity, or individual has taken this decision/action in English. Do NOT include prefixes like 'Reason:'.",
+    "financial_impact": "What is the financial impact or the benefits users can gain in English? Use 2 to 3 lines. Use crisp, quantifiable numbers and bullet points.",
+    "action": "Provide actionable steps (2 to 3 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
     "category": "One of: ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
 }}"""
-
     model = genai.GenerativeModel('gemini-1.5-pro')
     response = model.generate_content(prompt)
     
@@ -108,7 +127,6 @@ def push_to_supabase(article_data: dict, llm_data: dict, is_video: bool = False)
         "title": article_data["title"],
         "sourceUrl": article_data["url"],
         "summaryWhatHappened": llm_data.get("summary", ""),
-        "summaryWhoImpacted": llm_data.get("impacted_users", ""),
         "summaryText": llm_data.get("reason", ""),
         "summaryActionableTakeaway": llm_data.get("action", ""),
         "financialImpactBullets": llm_data.get("financial_impact", ""),
@@ -120,7 +138,11 @@ def push_to_supabase(article_data: dict, llm_data: dict, is_video: bool = False)
     
     if is_video:
         payload["category"] = "Video Shorts"
-    
+        
+    if not supabase:
+        logging.warning("Supabase client not initialized. Skipping database insertion for: " + article_data["title"])
+        return
+        
     try:
         supabase.table("financial_news").insert(payload).execute()
         logging.info(f"Successfully inserted: {article_data['title']}")
@@ -141,7 +163,9 @@ def main():
     videos = fetch_youtube_shorts()
     for video in videos:
         logging.info(f"Processing Video: {video['title']}")
-        llm_data = summarize_with_gemini(video["text"]) # Or pass title + desc
+        # Pass both title and description to give more context for actionable insights
+        video_context = f"Video Title: {video['title']}\nVideo Description: {video['text']}"
+        llm_data = summarize_with_gemini(video_context)
         push_to_supabase(video, llm_data, is_video=True)
         
     logging.info("Pipeline execution completed.")

@@ -71,59 +71,29 @@ import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.MinimalSecondaryContainer
 import java.text.NumberFormat
 import java.util.Locale
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import com.example.ui.viewmodels.TaxCalculatorViewModel
+import com.example.ui.viewmodels.TaxCalculatorState
 
-data class TaxResult(
-    val netTaxableIncome: Double,
-    val baseTax: Double,
-    val cess: Double,
-    val totalTaxPayable: Double,
-    val effectiveTaxRate: Double
-)
+
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun TaxCalculatorTab(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: TaxCalculatorViewModel = viewModel()
 ) {
-    var grossIncomeInput by remember { mutableStateOf("1200000") }
-    var financialYear by remember { mutableStateOf("FY 2026-27 (Proposed)") }
+    val state by viewModel.uiState.collectAsState()
+    
+    val oldTaxResult = viewModel.calculateOldRegimeTax()
+    val newTaxResult = viewModel.calculateNewRegimeTax()
+    
+    val taxSavings = kotlin.math.abs(oldTaxResult.totalTaxPayable - newTaxResult.totalTaxPayable)
+    val recommendedRegime = if (newTaxResult.totalTaxPayable <= oldTaxResult.totalTaxPayable) "New Regime" else "Old Regime"
+    
     var expandedFY by remember { mutableStateOf(false) }
     val fyOptions = listOf("FY 2025-26", "FY 2026-27 (Proposed)")
-    var sec80CInput by remember { mutableStateOf("150000") }
-    var sec80DInput by remember { mutableStateOf("25000") }
-    var npsInput by remember { mutableStateOf("50000") }
-    var hraLoanInput by remember { mutableStateOf("100000") }
-    var isSalaried by remember { mutableStateOf(true) }
-
-    val grossIncome = grossIncomeInput.toDoubleOrNull() ?: 0.0
-    val sec80C = (sec80CInput.toDoubleOrNull() ?: 0.0).coerceAtMost(150000.0)
-    val sec80D = (sec80DInput.toDoubleOrNull() ?: 0.0).coerceAtMost(75000.0)
-    val nps = (npsInput.toDoubleOrNull() ?: 0.0).coerceAtMost(50000.0)
-    val hraLoan = hraLoanInput.toDoubleOrNull() ?: 0.0
-
-    val oldTaxResult by remember(grossIncome, sec80C, sec80D, nps, hraLoan, isSalaried) {
-        derivedStateOf {
-            calculateOldRegimeTax(grossIncome, sec80C, sec80D, nps, hraLoan, isSalaried)
-        }
-    }
-
-    val newTaxResult by remember(grossIncome, isSalaried) {
-        derivedStateOf {
-            calculateNewRegimeTax(grossIncome, isSalaried, financialYear)
-        }
-    }
-
-    val taxSavings by remember(oldTaxResult, newTaxResult) {
-        derivedStateOf {
-            kotlin.math.abs(oldTaxResult.totalTaxPayable - newTaxResult.totalTaxPayable)
-        }
-    }
-
-    val recommendedRegime by remember(oldTaxResult, newTaxResult) {
-        derivedStateOf {
-            if (newTaxResult.totalTaxPayable <= oldTaxResult.totalTaxPayable) "New Regime" else "Old Regime"
-        }
-    }
 
     val currencyFormatter = remember {
         NumberFormat.getCurrencyInstance(Locale("en", "IN")).apply {
@@ -172,7 +142,7 @@ fun TaxCalculatorTab(
                         )
                     )
                     Text(
-                        text = "$financialYear Budget Slabs",
+                        text = "${state.currentPolicy.financialYear} Budget Slabs",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSecondary
                     )
@@ -198,9 +168,9 @@ fun TaxCalculatorTab(
             verticalAlignment = Alignment.CenterVertically
         ) {
             listOf("700000" to "₹7L", "1000000" to "₹10L", "1500000" to "₹15L").forEach { (amount, label) ->
-                val isSelected = grossIncomeInput == amount
+                val isSelected = state.grossIncomeInput == amount
                 Surface(
-                    onClick = { grossIncomeInput = amount },
+                    onClick = { viewModel.updateGrossIncome(amount) },
                     shape = RoundedCornerShape(20.dp),
                     color = if (isSelected) MinimalPurplePrimary else Color.White,
                     border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, MinimalBorder) else null,
@@ -220,8 +190,8 @@ fun TaxCalculatorTab(
             
             // Manual entry field
             OutlinedTextField(
-                value = grossIncomeInput,
-                onValueChange = { newValue -> grossIncomeInput = newValue.filter { it.isDigit() } },
+                value = state.grossIncomeInput,
+                onValueChange = { newValue -> viewModel.updateGrossIncome(newValue.filter { it.isDigit() }) },
                 placeholder = { Text("Manual", fontSize = 12.sp) },
                 textStyle = androidx.compose.ui.text.TextStyle(
                     fontSize = 12.sp,
@@ -364,7 +334,7 @@ fun TaxCalculatorTab(
             onExpandedChange = { expandedFY = !expandedFY }
         ) {
             OutlinedTextField(
-                value = financialYear,
+                value = state.currentPolicy.financialYear,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Select Financial Year") },
@@ -388,7 +358,7 @@ fun TaxCalculatorTab(
                     DropdownMenuItem(
                         text = { Text(selectionOption) },
                         onClick = {
-                            financialYear = selectionOption
+                            viewModel.selectFinancialYear(selectionOption)
                             expandedFY = false
                         }
                     )
@@ -400,8 +370,8 @@ fun TaxCalculatorTab(
 
         // Gross Salary Input
         OutlinedTextField(
-            value = grossIncomeInput,
-            onValueChange = { newValue -> grossIncomeInput = newValue.filter { it.isDigit() } },
+            value = state.grossIncomeInput,
+            onValueChange = { newValue -> viewModel.updateGrossIncome(newValue.filter { it.isDigit() }) },
             label = { Text("Gross Annual Salary / Income (₹)") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             leadingIcon = { Text("₹", fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(start = 12.dp)) },
@@ -423,8 +393,8 @@ fun TaxCalculatorTab(
 
         // 80C Deductions
         OutlinedTextField(
-            value = sec80CInput,
-            onValueChange = { sec80CInput = it.filter { char -> char.isDigit() } },
+            value = state.sec80CInput,
+            onValueChange = { viewModel.updateSec80C(it.filter { char -> char.isDigit() }) },
             label = { Text("Section 80C (PPF, ELSS, EPF, LIC - Max ₹1.5L)") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             leadingIcon = { Text("₹", fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(start = 12.dp)) },
@@ -446,8 +416,8 @@ fun TaxCalculatorTab(
 
         // 80D Health Insurance
         OutlinedTextField(
-            value = sec80DInput,
-            onValueChange = { sec80DInput = it.filter { char -> char.isDigit() } },
+            value = state.sec80DInput,
+            onValueChange = { viewModel.updateSec80D(it.filter { char -> char.isDigit() }) },
             label = { Text("Section 80D (Health Insurance Premium - Max ₹75k)") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             leadingIcon = { Text("₹", fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(start = 12.dp)) },
@@ -469,8 +439,8 @@ fun TaxCalculatorTab(
 
         // NPS 80CCD(1B)
         OutlinedTextField(
-            value = npsInput,
-            onValueChange = { npsInput = it.filter { char -> char.isDigit() } },
+            value = state.npsInput,
+            onValueChange = { viewModel.updateNps(it.filter { char -> char.isDigit() }) },
             label = { Text("Section 80CCD(1B) NPS Tier 1 (Max ₹50,000)") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             leadingIcon = { Text("₹", fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(start = 12.dp)) },
@@ -492,8 +462,8 @@ fun TaxCalculatorTab(
 
         // HRA / Home Loan
         OutlinedTextField(
-            value = hraLoanInput,
-            onValueChange = { hraLoanInput = it.filter { char -> char.isDigit() } },
+            value = state.hraLoanInput,
+            onValueChange = { viewModel.updateHraLoan(it.filter { char -> char.isDigit() }) },
             label = { Text("HRA Exemption / Sec 24 Home Loan Interest") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             leadingIcon = { Text("₹", fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(start = 12.dp)) },
@@ -546,136 +516,6 @@ fun TaxCalculatorTab(
             }
         }
     }
-}
-
-
-// --- DYNAMIC TAX CONFIGURATION MODELS ---
-data class TaxSlab(val min: Double, val max: Double?, val rate: Double)
-
-data class TaxRegimeConfig(
-    val standardDeduction: Double,
-    val rebateLimit: Double,
-    val slabs: List<TaxSlab>
-)
-
-data class TaxPolicyConfig(
-    val financialYear: String,
-    val oldRegime: TaxRegimeConfig,
-    val newRegime: TaxRegimeConfig
-)
-
-// Simulated Cloud Fetch (In a real app, this comes from an API or Supabase)
-fun fetchTaxPolicyConfig(financialYear: String): TaxPolicyConfig {
-    if (financialYear.contains("26-27")) {
-        return TaxPolicyConfig(
-            financialYear = "FY 2026-27 (Proposed)",
-            oldRegime = TaxRegimeConfig(
-                standardDeduction = 50000.0,
-                rebateLimit = 500000.0,
-                slabs = listOf(
-                    TaxSlab(0.0, 250000.0, 0.0),
-                    TaxSlab(250000.0, 500000.0, 0.05),
-                    TaxSlab(500000.0, 1000000.0, 0.20),
-                    TaxSlab(1000000.0, null, 0.30)
-                )
-            ),
-            newRegime = TaxRegimeConfig(
-                standardDeduction = 100000.0,
-                rebateLimit = 750000.0,
-                slabs = listOf(
-                    TaxSlab(0.0, 400000.0, 0.0),
-                    TaxSlab(400000.0, 800000.0, 0.05),
-                    TaxSlab(800000.0, 1200000.0, 0.10),
-                    TaxSlab(1200000.0, 1600000.0, 0.15),
-                    TaxSlab(1600000.0, 2000000.0, 0.20),
-                    TaxSlab(2000000.0, null, 0.30)
-                )
-            )
-        )
-    } else {
-        return TaxPolicyConfig(
-            financialYear = "FY 2025-26",
-            oldRegime = TaxRegimeConfig(
-                standardDeduction = 50000.0,
-                rebateLimit = 500000.0,
-                slabs = listOf(
-                    TaxSlab(0.0, 250000.0, 0.0),
-                    TaxSlab(250000.0, 500000.0, 0.05),
-                    TaxSlab(500000.0, 1000000.0, 0.20),
-                    TaxSlab(1000000.0, null, 0.30)
-                )
-            ),
-            newRegime = TaxRegimeConfig(
-                standardDeduction = 75000.0,
-                rebateLimit = 700000.0,
-                slabs = listOf(
-                    TaxSlab(0.0, 300000.0, 0.0),
-                    TaxSlab(300000.0, 700000.0, 0.05),
-                    TaxSlab(700000.0, 1000000.0, 0.10),
-                    TaxSlab(1000000.0, 1200000.0, 0.15),
-                    TaxSlab(1200000.0, 1500000.0, 0.20),
-                    TaxSlab(1500000.0, null, 0.30)
-                )
-            )
-        )
-    }
-}
-
-private fun calculateDynamicTax(
-    grossIncome: Double,
-    totalDeductions: Double,
-    isSalaried: Boolean,
-    config: TaxRegimeConfig
-): TaxResult {
-    val stdDeduction = if (isSalaried) config.standardDeduction else 0.0
-    val taxableIncome = (grossIncome - totalDeductions - stdDeduction).coerceAtLeast(0.0)
-
-    if (taxableIncome <= config.rebateLimit) {
-        return TaxResult(taxableIncome, 0.0, 0.0, 0.0, 0.0)
-    }
-
-    var baseTax = 0.0
-    var remainingIncome = taxableIncome
-
-    for (slab in config.slabs) {
-        if (taxableIncome > slab.min) {
-            val taxableInThisSlab = if (slab.max != null) {
-                (taxableIncome.coerceAtMost(slab.max) - slab.min)
-            } else {
-                taxableIncome - slab.min
-            }
-            baseTax += taxableInThisSlab * slab.rate
-        }
-    }
-
-    val cess = baseTax * 0.04
-    val totalTax = baseTax + cess
-    val effectiveRate = if (grossIncome > 0) (totalTax / grossIncome) * 100 else 0.0
-
-    return TaxResult(taxableIncome, baseTax, cess, totalTax, effectiveRate)
-}
-
-private fun calculateOldRegimeTax(
-    grossIncome: Double,
-    sec80C: Double,
-    sec80D: Double,
-    nps: Double,
-    hraLoan: Double,
-    isSalaried: Boolean,
-    financialYear: String = "FY 2025-26"
-): TaxResult {
-    val config = fetchTaxPolicyConfig(financialYear).oldRegime
-    val deductions = sec80C + sec80D + nps + hraLoan
-    return calculateDynamicTax(grossIncome, deductions, isSalaried, config)
-}
-
-private fun calculateNewRegimeTax(
-    grossIncome: Double,
-    isSalaried: Boolean,
-    financialYear: String = "FY 2025-26"
-): TaxResult {
-    val config = fetchTaxPolicyConfig(financialYear).newRegime
-    return calculateDynamicTax(grossIncome, 0.0, isSalaried, config)
 }
 
 
