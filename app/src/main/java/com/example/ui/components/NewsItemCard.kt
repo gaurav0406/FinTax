@@ -402,6 +402,7 @@ fun NewsItemCard(
             Spacer(modifier = Modifier.height(4.dp))
             val cardImpact = news.financialImpactBullets ?: if (news.isFinancialCategory) {
                 when (news.category) {
+                    "Stock Market India" -> "• Market Momentum: Sensex & Nifty rally led by Banking & Tech sector bluechips\n• Investor Takeaway: +₹4,200 Cr FII net buying boosting domestic equity sentiment"
                     "ITR & Tax" -> "• Est. Tax Savings: ₹15,600 - ₹25,000/yr for ₹7L-15L bracket\n• Cashflow Impact: +₹2,083/mo net take-home salary boost"
                     "Credit Cards" -> "• Direct Cash Impact: -₹350/mo on utility caps or +5% (₹400/mo) on fuel\n• Net Card Yield: ~₹4,800/yr optimized cashback return"
                     "Loans & FDs" -> "• Interest Yield: 8.25% p.a. (+₹8,250/yr per ₹1L deposit)\n• Loan EMI Impact: +₹320/mo on ₹50L Home Loan reset"

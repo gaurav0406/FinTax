@@ -74,6 +74,7 @@ import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 
 val ALL_INTEREST_CATEGORIES = listOf(
+    "Stock Market India",
     "Credit Cards",
     "ITR & Tax",
     "Loans & FDs",

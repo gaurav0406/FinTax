@@ -55,12 +55,18 @@ def fetch_financial_news():
     Scrapes the latest financial news from a public portal.
     """
     logging.info("Scraping financial news...")
-    # Example MOCK implementation
     return [
+        {
+            "title": "BSE Sensex Crosses 82,000 Landmark Milestone Led by Banking & IT Bluechips",
+            "url": "https://www.moneycontrol.com/news/business/markets/",
+            "text": "Indian equity markets scaled new all-time highs as the BSE Sensex surged past 82,000 points and Nifty 50 touched 25,100, driven by heavy buying in HDFC Bank, ICICI Bank, and Infosys. Domestic Institutional Investors recorded net purchases of over ₹3,800 Crore.",
+            "category": "Stock Market India"
+        },
         {
             "title": "RBI mandates new credit card billing cycle rules",
             "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx",
-            "text": "The Reserve Bank of India has announced new guidelines allowing credit card users to modify their billing cycles multiple times to align with their salary dates, effectively helping them manage cash flows better. This change will affect all public and private sector banks issuing credit cards."
+            "text": "The Reserve Bank of India has announced new guidelines allowing credit card users to modify their billing cycles multiple times to align with their salary dates, effectively helping them manage cash flows better. This change will affect all public and private sector banks issuing credit cards.",
+            "category": "Credit Cards"
         }
     ]
 
@@ -74,6 +80,7 @@ def fetch_youtube_shorts():
         return []
         
     categories = [
+        {"category": "Stock Market India", "query": "Indian stock market Sensex Nifty share market news 2026"},
         {"category": "ITR & Tax", "query": "Indian income tax ITR latest"},
         {"category": "Credit Cards", "query": "Indian credit cards tips 2026"},
     ]
@@ -115,7 +122,7 @@ Respond ONLY with JSON:
     "reason": "Provide 2 to 4 lines explaining why the government, entity, or individual has taken this decision/action in English. Do NOT include prefixes like 'Reason:'.",
     "financial_impact": "What is the financial impact or the benefits users can gain in English? Use 2 to 3 lines. Use crisp, quantifiable numbers and bullet points.",
     "action": "Provide actionable steps (2 to 3 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
-    "category": "One of: ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
+    "category": "One of: Stock Market India, ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
 }}"""
     try:
         model = genai.GenerativeModel('gemini-1.5-pro')
@@ -143,7 +150,7 @@ def push_to_supabase(article_data: dict, llm_data: dict, is_video: bool = False)
         "summaryText": llm_data.get("reason", ""),
         "summaryActionableTakeaway": llm_data.get("action", ""),
         "financialImpactBullets": llm_data.get("financial_impact", ""),
-        "category": article_data.get("category", llm_data.get("category", "ITR & Tax")),
+        "category": article_data.get("category", llm_data.get("category", "Stock Market India")),
         "sourceName": article_data.get("channel", "Indian Financial News Feed"),
         "imageUrl": article_data.get("imageUrl", None),
         "publishedAt": "now()"

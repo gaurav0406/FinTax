@@ -115,6 +115,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 
 val CATEGORIES = listOf(
     "All",
+    "Stock Market India",
     "Credit Cards",
     "ITR & Tax",
     "Loans & FDs",

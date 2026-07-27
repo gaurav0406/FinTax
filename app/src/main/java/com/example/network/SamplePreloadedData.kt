@@ -8,6 +8,38 @@ object SamplePreloadedData {
     fun getInitialNewsList(): List<FinancialNewsEntity> {
         val now = System.currentTimeMillis()
         return listOf(
+            // --- STOCK MARKET INDIA ---
+            FinancialNewsEntity(
+                id = 101,
+                title = "BSE Sensex Crosses 82,000 Landmark Milestone Led by Banking & IT Bluechips",
+                summaryWhatHappened = "Indian equity markets scaled new all-time highs as the BSE Sensex surged past 82,000 points and Nifty 50 touched 25,100, driven by heavy buying in HDFC Bank, ICICI Bank, and Infosys.",
+                summaryWhoImpacted = "Equity investors, SIP mutual fund holders, and retail traders across India.",
+                summaryActionableTakeaway = "🟢 Impact: Strong domestic DII inflows (+₹3,800 Cr) & FII buying bolster midcap & large-cap portfolios. Review your equity allocation to rebalance risk.",
+                summaryText = "Indian equity markets scaled new all-time highs as the BSE Sensex surged past 82,000 points and Nifty 50 touched 25,100, driven by heavy buying in HDFC Bank, ICICI Bank, and Infosys. Review your equity allocation to rebalance risk.",
+                category = "Stock Market India",
+                financialActionUrl = "https://www.nseindia.com",
+                sourceUrl = "https://www.moneycontrol.com/news/business/markets/bse-sensex-nifty-50-record-high-102948.html",
+                sourceName = "Moneycontrol Markets",
+                imageUrl = "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=1200&q=80",
+                financialImpactBullets = "• Market Rally Impact: +1.8% gain across major sectoral indices\n• Foreign Institutional Inflow: +₹4,200 Cr net buying in Indian equities this week",
+                publishedAt = now - (1000 * 60 * 10)
+            ),
+            FinancialNewsEntity(
+                id = 102,
+                title = "SEBI Mandates T+0 Settlement Mechanism for Top 500 Listed Indian Companies",
+                summaryWhatHappened = "Capital markets regulator SEBI approved instant optional T+0 trade settlement for top 500 listed stocks on NSE and BSE, allowing same-day cash payout for stock sellers.",
+                summaryWhoImpacted = "Stock market investors, day traders, and brokerage platforms like Zerodha, Groww, and Angel One.",
+                summaryActionableTakeaway = "🟢 Impact: Liquidity Boost! Stock sale proceeds hit your bank account on the same day instead of waiting for T+1 settlement.",
+                summaryText = "Capital markets regulator SEBI approved instant optional T+0 trade settlement for top 500 listed stocks on NSE and BSE, allowing same-day cash payout for stock sellers. Sale proceeds hit your account same day!",
+                category = "Stock Market India",
+                financialActionUrl = "https://www.sebi.gov.in",
+                sourceUrl = "https://www.livemint.com/market/stock-market-news/sebi-t0-settlement-top-500-stocks-nse-bse-1029481.html",
+                sourceName = "Livemint Markets",
+                imageUrl = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80",
+                financialImpactBullets = "• Settlement Speed: 0 days payout vs 24 hours under T+1\n• Working Capital Yield: Faster reinvestment cycle increases annualized portfolio flexibility",
+                publishedAt = now - (1000 * 60 * 25)
+            ),
+
             // --- CREDIT CARDS ---
             FinancialNewsEntity(
                 id = 1,
@@ -363,7 +395,7 @@ object SamplePreloadedData {
 
     private fun generateExtraNews(baseTime: Long): List<FinancialNewsEntity> {
         val categories = listOf(
-            "Credit Cards", "ITR & Tax", "Loans & FDs", "Markets & Mutual Funds", 
+            "Stock Market India", "Credit Cards", "ITR & Tax", "Loans & FDs", "Markets & Mutual Funds", 
             "RBI & Policy", "Entertainment", "Technology Insights", "AI & New Happenings", 
             "FinTech & Crypto", "Startup Ecosystem", "Smart Investing", "Personal Finance", 
             "Sports", "Cars & EV", "Education"

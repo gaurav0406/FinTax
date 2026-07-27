@@ -29,7 +29,7 @@ data class FinancialNewsEntity(
 
     val isFinancialCategory: Boolean
         get() = when (category.trim()) {
-            "ITR & Tax", "Credit Cards", "Loans & FDs", "Markets & Mutual Funds",
+            "Stock Market India", "ITR & Tax", "Credit Cards", "Loans & FDs", "Markets & Mutual Funds",
             "RBI & Policy", "FinTech & Crypto", "Smart Investing", "Personal Finance",
             "Cars & EV", "Video Shorts" -> true
             else -> false

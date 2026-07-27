@@ -21,7 +21,7 @@ object NewsProcessorService {
                       "reason": "Provide 2 to 4 lines explaining why the government, entity, or individual has taken this decision/action in English. Do NOT include prefixes like 'Reason:'.",
                       "financial_impact": "What is the financial impact or the benefits users can gain in English? Use 2 to 3 lines. Use crisp, quantifiable numbers and bullet points.",
                       "action": "Provide actionable steps (2 to 3 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
-                      "category": "One of: ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
+                      "category": "One of: Stock Market India, ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
                     }
                 """.trimIndent()
 
@@ -58,6 +58,7 @@ object NewsProcessorService {
 
     fun generateFallbackImpact(category: String): String {
         return when (category) {
+            "Stock Market India" -> "• Market Momentum: Sensex & Nifty rally led by Banking & Tech sector bluechips\n• Investor Takeaway: +₹4,200 Cr FII net buying boosting domestic equity sentiment"
             "ITR & Tax" -> "• Estimated Tax Savings: ₹15,600 - ₹25,000/yr for ₹7L-15L bracket\n• Cash Flow Impact: +₹2,083/mo net take-home salary increase"
             "Credit Cards" -> "• Direct Cash Impact: -₹350/mo on utility fees or +5% (₹400/mo) fuel waiver\n• Net Annual Return: ~₹4,800/yr optimized card savings"
             "Loans & FDs" -> "• Interest Yield / Outlay: 8.25% return (+₹8,250/yr on ₹1L deposit) or +₹320/mo on ₹50L Home Loan EMI"
