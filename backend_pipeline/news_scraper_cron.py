@@ -5,7 +5,6 @@ import requests
 import feedparser
 from bs4 import BeautifulSoup
 import google.generativeai as genai
-from supabase import create_client, Client
 from googleapiclient.discovery import build
 
 # Configure Logging
@@ -26,18 +25,14 @@ try:
 except Exception as e:
     logging.error(f"Error configuring Gemini API: {e}")
 
-# Initialize Supabase safely
-supabase: Client = None
-try:
-    if (SUPABASE_URL and SUPABASE_URL.startswith("http") and "YOUR_" not in SUPABASE_URL and
-        SUPABASE_KEY and len(SUPABASE_KEY) > 20 and "YOUR_" not in SUPABASE_KEY):
-        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-        logging.info("Supabase client initialized successfully.")
-    else:
-        logging.warning("Supabase URL or Key missing or placeholder. Skipping DB connection.")
-except Exception as e:
-    logging.warning(f"Failed to initialize Supabase client (check your SUPABASE_URL and SUPABASE_KEY secrets): {e}")
-    supabase = None
+# Check Supabase Credentials
+if (SUPABASE_URL and SUPABASE_URL.startswith("http") and "YOUR_" not in SUPABASE_URL and
+    SUPABASE_KEY and len(SUPABASE_KEY) > 20 and "YOUR_" not in SUPABASE_KEY):
+    logging.info("Supabase configuration found. Using REST API for insertions.")
+    USE_SUPABASE = True
+else:
+    logging.warning("Supabase URL or Key missing or placeholder. Skipping DB connection.")
+    USE_SUPABASE = False
 
 # Initialize YouTube Client safely
 youtube = None
@@ -51,6 +46,7 @@ except Exception as e:
     logging.warning(f"Failed to initialize YouTube client: {e}")
     youtube = None
 
+
 def fetch_financial_news():
     """
     Scrapes the latest financial news from RSS feeds.
@@ -58,10 +54,10 @@ def fetch_financial_news():
     """
     logging.info("Scraping financial news...")
     
-    # We will use public RSS feeds for financial news (e.g., Economic Times)
+    # We will use public RSS feeds for financial news (e.g., Economic Times & Livemint)
     feeds = [
         {"category": "Stock Market India", "url": "https://economictimes.indiatimes.com/markets/rssfeeds/2146842.cms"},
-        {"category": "Credit Cards", "url": "https://economictimes.indiatimes.com/wealth/borrow/rssfeeds/83756073.cms"},
+        {"category": "Credit Cards", "url": "https://www.livemint.com/rss/money"},
         {"category": "ITR & Tax", "url": "https://economictimes.indiatimes.com/wealth/tax/rssfeeds/83755913.cms"},
         {"category": "Markets & Mutual Funds", "url": "https://economictimes.indiatimes.com/mf/rssfeeds/83756208.cms"}
     ]
@@ -70,9 +66,11 @@ def fetch_financial_news():
     for feed in feeds:
         try:
             parsed = feedparser.parse(feed["url"])
-            # Get up to 15 articles per category
-            for entry in parsed.entries[:15]:
-                # Parse HTML content from summary using BeautifulSoup
+            count = 0
+            for entry in parsed.entries:
+                if count >= 15:
+                    break
+                    
                 summary_html = entry.get("summary", "")
                 soup = BeautifulSoup(summary_html, 'html.parser')
                 clean_text = soup.get_text(strip=True)
@@ -87,7 +85,8 @@ def fetch_financial_news():
                     "text": clean_text,
                     "category": feed["category"]
                 })
-            logging.info(f"Fetched {len(parsed.entries[:15])} articles for category: {feed['category']}")
+                count += 1
+            logging.info(f"Fetched {count} articles for category: {feed['category']}")
         except Exception as e:
             logging.error(f"Error fetching RSS feed {feed['url']}: {e}")
             
@@ -148,6 +147,8 @@ Respond ONLY with JSON:
     "category": "One of: Stock Market India, ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
 }}"""
     try:
+        # Using a reliable model name available for developers. 
+        # Fallback to flash-8b or standard flash if needed
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt)
         
@@ -182,15 +183,27 @@ def push_to_supabase(article_data: dict, llm_data: dict, is_video: bool = False)
     if is_video:
         payload["category"] = "Video Shorts"
         
-    if not supabase:
+    if not USE_SUPABASE:
         logging.warning("Supabase client not initialized. Skipping database insertion for: " + article_data["title"])
         return
         
     try:
-        supabase.table("financial_news").insert(payload).execute()
-        logging.info(f"Successfully inserted: {article_data['title']}")
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+        }
+        # Using REST API call to completely bypass the python supabase client proxy issue
+        endpoint = f"{SUPABASE_URL.rstrip('/')}/rest/v1/financial_news"
+        response = requests.post(endpoint, headers=headers, json=payload)
+        
+        if response.status_code in [200, 201, 204]:
+            logging.info(f"Successfully inserted: {article_data['title']}")
+        else:
+            logging.error(f"Failed to insert into Supabase: {response.status_code} - {response.text}")
     except Exception as e:
-        logging.error(f"Error inserting into Supabase: {e}")
+        logging.error(f"Error inserting into Supabase via REST: {e}")
 
 def main():
     logging.info("Starting unified background scraping pipeline...")
