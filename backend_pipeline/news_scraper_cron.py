@@ -16,25 +16,38 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "YOUR_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "YOUR_SUPABASE_SERVICE_ROLE_KEY")
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "YOUR_YOUTUBE_API_KEY")
 
-# Initialize Clients
+# Initialize Gemini
 try:
-    genai.configure(api_key=GEMINI_API_KEY)
-    
-    # Simple check for placeholder or empty keys
-    if SUPABASE_URL and "YOUR_" not in SUPABASE_URL and SUPABASE_KEY and "YOUR_" not in SUPABASE_KEY:
-        supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    if GEMINI_API_KEY and "YOUR_" not in GEMINI_API_KEY:
+        genai.configure(api_key=GEMINI_API_KEY)
     else:
-        logging.warning("Supabase URL or Key not set/invalid. Skipping DB connection.")
-        supabase = None
-        
+        logging.warning("GEMINI_API_KEY not set or invalid placeholder.")
+except Exception as e:
+    logging.error(f"Error configuring Gemini API: {e}")
+
+# Initialize Supabase safely
+supabase: Client = None
+try:
+    if (SUPABASE_URL and SUPABASE_URL.startswith("http") and "YOUR_" not in SUPABASE_URL and
+        SUPABASE_KEY and len(SUPABASE_KEY) > 20 and "YOUR_" not in SUPABASE_KEY):
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        logging.info("Supabase client initialized successfully.")
+    else:
+        logging.warning("Supabase URL or Key missing or placeholder. Skipping DB connection.")
+except Exception as e:
+    logging.warning(f"Failed to initialize Supabase client (check your SUPABASE_URL and SUPABASE_KEY secrets): {e}")
+    supabase = None
+
+# Initialize YouTube Client safely
+youtube = None
+try:
     if YOUTUBE_API_KEY and "YOUR_" not in YOUTUBE_API_KEY:
         youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+        logging.info("YouTube client initialized successfully.")
     else:
         logging.warning("YouTube API Key not set/invalid. Skipping YouTube connection.")
-        youtube = None
 except Exception as e:
-    logging.error(f"Error initializing clients: {e}")
-    supabase = None
+    logging.warning(f"Failed to initialize YouTube client: {e}")
     youtube = None
 
 def fetch_financial_news():
@@ -104,19 +117,19 @@ Respond ONLY with JSON:
     "action": "Provide actionable steps (2 to 3 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
     "category": "One of: ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
 }}"""
-    model = genai.GenerativeModel('gemini-1.5-pro')
-    response = model.generate_content(prompt)
-    
-    response_text = response.text.strip()
-    if response_text.startswith("```json"):
-        response_text = response_text[7:]
-    if response_text.endswith("```"):
-        response_text = response_text[:-3]
-        
     try:
+        model = genai.GenerativeModel('gemini-1.5-pro')
+        response = model.generate_content(prompt)
+        
+        response_text = response.text.strip()
+        if response_text.startswith("```json"):
+            response_text = response_text[7:]
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+            
         return json.loads(response_text)
     except Exception as e:
-        logging.error(f"Failed to parse LLM response: {e}")
+        logging.error(f"Failed to summarize with Gemini: {e}")
         return {}
 
 def push_to_supabase(article_data: dict, llm_data: dict, is_video: bool = False):
@@ -163,7 +176,6 @@ def main():
     videos = fetch_youtube_shorts()
     for video in videos:
         logging.info(f"Processing Video: {video['title']}")
-        # Pass both title and description to give more context for actionable insights
         video_context = f"Video Title: {video['title']}\nVideo Description: {video['text']}"
         llm_data = summarize_with_gemini(video_context)
         push_to_supabase(video, llm_data, is_video=True)
