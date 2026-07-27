@@ -21,7 +21,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --upgrade supabase httpx google-generativeai
+          pip install --upgrade supabase httpx google-genai
           if [ -f backend_pipeline/requirements.txt ]; then pip install -r backend_pipeline/requirements.txt; fi
           
       - name: Run Scraper
