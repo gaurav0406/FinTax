@@ -4,7 +4,7 @@ import logging
 import requests
 import feedparser
 from bs4 import BeautifulSoup
-import google.generativeai as genai
+from google import genai
 from supabase import create_client, Client
 from googleapiclient.discovery import build
 
@@ -18,9 +18,10 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY", "YOUR_SUPABASE_SERVICE_ROLE_KEY")
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "YOUR_YOUTUBE_API_KEY")
 
 # Initialize Gemini
+gemini_client = None
 try:
     if GEMINI_API_KEY and "YOUR_" not in GEMINI_API_KEY:
-        genai.configure(api_key=GEMINI_API_KEY)
+        gemini_client = genai.Client(api_key=GEMINI_API_KEY)
     else:
         logging.warning("GEMINI_API_KEY not set or invalid placeholder.")
 except Exception as e:
@@ -151,8 +152,14 @@ Respond ONLY with JSON:
     "category": "One of: Stock Market India, ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
 }}"""
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(prompt)
+        if not gemini_client:
+            logging.warning("Gemini client not initialized.")
+            return {}
+            
+        response = gemini_client.models.generate_content(
+            model='gemini-1.5-flash',
+            contents=prompt,
+        )
         
         response_text = response.text.strip()
         if response_text.startswith("```json"):
