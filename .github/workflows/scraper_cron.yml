@@ -36,7 +36,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: scraped-financial-data
-          path: |
-            backend_pipeline/raw_scraped_data.json
-            backend_pipeline/processed_scraped_data.json
+          path: backend_pipeline/*.json
           retention-days: 7
