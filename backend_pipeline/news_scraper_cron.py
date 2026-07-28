@@ -185,6 +185,7 @@ def summarize_batch_with_gemini(items: list) -> dict:
       {{
         "id": <number matching input id>,
         "summary": "Detailed 6 to 8-line summary of the news in English without prefixes like 'What happened:'.",
+        "who_impacted": "1 to 2 lines specifying who is impacted by this news (e.g. Taxpayers, Retail Investors, Salaried Employees).",
         "reason": "4 to 5 lines explaining why this decision/action was taken.",
         "financial_impact": "Financial impact or benefits for taxpayers/investors in 3 to 4 lines with numbers.",
         "action": "Actionable steps in 3 to 4 lines.",
@@ -335,12 +336,13 @@ def main():
             continue
 
         payload = {
-            "title": item["title"],
-            "sourceUrl": item["url"],
-            "summaryWhatHappened": llm_data.get("summary", ""),
-            "summaryText": llm_data.get("reason", ""),
-            "summaryActionableTakeaway": llm_data.get("action", ""),
-            "financialImpactBullets": llm_data.get("financial_impact", ""),
+            "title": item["title"] or "Financial News",
+            "sourceUrl": item["url"] or "https://economictimes.indiatimes.com",
+            "summaryWhatHappened": llm_data.get("summary", "") or "Detailed summary of news item.",
+            "summaryWhoImpacted": llm_data.get("who_impacted", "") or "Taxpayers, Investors, and General Public",
+            "summaryText": llm_data.get("reason", "") or "Detailed background reason and analysis.",
+            "summaryActionableTakeaway": llm_data.get("action", "") or "Stay informed with official financial updates.",
+            "financialImpactBullets": llm_data.get("financial_impact", "") or "",
             "category": "Video Shorts" if item.get("is_video") else item.get("category", llm_data.get("category", "Stock Market India")),
             "sourceName": item.get("sourceName", "Indian Financial News Feed"),
             "imageUrl": item.get("imageUrl", None),
