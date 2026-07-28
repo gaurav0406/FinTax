@@ -18,8 +18,9 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "YOUR_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "YOUR_SUPABASE_SERVICE_ROLE_KEY")
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "YOUR_YOUTUBE_API_KEY")
 
-RAW_DATA_FILE = "raw_scraped_data.json"
-PROCESSED_DATA_FILE = "processed_scraped_data.json"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+RAW_DATA_FILE = os.path.join(BASE_DIR, "raw_scraped_data.json")
+PROCESSED_DATA_FILE = os.path.join(BASE_DIR, "processed_scraped_data.json")
 
 # Initialize Gemini
 gemini_client = None
@@ -207,8 +208,25 @@ def summarize_batch_with_gemini(items: list) -> dict:
             response_text = response_text[:-3]
         response_text = response_text.strip()
 
-        parsed_list = json.loads(response_text)
-        summaries_by_id = {summary["id"]: summary for summary in parsed_list if "id" in summary}
+        parsed_data = json.loads(response_text)
+        
+        # Handle case where model returns a dict with an 'items' key instead of a raw list
+        if isinstance(parsed_data, dict):
+            parsed_list = parsed_data.get("items", parsed_data.get("data", [parsed_data]))
+        elif isinstance(parsed_data, list):
+            parsed_list = parsed_data
+        else:
+            parsed_list = []
+
+        summaries_by_id = {}
+        for summary in parsed_list:
+            if isinstance(summary, dict) and "id" in summary:
+                try:
+                    item_id = int(summary["id"])
+                    summaries_by_id[item_id] = summary
+                except (ValueError, TypeError):
+                    pass
+
         logging.info(f"Gemini successfully summarized {len(summaries_by_id)} items in 1 API call.")
         return summaries_by_id
 
@@ -219,6 +237,7 @@ def summarize_batch_with_gemini(items: list) -> dict:
 def push_batch_to_supabase(payloads: list):
     """
     Inserts a list of formatted records into Supabase in bulk.
+    Falls back to row-by-row insertion if a batch error occurs.
     """
     if not payloads:
         logging.info("No payloads to insert into Supabase.")
@@ -230,9 +249,17 @@ def push_batch_to_supabase(payloads: list):
 
     try:
         supabase.table("financial_news").insert(payloads).execute()
-        logging.info(f"Successfully inserted {len(payloads)} records into Supabase.")
+        logging.info(f"Successfully inserted batch of {len(payloads)} records into Supabase.")
     except Exception as e:
-        logging.error(f"Error inserting bulk records into Supabase: {e}")
+        logging.error(f"Batch insert error: {e}. Falling back to row-by-row insertion...")
+        inserted_count = 0
+        for payload in payloads:
+            try:
+                supabase.table("financial_news").insert(payload).execute()
+                inserted_count += 1
+            except Exception as item_err:
+                logging.error(f"Failed to insert item '{payload.get('title')}': {item_err}")
+        logging.info(f"Row-by-row fallback completed. Inserted {inserted_count}/{len(payloads)} records.")
 
 def cleanup_old_news(days: int = 15):
     """

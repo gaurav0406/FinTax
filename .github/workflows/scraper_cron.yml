@@ -30,3 +30,13 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: python backend_pipeline/news_scraper_cron.py
+
+      - name: Upload Scraped JSON Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraped-financial-data
+          path: |
+            backend_pipeline/raw_scraped_data.json
+            backend_pipeline/processed_scraped_data.json
+          retention-days: 7
