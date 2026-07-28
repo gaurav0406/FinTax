@@ -6,11 +6,16 @@ import requests
 import feedparser
 from bs4 import BeautifulSoup
 from google import genai
+from google.genai import types
 from supabase import create_client, Client
 from googleapiclient.discovery import build
 
-# Configure Logging
+# Configure Logging & suppress third-party SDK info logs
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.getLogger("google").setLevel(logging.WARNING)
+logging.getLogger("google.genai").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 # Environment Variables (Set these in your Serverless/Cron environment)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY")
@@ -204,6 +209,10 @@ def summarize_batch_with_gemini(items: list) -> dict:
                 response = gemini_client.models.generate_content(
                     model=model_name,
                     contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
+                    )
                 )
                 
                 response_text = response.text.strip()
