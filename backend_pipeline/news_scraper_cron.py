@@ -248,9 +248,13 @@ def summarize_batch_with_gemini(items: list) -> dict:
 
             except Exception as e:
                 err_str = str(e)
-                if "503" in err_str or "UNAVAILABLE" in err_str or "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
-                    wait_time = 2 * (attempt + 1)
-                    logging.warning(f"Model '{model_name}' returned transient error: {e}. Retrying in {wait_time}s...")
+                if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    wait_time = 12 * (attempt + 1)
+                    logging.warning(f"Model '{model_name}' rate limit reached (429). Retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                elif "503" in err_str or "UNAVAILABLE" in err_str:
+                    wait_time = 4 * (attempt + 1)
+                    logging.warning(f"Model '{model_name}' transient error (503). Retrying in {wait_time}s...")
                     time.sleep(wait_time)
                 else:
                     logging.error(f"Error with model '{model_name}': {e}. Trying next fallback model...")
@@ -330,6 +334,8 @@ def main():
         chunk = all_raw_items[i : i + CHUNK_SIZE]
         chunk_summaries = summarize_batch_with_gemini(chunk)
         summaries_map.update(chunk_summaries)
+        if i + CHUNK_SIZE < len(all_raw_items):
+            time.sleep(3)  # Pace batch requests to prevent rate limit spikes
 
     # 4. Construct final payload & store processed data locally
     now_ms = int(time.time() * 1000)
