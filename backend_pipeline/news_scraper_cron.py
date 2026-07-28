@@ -157,7 +157,7 @@ Respond ONLY with JSON:
             return {}
             
         response = gemini_client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='Gemini 3.5 Flash-Lite',
             contents=prompt,
         )
         
