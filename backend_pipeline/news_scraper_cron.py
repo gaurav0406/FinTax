@@ -193,46 +193,61 @@ def summarize_batch_with_gemini(items: list) -> dict:
     ]
     """
 
-    try:
-        response = gemini_client.models.generate_content(
-            model='gemini-2.5-flash-lite',
-            contents=prompt,
-        )
-        
-        response_text = response.text.strip()
-        if response_text.startswith("```json"):
-            response_text = response_text[7:]
-        if response_text.startswith("```"):
-            response_text = response_text[3:]
-        if response_text.endswith("```"):
-            response_text = response_text[:-3]
-        response_text = response_text.strip()
+    models_to_try = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-1.5-flash']
+    
+    for model_name in models_to_try:
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                logging.info(f"Attempting batch summarization with model '{model_name}' (Attempt {attempt + 1}/{max_retries})...")
+                response = gemini_client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                )
+                
+                response_text = response.text.strip()
+                if response_text.startswith("```json"):
+                    response_text = response_text[7:]
+                if response_text.startswith("```"):
+                    response_text = response_text[3:]
+                if response_text.endswith("```"):
+                    response_text = response_text[:-3]
+                response_text = response_text.strip()
 
-        parsed_data = json.loads(response_text)
-        
-        # Handle case where model returns a dict with an 'items' key instead of a raw list
-        if isinstance(parsed_data, dict):
-            parsed_list = parsed_data.get("items", parsed_data.get("data", [parsed_data]))
-        elif isinstance(parsed_data, list):
-            parsed_list = parsed_data
-        else:
-            parsed_list = []
+                parsed_data = json.loads(response_text)
+                
+                # Handle case where model returns a dict with an 'items' key instead of a raw list
+                if isinstance(parsed_data, dict):
+                    parsed_list = parsed_data.get("items", parsed_data.get("data", [parsed_data]))
+                elif isinstance(parsed_data, list):
+                    parsed_list = parsed_data
+                else:
+                    parsed_list = []
 
-        summaries_by_id = {}
-        for summary in parsed_list:
-            if isinstance(summary, dict) and "id" in summary:
-                try:
-                    item_id = int(summary["id"])
-                    summaries_by_id[item_id] = summary
-                except (ValueError, TypeError):
-                    pass
+                summaries_by_id = {}
+                for summary in parsed_list:
+                    if isinstance(summary, dict) and "id" in summary:
+                        try:
+                            item_id = int(summary["id"])
+                            summaries_by_id[item_id] = summary
+                        except (ValueError, TypeError):
+                            pass
 
-        logging.info(f"Gemini successfully summarized {len(summaries_by_id)} items in 1 API call.")
-        return summaries_by_id
+                logging.info(f"Gemini model '{model_name}' successfully summarized {len(summaries_by_id)} items in 1 API call.")
+                return summaries_by_id
 
-    except Exception as e:
-        logging.error(f"Failed to perform batch summarization with Gemini: {e}")
-        return {}
+            except Exception as e:
+                err_str = str(e)
+                if "503" in err_str or "UNAVAILABLE" in err_str or "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    wait_time = 2 * (attempt + 1)
+                    logging.warning(f"Model '{model_name}' returned transient error: {e}. Retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    logging.error(f"Error with model '{model_name}': {e}. Trying next fallback model...")
+                    break  # Try next model if it's not a transient retryable error
+
+    logging.error("All Gemini models and retries failed for batch summarization.")
+    return {}
 
 def push_batch_to_supabase(payloads: list):
     """
