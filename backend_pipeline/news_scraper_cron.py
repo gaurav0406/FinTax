@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import logging
 import requests
 import feedparser
@@ -186,7 +187,7 @@ def push_to_supabase(article_data: dict, llm_data: dict, is_video: bool = False)
         "category": article_data.get("category", llm_data.get("category", "Stock Market India")),
         "sourceName": article_data.get("channel", "Indian Financial News Feed"),
         "imageUrl": article_data.get("imageUrl", None),
-        "publishedAt": "now()"
+        "publishedAt": int(time.time() * 1000)
     }
     
     if is_video:
