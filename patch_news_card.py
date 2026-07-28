@@ -3,107 +3,146 @@ import re
 with open("app/src/main/java/com/example/ui/components/NewsItemCard.kt", "r") as f:
     content = f.read()
 
-# 1. Add date next to source name
-import_text = "import androidx.compose.ui.unit.sp\nimport java.text.SimpleDateFormat\nimport java.util.Date\nimport java.util.Locale\nimport androidx.compose.ui.text.style.TextOverflow\n"
-content = content.replace("import androidx.compose.ui.unit.sp", import_text)
+# Add needed imports
+imports = """
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.ui.text.style.TextDecoration
+import org.json.JSONObject
+import org.json.JSONArray
+"""
 
-# Add date display logic
-source_name_block = """                    Text(
-                        text = news.sourceName,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )"""
-date_display = """                    Text(
-                        text = news.sourceName,
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "• " + SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(news.publishedAt)),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )"""
-content = content.replace(source_name_block, date_display)
+if "import androidx.compose.material3.ModalBottomSheet" not in content:
+    content = content.replace("import androidx.compose.material3.Button", imports + "import androidx.compose.material3.Button")
 
-# 2. Replace Expand/Collapse toggle and 3 Bullet Points Breakdown with a fixed summary 3-4 lines
-old_summary_block = """            // Expand/Collapse Toggle
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { isExpanded = !isExpanded },
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "SUMMARY BREAKDOWN",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                )
-                Icon(
-                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = "Expand/Collapse",
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            // 3 Bullet Points Breakdown
-            AnimatedVisibility(
-                visible = isExpanded,
-                enter = expandVertically(),
-                exit = shrinkVertically()
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+# Add state variables for BottomSheet and Sentiment inside NewsItemCard
+state_vars = """
+    var showJargonSheet by remember { mutableStateOf(false) }
+    var currentJargonTerm by remember { mutableStateOf("") }
+    var currentJargonDefinition by remember { mutableStateOf("") }
+    var sentiment by remember { mutableStateOf<String?>(null) }
+"""
+
+content = re.sub(r'(var webViewTitleToOpen by remember \{ mutableStateOf\("Financial Action"\) \})', r'\1' + '\n' + state_vars, content)
+
+# Inject Key Metrics at the top of the content Column (after Spacer(modifier = Modifier.height(16.dp))
+metrics_injection = """
+            // Key Metrics Highlights
+            val metricsList = news.keyMetrics?.split("|||") ?: emptyList()
+            if (metricsList.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(bottom = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    MinimalBulletRow(
-                        label = "👥 Who is impacted:",
-                        text = news.summaryWhoImpacted
-                    )
-                    if (news.category in listOf("ITR & Tax", "Loans & FDs", "Credit Cards", "Tax")) {
-                        MinimalBulletRow(
-                            label = "💡 How you're impacted (Tangible/Intangible):",
-                            text = news.summaryWhatHappened
-                        )
-                        MinimalBulletRow(
-                            label = "🎯 Action to take (Risk & Benefits):",
-                            text = news.summaryActionableTakeaway
-                        )
+                    metricsList.forEach { metric ->
+                        Surface(
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = metric,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            )
+                        }
                     }
                 }
-            }"""
+            }
+"""
 
-new_summary_block = """            // Summary Breakdown
-            Text(
-                text = "SUMMARY",
-                style = MaterialTheme.typography.labelSmall.copy(
+content = re.sub(r'(Text\(\s*text = news\.title,\s*style = MaterialTheme\.typography\.titleMedium\.copy\(.*?\)\s*\)\s*Spacer\(modifier = Modifier\.height\(16\.dp\)\))', r'\1' + '\n' + metrics_injection, content, flags=re.DOTALL)
+
+# Inject Sentiment Poll at the bottom of the card content (before the bottom action bar)
+sentiment_injection = """
+            // Sentiment Poll
+            Spacer(modifier = Modifier.height(16.dp))
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        text = "How do you feel about this news?",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = { sentiment = "Bullish" },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (sentiment == "Bullish") Color(0xFF2E7D32) else MaterialTheme.colorScheme.surface,
+                                contentColor = if (sentiment == "Bullish") Color.White else MaterialTheme.colorScheme.onSurface
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("🚀 Bullish" + if(sentiment != null) " (68%)" else "")
+                        }
+                        Button(
+                            onClick = { sentiment = "Bearish" },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (sentiment == "Bearish") Color(0xFFC62828) else MaterialTheme.colorScheme.surface,
+                                contentColor = if (sentiment == "Bearish") Color.White else MaterialTheme.colorScheme.onSurface
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("📉 Bearish" + if(sentiment != null) " (32%)" else "")
+                        }
+                    }
+                }
+            }
+"""
+
+content = re.sub(r'(// \-\-\- Expandable Content \-\-\-)', sentiment_injection + r'\n            \1', content)
+
+# Inject Bottom Sheet logic at the very end of NewsItemCard (before the last closing brace)
+bottom_sheet = """
+    if (showJargonSheet) {
+        androidx.compose.material3.ModalBottomSheet(
+            onDismissRequest = { showJargonSheet = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            ) {
+                Text(
+                    text = currentJargonTerm,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    color = MinimalPurpleDark
+                    color = MaterialTheme.colorScheme.primary
                 )
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = news.summaryText,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = currentJargonDefinition,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
-                ),
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis
-            )"""
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+"""
 
-content = content.replace(old_summary_block, new_summary_block)
-
-# 3. Top Stories as a Link? 
-# The user wants "Digital stop stories news should be a link."
-# Wait, maybe they mean "Top stories"? We have "Digital top stories"?
-# In MainHomeScreen, there is no "Top stories". It's just the news feed. But we can ensure source link is prominent.
-# Actually, the action buttons are "Take Action" and "Source Article". That's a link. 
+content = re.sub(r'(\n\}\s*)$', bottom_sheet + r'\1', content)
 
 with open("app/src/main/java/com/example/ui/components/NewsItemCard.kt", "w") as f:
     f.write(content)
+

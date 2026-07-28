@@ -19,6 +19,8 @@ data class FinancialNewsEntity(
     val audioUrl: String? = null,
     val imageUrl: String? = null,
     val financialImpactBullets: String? = null,
+    val keyMetrics: String? = null,
+    val jargonTerms: String? = null,
     val publishedAt: Long = System.currentTimeMillis(),
     val isBookmarked: Boolean = false,
     val readCount: Int = 1250,

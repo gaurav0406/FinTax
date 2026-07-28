@@ -1,27 +1,18 @@
-package com.example
+import re
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.ui.MainHomeScreen
-import com.example.ui.NewsViewModel
-import com.example.ui.theme.FinTaxTheme
-import com.example.utils.AdMobHelper
+with open("app/src/main/java/com/example/MainActivity.kt", "r") as f:
+    content = f.read()
+
+new_imports = """
 import android.content.Context
 import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
 import com.example.ui.OnboardingScreen
+"""
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        
-        // Initialize AdMob and start preloading Interstitial Ad
-        AdMobHelper.initialize(this)
-        
-        enableEdgeToEdge()
+if "import com.example.ui.OnboardingScreen" not in content:
+    content = content.replace("import com.example.utils.AdMobHelper", "import com.example.utils.AdMobHelper\n" + new_imports.strip())
+
+set_content_replacement = """
         setContent {
             FinTaxTheme {
                 val context = LocalContext.current
@@ -45,5 +36,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-}
+"""
+
+content = re.sub(r'setContent \{.*?val newsViewModel: NewsViewModel = viewModel\(\)\s*MainHomeScreen\(viewModel = newsViewModel\)\s*\}\s*\}', set_content_replacement.strip(), content, flags=re.DOTALL)
+
+if "import androidx.compose.ui.platform.LocalContext" not in content:
+    content = content.replace("import androidx.compose.runtime.*", "import androidx.compose.runtime.*\nimport androidx.compose.ui.platform.LocalContext")
+
+with open("app/src/main/java/com/example/MainActivity.kt", "w") as f:
+    f.write(content)
+

@@ -203,19 +203,7 @@ fun InshortsFeedView(
     }
 
     // Determine next category for uninterrupted swipe transition
-    val nextCategory = remember(selectedCategory, categories) {
-        if (categories.isEmpty()) null
-        else {
-            val validCategories = categories.filter { it != "All" }
-            val currentIndex = validCategories.indexOf(selectedCategory)
-            if (currentIndex != -1 && currentIndex < validCategories.size - 1) {
-                validCategories[currentIndex + 1]
-            } else if (validCategories.isNotEmpty()) {
-                validCategories.firstOrNull { it != selectedCategory }
-            } else null
-        }
-    }
-
+    
     // Build Interleaved Slides (AdMob Native every 4th slide, Lead Gen every 8th slide)
     val interleavedSlides = remember(displayNewsList, dailyDigestList) {
         val slides = mutableListOf<FeedSlide>()
@@ -251,19 +239,13 @@ fun InshortsFeedView(
 
     // Auto-advance loop & smooth transition to next category at the end of 5 cards
     LaunchedEffect(pagerState.currentPage, autoSwipeEnabled, swipeIntervalMs, selectedCategory) {
-        if (pagerState.currentPage == interleavedSlides.size - 1 && nextCategory != null) {
-            // Reached last slide of current category — auto-advance to next category
-            kotlinx.coroutines.delay(6000)
-            if (autoSwipeEnabled) {
-                onSelectCategory(nextCategory)
-            }
-        } else if (autoSwipeEnabled && pagerState.currentPage < interleavedSlides.size - 1) {
+        if (autoSwipeEnabled && pagerState.currentPage < interleavedSlides.size - 1) {
             timeRemainingMs = swipeIntervalMs
             while (timeRemainingMs > 0) {
                 kotlinx.coroutines.delay(1000)
                 timeRemainingMs -= 1000
             }
-            pagerState.scrollToPage(pagerState.currentPage + 1)
+            pagerState.animateScrollToPage(pagerState.currentPage + 1)
         }
     }
 

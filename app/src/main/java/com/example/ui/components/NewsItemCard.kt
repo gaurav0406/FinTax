@@ -32,7 +32,22 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Visibility
 
 import com.example.ui.theme.MinimalPurplePrimary
+
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.ui.text.style.TextDecoration
+import org.json.JSONObject
+import org.json.JSONArray
 import androidx.compose.material3.Button
+
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -52,7 +67,6 @@ import android.content.Context
 import android.content.Intent
 import android.app.Activity
 import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.Share
 import com.example.utils.AdMobHelper
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
@@ -69,7 +83,6 @@ import java.util.Locale
 import androidx.compose.ui.text.style.TextOverflow
 
 import com.example.data.FinancialNewsEntity
-import com.example.ui.theme.MinimalPurplePrimary
 
 private fun formatSocialCount(count: Int): String {
     return when {
@@ -109,6 +122,12 @@ fun NewsItemCard(
     var isExpanded by remember { mutableStateOf(true) }
     var webViewUrlToOpen by remember { mutableStateOf<String?>(null) }
     var webViewTitleToOpen by remember { mutableStateOf("Financial Action") }
+
+    var showJargonSheet by remember { mutableStateOf(false) }
+    var currentJargonTerm by remember { mutableStateOf("") }
+    var currentJargonDefinition by remember { mutableStateOf("") }
+    var sentiment by remember { mutableStateOf<String?>(null) }
+
 
     LaunchedEffect(isExpanded) {
         if (isExpanded && autoPlayAudio && !isPlaying) {
@@ -346,8 +365,14 @@ fun NewsItemCard(
                 )
             )
             Spacer(modifier = Modifier.height(6.dp))
-            Text(
+            JargonText(
                 text = news.summaryWhatHappened,
+                jargonTerms = news.jargonTerms,
+                onJargonClick = { term, def ->
+                    currentJargonTerm = term
+                    currentJargonDefinition = def
+                    showJargonSheet = true
+                },
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontSize = 13.sp,
                     lineHeight = 18.sp,
@@ -382,8 +407,14 @@ fun NewsItemCard(
                 )
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
+            JargonText(
                 text = news.summaryText,
+                jargonTerms = news.jargonTerms,
+                onJargonClick = { term, def ->
+                    currentJargonTerm = term
+                    currentJargonDefinition = def
+                    showJargonSheet = true
+                },
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontSize = 13.sp,
                     lineHeight = 18.sp,
@@ -537,6 +568,34 @@ fun NewsItemCard(
             onDismiss = { webViewUrlToOpen = null }
         )
     }
+
+    if (showJargonSheet) {
+        @OptIn(ExperimentalMaterial3Api::class)
+        androidx.compose.material3.ModalBottomSheet(
+            onDismissRequest = { showJargonSheet = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            ) {
+                Text(
+                    text = currentJargonTerm,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = currentJargonDefinition,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+
 }
 
 @Composable
@@ -587,4 +646,86 @@ fun shareNewsArticle(context: Context, news: FinancialNewsEntity) {
         )
     }
     context.startActivity(Intent.createChooser(shareIntent, "Share FinTax News"))
+    
+
+}
+
+
+@Composable
+fun JargonText(
+    text: String,
+    jargonTerms: String?,
+    onJargonClick: (String, String) -> Unit,
+    style: androidx.compose.ui.text.TextStyle
+) {
+    if (jargonTerms.isNullOrBlank()) {
+        Text(text = text, style = style)
+        return
+    }
+
+    val jargons = jargonTerms.split("|||").mapNotNull { 
+        val parts = it.split(": ", limit = 2)
+        if (parts.size == 2) parts[0] to parts[1] else null
+    }.toMap()
+
+    if (jargons.isEmpty()) {
+        Text(text = text, style = style)
+        return
+    }
+
+    val annotatedString = buildAnnotatedString {
+        var currentIndex = 0
+        val lowerText = text.lowercase()
+        
+        // Very basic search for jargon (first match wins)
+        // For a robust implementation, we'd use regex, but this is a simple approximation
+        
+        var nextMatchIndex = -1
+        var nextMatchWord = ""
+        
+        while (currentIndex < text.length) {
+            nextMatchIndex = -1
+            nextMatchWord = ""
+            
+            for (jargon in jargons.keys) {
+                val idx = lowerText.indexOf(jargon.lowercase(), currentIndex)
+                if (idx != -1 && (nextMatchIndex == -1 || idx < nextMatchIndex)) {
+                    nextMatchIndex = idx
+                    nextMatchWord = jargon
+                }
+            }
+            
+            if (nextMatchIndex != -1) {
+                append(text.substring(currentIndex, nextMatchIndex))
+                
+                pushStringAnnotation(tag = "JARGON", annotation = nextMatchWord)
+                withStyle(style = SpanStyle(
+                    color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline,
+                    fontWeight = FontWeight.Bold
+                )) {
+                    append(text.substring(nextMatchIndex, nextMatchIndex + nextMatchWord.length))
+                }
+                pop()
+                
+                currentIndex = nextMatchIndex + nextMatchWord.length
+            } else {
+                append(text.substring(currentIndex))
+                break
+            }
+        }
+    }
+
+    ClickableText(
+        text = annotatedString,
+        style = style,
+        onClick = { offset ->
+            annotatedString.getStringAnnotations(tag = "JARGON", start = offset, end = offset)
+                .firstOrNull()?.let { annotation ->
+                    val term = annotation.item
+                    val def = jargons.entries.firstOrNull { it.key.equals(term, ignoreCase = true) }?.value ?: ""
+                    onJargonClick(term, def)
+                }
+        }
+    )
 }
