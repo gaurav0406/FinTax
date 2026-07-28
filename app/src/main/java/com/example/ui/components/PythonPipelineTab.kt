@@ -87,7 +87,7 @@ Constraints: Total summary <60 words across 3 points.
 
 def run_pipeline():
     supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")
     
     for feed in FEEDS:
         parsed = feedparser.parse(feed['url'])

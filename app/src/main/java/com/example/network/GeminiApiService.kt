@@ -17,12 +17,28 @@ object GeminiClient {
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    suspend fun generateContent(apiKey: String, prompt: String): String? = withContext(Dispatchers.IO) {
-        val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"
+    suspend fun generateContent(
+        apiKey: String,
+        prompt: String,
+        systemInstruction: String? = null,
+        responseMimeType: String? = null
+    ): String? = withContext(Dispatchers.IO) {
+        val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey"
         
         val part = JSONObject().put("text", prompt)
         val content = JSONObject().put("parts", JSONArray().put(part))
         val bodyJson = JSONObject().put("contents", JSONArray().put(content))
+        
+        if (systemInstruction != null) {
+            val sysPart = JSONObject().put("text", systemInstruction)
+            val sysContent = JSONObject().put("parts", JSONArray().put(sysPart))
+            bodyJson.put("system_instruction", sysContent)
+        }
+        
+        if (responseMimeType != null) {
+            val genConfig = JSONObject().put("response_mime_type", responseMimeType)
+            bodyJson.put("generation_config", genConfig)
+        }
 
         val requestBody = bodyJson.toString().toRequestBody("application/json".toMediaType())
         val request = Request.Builder()

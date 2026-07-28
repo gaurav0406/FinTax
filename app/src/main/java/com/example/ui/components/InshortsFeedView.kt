@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -137,7 +139,7 @@ sealed interface FeedSlide {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InshortsFeedView(
-    newsList: List<FinancialNewsEntity>,
+    allNewsList: List<FinancialNewsEntity>,
     dailyDigestList: List<FinancialNewsEntity> = emptyList(),
     categories: List<String>,
     selectedCategory: String,
@@ -168,7 +170,7 @@ fun InshortsFeedView(
         }
     }
 
-    if (newsList.isEmpty()) {
+    if (allNewsList.isEmpty()) {
         Box(
             modifier = modifier
                 .fillMaxSize()
@@ -184,7 +186,7 @@ fun InshortsFeedView(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "No articles found in $selectedCategory",
+                    text = "No articles found",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                 )
@@ -193,119 +195,128 @@ fun InshortsFeedView(
         return
     }
 
-    // Cap news items to 5 per category for continuous 5-card swiping flow
-    val displayNewsList = remember(newsList, selectedCategory) {
-        if (selectedCategory != "All") {
-            newsList.take(5)
-        } else {
-            newsList
-        }
-    }
-
-    // Determine next category for uninterrupted swipe transition
+    val displayCategories = if (categories.isEmpty()) listOf("All") else categories
+    val initialPage = displayCategories.indexOf(selectedCategory).coerceAtLeast(0)
+    val horizontalPagerState = rememberPagerState(initialPage = initialPage, pageCount = { displayCategories.size })
     
-    // Build Interleaved Slides (AdMob Native every 4th slide, Lead Gen every 8th slide)
-    val interleavedSlides = remember(displayNewsList, dailyDigestList) {
-        val slides = mutableListOf<FeedSlide>()
-        if (dailyDigestList.isNotEmpty() && selectedCategory == "All") {
-            slides.add(FeedSlide.DailyDigestSlide(dailyDigestList))
+    LaunchedEffect(horizontalPagerState.currentPage) {
+        val cat = displayCategories[horizontalPagerState.currentPage]
+        if (cat != selectedCategory) {
+            onSelectCategory(cat)
         }
-        var slideCounter = slides.size
-
-        for (news in displayNewsList) {
-            // Every 4th slide insert AdMob Native Express Card
-            if (slideCounter > 0 && (slideCounter + 1) % 4 == 0 && (slideCounter + 1) % 8 != 0) {
-                slides.add(FeedSlide.AdSlide(slideCounter))
-                slideCounter++
-            }
-
-            // Every 8th slide insert Lead Generation Card
-            if (slideCounter > 0 && (slideCounter + 1) % 8 == 0) {
-                slides.add(FeedSlide.LeadGenSlide(slideCounter))
-                slideCounter++
-            }
-
-            slides.add(FeedSlide.NewsSlide(news))
-            slideCounter++
-        }
-        slides
     }
-
-    val pagerState = rememberPagerState(pageCount = { interleavedSlides.size })
-
-    var autoSwipeEnabled by remember { mutableStateOf(true) }
-    var swipeIntervalMs by remember { mutableStateOf(10000L) }
-    var timeRemainingMs by remember { mutableStateOf(10000L) }
-
-    // Auto-advance loop & smooth transition to next category at the end of 5 cards
-    LaunchedEffect(pagerState.currentPage, autoSwipeEnabled, swipeIntervalMs, selectedCategory) {
-        if (autoSwipeEnabled && pagerState.currentPage < interleavedSlides.size - 1) {
-            timeRemainingMs = swipeIntervalMs
-            while (timeRemainingMs > 0) {
-                kotlinx.coroutines.delay(1000)
-                timeRemainingMs -= 1000
-            }
-            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+    
+    LaunchedEffect(selectedCategory) {
+        val idx = displayCategories.indexOf(selectedCategory)
+        if (idx != -1 && idx != horizontalPagerState.currentPage) {
+            horizontalPagerState.scrollToPage(idx)
         }
     }
 
-    PullToRefreshBox(
-        isRefreshing = isRefreshing,
-        onRefresh = onRefresh,
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .testTag("inshorts_feed_view")
-    ) {
-        // Vertical Pager Swipe View
-        VerticalPager(
-            state = pagerState,
+    Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        HorizontalPager(
+            state = horizontalPagerState,
             modifier = Modifier.fillMaxSize()
         ) { page ->
-            when (val slide = interleavedSlides[page]) {
-                is FeedSlide.DailyDigestSlide -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        DailyDigestCard(
-                            newsList = slide.newsList,
-                            allNewsList = newsList,
-                            onCategoryClick = onSelectCategory
-                        )
+            val currentCat = displayCategories[page]
+            val catNewsList = remember(allNewsList, currentCat) {
+                if (currentCat == "All") allNewsList
+                else allNewsList.filter { it.category.equals(currentCat, ignoreCase = true) }
+            }
+            val displayNewsList = remember(catNewsList, currentCat) {
+                if (currentCat != "All") catNewsList.take(5) else catNewsList
+            }
+
+            val interleavedSlides = remember(displayNewsList, dailyDigestList) {
+                val slides = mutableListOf<FeedSlide>()
+                if (dailyDigestList.isNotEmpty() && currentCat == "All") {
+                    slides.add(FeedSlide.DailyDigestSlide(dailyDigestList))
+                }
+                var slideCounter = slides.size
+                for (news in displayNewsList) {
+                    if (slideCounter > 0 && (slideCounter + 1) % 4 == 0 && (slideCounter + 1) % 8 != 0) {
+                        slides.add(FeedSlide.AdSlide(slideCounter))
+                        slideCounter++
                     }
+                    if (slideCounter > 0 && (slideCounter + 1) % 8 == 0) {
+                        slides.add(FeedSlide.LeadGenSlide(slideCounter))
+                        slideCounter++
+                    }
+                    slides.add(FeedSlide.NewsSlide(news))
+                    slideCounter++
                 }
-                is FeedSlide.NewsSlide -> {
-                    val news = slide.news
-                    val isCurrentPlaying = isPlaying && playingNewsId == news.id
+                slides
+            }
 
-                    InshortsNewsCardItem(
-                        news = news,
-                        isPlaying = isCurrentPlaying,
-                        pageIndex = page,
-                        totalPages = interleavedSlides.size,
-                        onPlayAudio = { onPlayAudio(news) },
-                        onToggleBookmark = { onToggleBookmark(news) },
-                        onOpenActionUrl = { url ->
-                            openUrlWithAd(url, news.title)
-                        },
-                        onOpenComments = if (onOpenComments != null) { { onOpenComments(news) } } else null
-                    )
+            val verticalPagerState = rememberPagerState(pageCount = { interleavedSlides.size })
+            
+            var autoSwipeEnabled by remember { mutableStateOf(true) }
+            var swipeIntervalMs by remember { mutableStateOf(10000L) }
+            var timeRemainingMs by remember { mutableStateOf(10000L) }
+            
+            LaunchedEffect(verticalPagerState.currentPage, autoSwipeEnabled, swipeIntervalMs, currentCat) {
+                if (autoSwipeEnabled && verticalPagerState.currentPage < interleavedSlides.size - 1) {
+                    timeRemainingMs = swipeIntervalMs
+                    while (timeRemainingMs > 0) {
+                        kotlinx.coroutines.delay(1000)
+                        timeRemainingMs -= 1000
+                    }
+                    verticalPagerState.animateScrollToPage(verticalPagerState.currentPage + 1)
                 }
+            }
 
-                is FeedSlide.AdSlide -> {
-                    AdMobNativeExpressCard(
-                        slideIndex = page,
-                        onOpenAd = { url ->
-                            openUrlWithAd(url, "Sponsored Partner")
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = onRefresh,
+                modifier = Modifier.fillMaxSize().testTag("inshorts_feed_view_refresh_$currentCat")
+            ) {
+                VerticalPager(
+                    state = verticalPagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { vPage ->
+                    when (val slide = interleavedSlides[vPage]) {
+                        is FeedSlide.DailyDigestSlide -> {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                DailyDigestCard(
+                                    newsList = slide.newsList,
+                                    allNewsList = allNewsList,
+                                    onCategoryClick = onSelectCategory
+                                )
+                            }
                         }
-                    )
-                }
-
-                is FeedSlide.LeadGenSlide -> {
-                    LeadGenerationCard(
-                        slideIndex = page,
-                        onOpenExternalLink = { url ->
-                            openUrlWithAd(url, "Card Application Portal")
+                        is FeedSlide.NewsSlide -> {
+                            val news = slide.news
+                            val isCurrentPlaying = isPlaying && playingNewsId == news.id
+                            InshortsNewsCardItem(
+                                news = news,
+                                isPlaying = isCurrentPlaying,
+                                pageIndex = vPage,
+                                totalPages = interleavedSlides.size,
+                                onPlayAudio = { onPlayAudio(news) },
+                                onToggleBookmark = { onToggleBookmark(news) },
+                                onOpenActionUrl = { url ->
+                                    openUrlWithAd(url, news.title)
+                                },
+                                onOpenComments = if (onOpenComments != null) { { onOpenComments(news) } } else null
+                            )
                         }
-                    )
+                        is FeedSlide.AdSlide -> {
+                            AdMobNativeExpressCard(
+                                slideIndex = vPage,
+                                onOpenAd = { url ->
+                                    openUrlWithAd(url, "Sponsored Partner")
+                                }
+                            )
+                        }
+                        is FeedSlide.LeadGenSlide -> {
+                            LeadGenerationCard(
+                                slideIndex = vPage,
+                                onOpenExternalLink = { url ->
+                                    openUrlWithAd(url, "Card Application Portal")
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -333,7 +344,6 @@ fun InshortsFeedView(
                         tint = MinimalPurpleLightContainer,
                         modifier = Modifier.size(16.dp)
                     )
-
                     categories.forEach { category ->
                         val isSelected = category == selectedCategory
                         FilterChip(
@@ -363,90 +373,6 @@ fun InshortsFeedView(
                             ),
                             modifier = Modifier.testTag("inshorts_category_$category")
                         )
-                    }
-                }
-            }
-        }
-
-        // Swipe hint indicator at top right
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 56.dp, end = 16.dp),
-            horizontalAlignment = Alignment.End
-        ) {
-            Box(
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f), shape = RoundedCornerShape(12.dp))
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.SwapVert,
-                        contentDescription = null,
-                        tint = MinimalPurpleLightContainer,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Swipe up for next",
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            if (autoSwipeEnabled) {
-                Box(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f), shape = RoundedCornerShape(12.dp))
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                ) {
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = "Auto-swipe in ${timeRemainingMs / 1000}s",
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row {
-                            Text(
-                                text = "Stop",
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                color = MinimalPurplePrimary,
-                                modifier = Modifier
-                                    .clickable { autoSwipeEnabled = false }
-                                    .padding(horizontal = 4.dp, vertical = 2.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            if (swipeIntervalMs == 10000L) {
-                                Text(
-                                    text = "20s",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                    color = MinimalPurplePrimary,
-                                    modifier = Modifier
-                                        .clickable {
-                                            swipeIntervalMs = 20000L
-                                            timeRemainingMs = 20000L
-                                        }
-                                        .padding(horizontal = 4.dp, vertical = 2.dp)
-                                )
-                            } else {
-                                Text(
-                                    text = "10s",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                    color = MinimalPurplePrimary,
-                                    modifier = Modifier
-                                        .clickable {
-                                            swipeIntervalMs = 10000L
-                                            timeRemainingMs = 10000L
-                                        }
-                                        .padding(horizontal = 4.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
                     }
                 }
             }
@@ -618,6 +544,10 @@ fun InshortsNewsCardItem(
                         label = "Action",
                         content = news.summaryActionableTakeaway
                     )
+                    
+                    if (news.category.contains("Market", ignoreCase = true) || news.category.contains("Funds", ignoreCase = true)) {
+                        BullishBearishWidget(newsId = news.id)
+                    }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -831,6 +761,74 @@ private fun InshortsBulletPoint(
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.95f)
                     )
                 )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun BullishBearishWidget(newsId: Int) {
+    var hasVoted by remember { mutableStateOf(false) }
+    var bullishVotes by remember { mutableStateOf(124) }
+    var bearishVotes by remember { mutableStateOf(45) }
+    
+    val totalVotes = bullishVotes + bearishVotes
+    val bullishPercent = if (totalVotes > 0) (bullishVotes.toFloat() / totalVotes * 100).toInt() else 0
+    val bearishPercent = if (totalVotes > 0) 100 - bullishPercent else 0
+
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+        Text(
+            text = "Community Sentiment",
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        if (!hasVoted) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = { bullishVotes++; hasVoted = true },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                ) {
+                    Text("Bullish 🚀")
+                }
+                Button(
+                    onClick = { bearishVotes++; hasVoted = true },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336))
+                ) {
+                    Text("Bearish 📉")
+                }
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth().height(24.dp).clip(RoundedCornerShape(12.dp)),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(bullishPercent.toFloat().coerceAtLeast(0.01f))
+                        .fillMaxHeight()
+                        .background(Color(0xFF4CAF50)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("$bullishPercent%", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(bearishPercent.toFloat().coerceAtLeast(0.01f))
+                        .fillMaxHeight()
+                        .background(Color(0xFFF44336)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("$bearishPercent%", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Bullish", fontSize = 10.sp, color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
+                Text("Bearish", fontSize = 10.sp, color = Color(0xFFF44336), fontWeight = FontWeight.Bold)
             }
         }
     }

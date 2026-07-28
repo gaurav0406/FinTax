@@ -544,7 +544,7 @@ fun MainHomeScreen(
                 0 -> {
                     if (useInshortsViewMode) {
                         InshortsFeedView(
-                            newsList = filteredNewsList,
+                            allNewsList = filteredNewsList,
                             dailyDigestList = dailyDigestList,
                             categories = orderedCategories,
                             selectedCategory = selectedCategory,
@@ -579,7 +579,7 @@ fun MainHomeScreen(
                 1 -> CommunityDiscussionsTab(viewModel = viewModel)
 
                 2 -> InshortsFeedView(
-                    newsList = bookmarkedList,
+                    allNewsList = bookmarkedList,
                     categories = emptyList(),
                     selectedCategory = "All",
                     playingNewsId = playbackState.activeNewsId,

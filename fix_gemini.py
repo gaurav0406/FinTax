@@ -1,33 +1,33 @@
 import re
 
-with open('app/src/main/java/com/example/network/GeminiNewsService.kt', 'r') as f:
-    text = f.read()
+with open("app/src/main/java/com/example/network/GeminiApiService.kt", "r") as f:
+    content = f.read()
 
-text = text.replace(
-    '"Point 1: What happened (1-2 concise sentences)",',
-    '"1-2 concise sentences describing what happened. DO NOT prefix with Point 1 or What happened.",'
-)
-text = text.replace(
-    '"Point 2: Who is impacted e.g. Salaried Class, Senior Citizens, Taxpayers (1 sentence)",',
-    '"1 sentence describing who is impacted (e.g. Salaried Class). DO NOT prefix with Point 2 or Who is impacted.",'
-)
-text = text.replace(
-    '"Point 3: Actionable Takeaway e.g. File ITR-1 before July 31, Link Aadhaar (1 sentence)"',
-    '"1 sentence describing the actionable takeaway. DO NOT prefix with Point 3 or Actionable Takeaway."'
-)
+# Replace generateContent signature and url
+new_signature = """    suspend fun generateContent(
+        apiKey: String,
+        prompt: String,
+        systemInstruction: String? = null,
+        responseMimeType: String? = null
+    ): String? = withContext(Dispatchers.IO) {
+        val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey"
+        
+        val part = JSONObject().put("text", prompt)
+        val content = JSONObject().put("parts", JSONArray().put(part))
+        val bodyJson = JSONObject().put("contents", JSONArray().put(content))
+        
+        if (systemInstruction != null) {
+            val sysPart = JSONObject().put("text", systemInstruction)
+            val sysContent = JSONObject().put("parts", JSONArray().put(sysPart))
+            bodyJson.put("system_instruction", sysContent)
+        }
+        
+        if (responseMimeType != null) {
+            val genConfig = JSONObject().put("response_mime_type", responseMimeType)
+            bodyJson.put("generation_config", genConfig)
+        }"""
 
-text = text.replace(
-    'val p1 = summaryArray?.optString(0) ?: "What Happened: Important financial update."',
-    'val p1 = summaryArray?.optString(0) ?: "Important financial update regarding the latest guidelines."'
-)
-text = text.replace(
-    'val p2 = summaryArray?.optString(1) ?: "Who is Impacted: Salaried taxpayers & investors."',
-    'val p2 = summaryArray?.optString(1) ?: "Salaried taxpayers and general investors."'
-)
-text = text.replace(
-    'val p3 = summaryArray?.optString(2) ?: "Actionable Takeaway: Verify guidelines on the official portal."',
-    'val p3 = summaryArray?.optString(2) ?: "Verify details on the official portal and consult a financial advisor."'
-)
+content = re.sub(r'    suspend fun generateContent\(apiKey: String, prompt: String\): String\? = withContext\(Dispatchers\.IO\) \{.*?val bodyJson = JSONObject\(\)\.put\("contents", JSONArray\(\)\.put\(content\)\)', new_signature, content, flags=re.DOTALL)
 
-with open('app/src/main/java/com/example/network/GeminiNewsService.kt', 'w') as f:
-    f.write(text)
+with open("app/src/main/java/com/example/network/GeminiApiService.kt", "w") as f:
+    f.write(content)
