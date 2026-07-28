@@ -72,41 +72,60 @@ def fetch_financial_news():
     
     feeds = [
         {"category": "Stock Market India", "url": "https://economictimes.indiatimes.com/markets/rssfeeds/2146842.cms"},
-        {"category": "Credit Cards", "url": "https://www.livemint.com/rss/money"},
+        {"category": "Stock Market India", "url": "https://www.livemint.com/rss/markets"},
         {"category": "ITR & Tax", "url": "https://economictimes.indiatimes.com/wealth/tax/rssfeeds/83755913.cms"},
-        {"category": "Markets & Mutual Funds", "url": "https://economictimes.indiatimes.com/mf/rssfeeds/83756208.cms"}
+        {"category": "ITR & Tax", "url": "https://www.financialexpress.com/about/income-tax/feed/"},
+        {"category": "Mutual Funds & SIP", "url": "https://economictimes.indiatimes.com/mf/rssfeeds/83756208.cms"},
+        {"category": "Personal Finance & Savings", "url": "https://www.livemint.com/rss/money"},
+        {"category": "GST & Policy Updates", "url": "https://www.financialexpress.com/about/gst/feed/"},
+        {"category": "Credit Cards", "url": "https://economictimes.indiatimes.com/wealth/spend/rssfeeds/83755919.cms"}
     ]
     
     articles = []
+    seen_normalized_titles = set()
+    seen_urls = set()
     item_id = 1
+
     for feed in feeds:
         try:
             parsed = feedparser.parse(feed["url"])
             count = 0
             for entry in parsed.entries:
-                if count >= 10:
+                if count >= 8:
                     break
-                    
+                
+                title = entry.get("title", "").strip()
+                url = entry.get("link", "").strip()
+                if not title or not url or url in seen_urls:
+                    continue
+
+                # Title normalization for deduplication
+                norm_title = "".join(c.lower() for c in title if c.isalnum())
+                if not norm_title or norm_title in seen_normalized_titles:
+                    continue
+
                 summary_html = entry.get("summary", "")
                 soup = BeautifulSoup(summary_html, 'html.parser')
                 clean_text = soup.get_text(strip=True)
                 
                 if not clean_text:
-                    clean_text = entry.get("title", "")
+                    clean_text = title
                 
                 articles.append({
                     "id": item_id,
                     "is_video": False,
-                    "title": entry.get("title", ""),
-                    "url": entry.get("link", ""),
+                    "title": title,
+                    "url": url,
                     "text": clean_text,
                     "category": feed["category"],
                     "sourceName": "Indian Financial News Feed",
                     "imageUrl": None
                 })
+                seen_normalized_titles.add(norm_title)
+                seen_urls.add(url)
                 item_id += 1
                 count += 1
-            logging.info(f"Fetched {count} articles for category: {feed['category']}")
+            logging.info(f"Fetched {count} unique articles for feed category: {feed['category']}")
         except Exception as e:
             logging.error(f"Error fetching RSS feed {feed['url']}: {e}")
             
@@ -180,7 +199,20 @@ def summarize_batch_with_gemini(items: list) -> dict:
         for item in items
     ]
 
-    prompt = f"""You are an expert financial news summarizer. Process the following list of news/video items and summarize EACH item into JSON format.
+    prompt = f"""You are an expert financial news editor and summarizer. Process the following list of news/video items and summarize EACH item into JSON format.
+
+    CRITICAL RULES:
+    1. ALL TEXT IN YOUR RESPONSE MUST BE IN CLEAN, FLUENT ENGLISH. Translate any Hindi or non-English text automatically.
+    2. Do NOT leave duplicates or non-financial fluff.
+    3. Categorize each item strictly into EXACTLY ONE of these standard categories:
+       - "ITR & Tax"
+       - "Stock Market India"
+       - "Credit Cards"
+       - "Loans & FDs"
+       - "Mutual Funds & SIP"
+       - "Personal Finance & Savings"
+       - "GST & Policy Updates"
+       - "Video Shorts"
 
     Input Items:
     {json.dumps(simplified_items, indent=2)}
@@ -189,12 +221,12 @@ def summarize_batch_with_gemini(items: list) -> dict:
     [
       {{
         "id": <number matching input id>,
-        "summary": "Detailed 6 to 8-line summary of the news in English without prefixes like 'What happened:'.",
+        "summary": "Clear 6 to 8-line summary of the news in English.",
         "who_impacted": "1 to 2 lines specifying who is impacted by this news (e.g. Taxpayers, Retail Investors, Salaried Employees).",
-        "reason": "4 to 5 lines explaining why this decision/action was taken.",
-        "financial_impact": "Financial impact or benefits for taxpayers/investors in 3 to 4 lines with numbers.",
-        "action": "Actionable steps in 3 to 4 lines.",
-        "category": "One of: Stock Market India, ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
+        "reason": "4 to 5 lines explaining why this decision or market event occurred.",
+        "financial_impact": "Financial impact or monetary numbers for taxpayers or investors in 3 to 4 bullet points.",
+        "action": "Actionable financial steps in 3 to 4 lines.",
+        "category": "One of: ITR & Tax, Stock Market India, Credit Cards, Loans & FDs, Mutual Funds & SIP, Personal Finance & Savings, GST & Policy Updates, Video Shorts"
       }}
     ]
     """

@@ -11,23 +11,41 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 
 object SupabaseClient {
-    // These should be configured in your .env or secrets panel and exposed via BuildConfig
-    // e.g., BuildConfig.SUPABASE_URL
-    private const val BASE_URL = "https://your-project.supabase.co/" 
+
+    fun getSupabaseUrl(): String {
+        return try {
+            val field = BuildConfig::class.java.getField("SUPABASE_URL")
+            val url = field.get(null) as? String
+            if (!url.isNullOrBlank() && !url.contains("your-project") && url.startsWith("http")) {
+                if (!url.endsWith("/")) "$url/" else url
+            } else null
+        } catch (e: Exception) {
+            null
+        } ?: "https://your-project.supabase.co/"
+    }
+
+    fun getSupabaseKey(): String {
+        return try {
+            val field = BuildConfig::class.java.getField("SUPABASE_KEY")
+            val key = field.get(null) as? String
+            if (!key.isNullOrBlank() && !key.contains("YOUR_SUPABASE")) key else null
+        } catch (e: Exception) {
+            null
+        } ?: ""
+    }
 
     private val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
 
     private val authInterceptor = Interceptor { chain ->
-        // Retrieve Supabase Key (anon key) securely from environment/secrets
-        // val supabaseKey = BuildConfig.SUPABASE_KEY
-        val supabaseKey = "YOUR_SUPABASE_ANON_KEY_HERE"
-        
-        val newRequest = chain.request().newBuilder()
-            .addHeader("apikey", supabaseKey)
-            .addHeader("Authorization", "Bearer \$supabaseKey")
-            .build()
+        val key = getSupabaseKey()
+        val newRequest = chain.request().newBuilder().apply {
+            if (key.isNotBlank()) {
+                addHeader("apikey", key)
+                addHeader("Authorization", "Bearer $key")
+            }
+        }.build()
         chain.proceed(newRequest)
     }
 
@@ -38,16 +56,18 @@ object SupabaseClient {
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
         .addInterceptor(loggingInterceptor)
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
         .build()
 
     val apiService: SupabaseApiService by lazy {
+        val baseUrl = getSupabaseUrl()
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
             .create(SupabaseApiService::class.java)
     }
 }
+

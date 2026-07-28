@@ -55,34 +55,67 @@ class NewsRepository(private val dao: FinancialNewsDao) {
         }
     }
     
+    private fun normalizeTitle(title: String): String {
+        return title.lowercase().filter { it.isLetterOrDigit() }
+    }
+
     suspend fun fetchLiveNewsFromSupabase() {
-        val dtos = com.example.network.LiveNewsClient.apiService.getLiveNews()
-        if (dtos.isNotEmpty()) {
-            val entities = dtos.mapNotNull { dto ->
-                if (dto.title == null || dto.sourceUrl == null) return@mapNotNull null
-                
-                // Parse bullet points
-                val what = dto.summary?.getOrNull(0) ?: ""
-                val who = dto.summary?.getOrNull(1) ?: ""
-                val action = dto.summary?.getOrNull(2) ?: ""
-                val category = dto.category ?: "ITR & Tax"
-                
-                FinancialNewsEntity(
-                    title = dto.title,
-                    summaryWhatHappened = what,
-                    summaryWhoImpacted = who,
-                    summaryActionableTakeaway = action,
-                    summaryText = dto.summaryText ?: dto.summary?.joinToString(" ") ?: "",
-                    category = category,
-                    financialActionUrl = dto.financialActionUrl,
-                    sourceUrl = dto.sourceUrl,
-                    sourceName = dto.sourceName ?: "Indian Financial Feed",
-                    audioUrl = dto.audioUrl,
-                    financialImpactBullets = NewsProcessorService.generateFallbackImpact(category)
-                )
+        var loaded = false
+
+        // 1. Try fetching directly from Supabase REST API
+        try {
+            val dtos = com.example.network.supabase.SupabaseClient.apiService.getLiveNews()
+            if (dtos.isNotEmpty()) {
+                val entities = dtos.mapNotNull { it.toEntity() }
+                if (entities.isNotEmpty()) {
+                    val existingNormalized = dao.getAllNews().first().map { normalizeTitle(it.title) }.toSet()
+                    val newEntities = mutableListOf<FinancialNewsEntity>()
+                    val seenInBatch = mutableSetOf<String>()
+
+                    for (entity in entities) {
+                        val norm = normalizeTitle(entity.title)
+                        if (norm.isNotBlank() && norm !in existingNormalized && norm !in seenInBatch) {
+                            newEntities.add(entity)
+                            seenInBatch.add(norm)
+                        }
+                    }
+
+                    if (newEntities.isNotEmpty()) {
+                        dao.insertNews(newEntities)
+                    }
+                    loaded = true
+                }
             }
-            if (entities.isNotEmpty()) {
-                dao.insertNews(entities)
+        } catch (e: Exception) {
+            android.util.Log.e("NewsRepository", "Supabase REST fetch failed: ${e.message}")
+        }
+
+        // 2. Fallback to GitHub raw processed dataset if Supabase REST unavailable or unconfigured
+        if (!loaded) {
+            try {
+                val dtos = com.example.network.LiveNewsClient.apiService.getProcessedData()
+                if (dtos.isNotEmpty()) {
+                    val entities = dtos.mapNotNull { it.toEntity() }
+                    if (entities.isNotEmpty()) {
+                        val existingNormalized = dao.getAllNews().first().map { normalizeTitle(it.title) }.toSet()
+                        val newEntities = mutableListOf<FinancialNewsEntity>()
+                        val seenInBatch = mutableSetOf<String>()
+
+                        for (entity in entities) {
+                            val norm = normalizeTitle(entity.title)
+                            if (norm.isNotBlank() && norm !in existingNormalized && norm !in seenInBatch) {
+                                newEntities.add(entity)
+                                seenInBatch.add(norm)
+                            }
+                        }
+
+                        if (newEntities.isNotEmpty()) {
+                            dao.insertNews(newEntities)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("NewsRepository", "GitHub processed data fetch failed: ${e.message}")
             }
         }
     }

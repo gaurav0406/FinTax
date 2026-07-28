@@ -113,6 +113,20 @@ private fun formatRelativeDate(timestamp: Long): String {
     }
 }
 
+private fun getCategoryBadgeColor(category: String): Color {
+    return when (category.lowercase()) {
+        "stock market india", "stock market" -> Color(0xFF2E7D32) // Green
+        "itr & tax", "tax" -> Color(0xFF6A1B9A) // Purple
+        "credit cards" -> Color(0xFFD84315) // Deep Orange
+        "loans & fds" -> Color(0xFF1565C0) // Royal Blue
+        "mutual funds & sip", "markets & mutual funds" -> Color(0xFF00838F) // Cyan
+        "personal finance & savings", "personal finance" -> Color(0xFF00695C) // Teal
+        "gst & policy updates", "rbi & policy" -> Color(0xFF4527A0) // Indigo
+        "video shorts" -> Color(0xFFC62828) // Deep Red
+        else -> MinimalPurplePrimary
+    }
+}
+
 sealed interface FeedSlide {
     data class NewsSlide(val news: FinancialNewsEntity) : FeedSlide
     data class AdSlide(val slideIndex: Int) : FeedSlide
@@ -179,15 +193,38 @@ fun InshortsFeedView(
         return
     }
 
+    // Cap news items to 5 per category for continuous 5-card swiping flow
+    val displayNewsList = remember(newsList, selectedCategory) {
+        if (selectedCategory != "All") {
+            newsList.take(5)
+        } else {
+            newsList
+        }
+    }
+
+    // Determine next category for uninterrupted swipe transition
+    val nextCategory = remember(selectedCategory, categories) {
+        if (categories.isEmpty()) null
+        else {
+            val validCategories = categories.filter { it != "All" }
+            val currentIndex = validCategories.indexOf(selectedCategory)
+            if (currentIndex != -1 && currentIndex < validCategories.size - 1) {
+                validCategories[currentIndex + 1]
+            } else if (validCategories.isNotEmpty()) {
+                validCategories.firstOrNull { it != selectedCategory }
+            } else null
+        }
+    }
+
     // Build Interleaved Slides (AdMob Native every 4th slide, Lead Gen every 8th slide)
-    val interleavedSlides = remember(newsList, dailyDigestList) {
+    val interleavedSlides = remember(displayNewsList, dailyDigestList) {
         val slides = mutableListOf<FeedSlide>()
-        if (dailyDigestList.isNotEmpty()) {
+        if (dailyDigestList.isNotEmpty() && selectedCategory == "All") {
             slides.add(FeedSlide.DailyDigestSlide(dailyDigestList))
         }
         var slideCounter = slides.size
 
-        for (news in newsList) {
+        for (news in displayNewsList) {
             // Every 4th slide insert AdMob Native Express Card
             if (slideCounter > 0 && (slideCounter + 1) % 4 == 0 && (slideCounter + 1) % 8 != 0) {
                 slides.add(FeedSlide.AdSlide(slideCounter))
@@ -212,8 +249,15 @@ fun InshortsFeedView(
     var swipeIntervalMs by remember { mutableStateOf(10000L) }
     var timeRemainingMs by remember { mutableStateOf(10000L) }
 
-    LaunchedEffect(pagerState.currentPage, autoSwipeEnabled, swipeIntervalMs) {
-        if (autoSwipeEnabled && pagerState.currentPage < interleavedSlides.size - 1) {
+    // Auto-advance loop & smooth transition to next category at the end of 5 cards
+    LaunchedEffect(pagerState.currentPage, autoSwipeEnabled, swipeIntervalMs, selectedCategory) {
+        if (pagerState.currentPage == interleavedSlides.size - 1 && nextCategory != null) {
+            // Reached last slide of current category — auto-advance to next category
+            kotlinx.coroutines.delay(6000)
+            if (autoSwipeEnabled) {
+                onSelectCategory(nextCategory)
+            }
+        } else if (autoSwipeEnabled && pagerState.currentPage < interleavedSlides.size - 1) {
             timeRemainingMs = swipeIntervalMs
             while (timeRemainingMs > 0) {
                 kotlinx.coroutines.delay(1000)
@@ -485,7 +529,7 @@ fun InshortsNewsCardItem(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Surface(
-                            color = MinimalPurplePrimary,
+                            color = getCategoryBadgeColor(news.category),
                             shape = RoundedCornerShape(20.dp)
                         ) {
                             Text(
@@ -493,7 +537,7 @@ fun InshortsNewsCardItem(
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onBackground,
+                                    color = Color.White,
                                     fontSize = 10.sp,
                                     letterSpacing = 1.sp
                                 )
