@@ -8,6 +8,8 @@ on:
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -29,12 +31,16 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-        run: python backend_pipeline/news_scraper_cron.py
+        run: |
+          python backend_pipeline/news_scraper_cron.py
+          ls -la backend_pipeline/ || true
 
       - name: Upload Scraped JSON Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: scraped-financial-data
-          path: backend_pipeline/*.json
+          path: |
+            backend_pipeline/processed_scraped_data.json
+            backend_pipeline/raw_scraped_data.json
           retention-days: 7
