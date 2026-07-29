@@ -1,162 +1,402 @@
 [
   {
+    "title": "ITR filing deadline in 2 days: Tax experts explain how you can file returns in just 10 minutes",
+    "url": "https://www.livemint.com/money/personal-finance/itr-filing-deadline-in-2-days-tax-experts-explain-how-you-can-file-returns-in-just-10-minutes-11785270184903.html",
+    "text": "The income tax return filing deadline is approaching, with only two days left. Tax experts explain how taxpayers can complete ITR filing quickly using the correct forms and documents, pre-filled data and e-verification before 31 July.",
+    "category": "Financial News",
+    "sourceName": "LiveMint Personal Finance",
+    "id": 1
+  },
+  {
     "title": "“I'll do it tomorrow” often turns into deadline-day panic, warns income tax dept ahead of 31 July ITR due date",
     "url": "https://www.livemint.com/money/personal-finance/ill-do-it-tomorrow-often-turns-into-deadline-day-panic-warns-income-tax-dept-ahead-of-31-july-itr-due-date-11785287443825.html",
     "text": "With the July 31 deadline for income tax return filing nearing, the tax department urges taxpayers to file early to avoid last-minute stress and errors. Details here.",
-    "category": "ITR & Tax",
+    "category": "Financial News",
     "sourceName": "LiveMint Personal Finance",
-    "id": 1
+    "id": 2
   },
   {
     "title": "8th Pay Commission not required to brief Centre during deliberations, Finance Ministry tells Rajya Sabha",
     "url": "https://www.livemint.com/money/personal-finance/8th-pay-commission-not-required-to-brief-centre-during-deliberations-finance-ministry-tells-rajya-sabha-11785262968389.html",
     "text": "The Finance Ministry has clarified in Parliament that the 8th Pay Commission is not required to share regular progress updates with the Centre. The Commission has autonomy, may determine its own procedures under the ToR, and will submit its final recommendations after 18 months, the minister said.",
-    "category": "ITR & Tax",
+    "category": "Financial News",
     "sourceName": "LiveMint Personal Finance",
-    "id": 2
+    "id": 3
   },
   {
     "title": "Why child-free couples may need more—not less—for retirement",
     "url": "https://www.livemint.com/money/personal-finance/why-child-free-couples-may-need-a-larger-retirement-corpus-11785235557013.html",
     "text": "Conventional wisdom says child-free couples need a smaller retirement corpus. In reality, longer retirements, caregiving costs and the absence of a family safety net can make financial planning more demanding.",
-    "category": "ITR & Tax",
+    "category": "Financial News",
     "sourceName": "LiveMint Personal Finance",
-    "id": 3
+    "id": 4
   },
   {
     "title": "Can you change the income tax regime while filing ITR? Here's what taxpayers should know",
     "url": "https://www.livemint.com/money/personal-finance/can-you-change-the-income-tax-regime-while-filing-itr-heres-what-taxpayers-should-know-11785252345094.html",
     "text": "Salaried taxpayers can switch between the old and new tax regimes while filing their ITR, regardless of the regime used by their employer for TDS. However, rules differ for those with business income. Understanding the flexibility and tax impact can help taxpayers make an informed choice.",
-    "category": "ITR & Tax",
+    "category": "Financial News",
     "sourceName": "LiveMint Personal Finance",
-    "id": 4
+    "id": 5
+  },
+  {
+    "title": "EPF Scheme 2026: Got married? Your past PF nomination is now invalid — key FAQs answered",
+    "url": "https://www.livemint.com/money/personal-finance/epf-scheme-2026-got-married-your-past-pf-nomination-is-now-invalid-key-faqs-answered-11785247048773.html",
+    "text": "Your earlier EPF nomination becomes invalid once you get married. Filing a fresh nomination ensures your PF benefits are paid to the intended beneficiaries without unnecessary delays or legal complications.",
+    "category": "Financial News",
+    "sourceName": "LiveMint Personal Finance",
+    "id": 6
+  },
+  {
+    "title": "Multi-asset allocation funds lead hybrid category inflows: Why investors are rushing in and what to check",
+    "url": "https://www.livemint.com/money/personal-finance/multiasset-allocation-funds-lead-hybrid-category-inflows-why-investors-are-rushing-in-and-what-to-check-11785240680686.html",
+    "text": "Multi-asset allocation funds topped the hybrid category, recording ₹70,819 crore in net inflows in 12 months. These funds help diversify across equities, debt, gold, and other assets. Investors should evaluate allocation strategy, diversification, and capture ratios before investing.",
+    "category": "Financial News",
+    "sourceName": "LiveMint Personal Finance",
+    "id": 7
+  },
+  {
+    "title": "Delhi Lakshmi Yojana: ₹2,500 monthly assistance announced; Check eligibility, rules and documents",
+    "url": "https://www.livemint.com/money/personal-finance/delhi-lakshmi-yojana-2-500-monthly-assistance-announced-check-eligibility-rules-and-documents-11785246220782.html",
+    "text": "The Delhi government has launched the 'Delhi Lakshmi Yojana', providing eligible women with monthly financial assistance of ₹2,500, of which ₹1,500 will go into a locked savings account. The initiative aims to empower women financially and support family stability.",
+    "category": "Financial News",
+    "sourceName": "LiveMint Personal Finance",
+    "id": 8
+  },
+  {
+    "title": "I work remotely in India for a US firm. Can I avoid Indian tax if I'm paid in the US?",
+    "url": "https://www.livemint.com/money/personal-finance/i-work-remotely-in-india-for-a-us-firm-can-i-avoid-indian-tax-if-im-paid-in-the-us-employment-11785131277077.html",
+    "text": "Many tech professionals moving back home assume receiving dollars in a foreign account keeps their income out of local jurisdiction—here is how tax residency rules actually treat global earnings.",
+    "category": "Financial News",
+    "sourceName": "LiveMint Personal Finance",
+    "id": 9
+  },
+  {
+    "title": "Switched jobs and lost track of your old PF account? Govt explains how EPFO's e-portal can help",
+    "url": "https://www.livemint.com/money/personal-finance/switched-jobs-and-lost-track-of-your-old-pf-account-govt-explains-how-epfos-e-portal-can-help-11785237355807.html",
+    "text": "The government has revealed that the EPFO has developed an Aadhaar-based e-portal to help members trace old inoperative PF accounts, transfer balances to their active UAN or settle claims. The portal aims to reduce paperwork, improve transparency and simplify access to forgotten PF savings.",
+    "category": "Financial News",
+    "sourceName": "LiveMint Personal Finance",
+    "id": 10
+  },
+  {
+    "title": "Trump, Zelenskiy discuss peace talks",
+    "url": "https://economictimes.indiatimes.com/news/international/world-news/trump-zelenskiy-discuss-peace-talks-patriot-missile-production/articleshow/132697642.cms",
+    "text": "Trump, Zelenskiy discuss peace talks",
+    "category": "Financial News",
+    "sourceName": "Economic Times Top Stories",
+    "id": 11
+  },
+  {
+    "title": "France widens mass evacuation amid wildfire",
+    "url": "https://economictimes.indiatimes.com/news/international/world-news/france-widens-mass-evacuation-as-wildfire-flares-near-atlantic-resorts/articleshow/132697608.cms",
+    "text": "France widens mass evacuation amid wildfire",
+    "category": "Financial News",
+    "sourceName": "Economic Times Top Stories",
+    "id": 12
+  },
+  {
+    "title": "Inside Reza Pahlavi's faltering bid to lead Iran",
+    "url": "https://economictimes.indiatimes.com/news/international/world-news/regime-change-inside-reza-pahlavis-faltering-bid-to-lead-iran/articleshow/132681493.cms",
+    "text": "Inside Reza Pahlavi's faltering bid to lead Iran",
+    "category": "Financial News",
+    "sourceName": "Economic Times Top Stories",
+    "id": 13
   },
   {
     "title": "Cable TV body withdraws case on TV ratings policy",
     "url": "https://economictimes.indiatimes.com/industry/media/entertainment/media/cable-tv-body-withdraws-challenge-to-tv-ratings-policy/articleshow/132697502.cms",
     "text": "Cable TV body withdraws case on TV ratings policy",
-    "category": "Stock Market India",
+    "category": "Financial News",
     "sourceName": "Economic Times Top Stories",
-    "id": 5
+    "id": 14
   },
   {
     "title": "China reacts to US sanctions on research institutes",
     "url": "https://economictimes.indiatimes.com/news/international/world-news/china-says-it-will-defend-its-research-institutions-after-us-sanctions-list/articleshow/132697327.cms",
     "text": "China reacts to US sanctions on research institutes",
-    "category": "Stock Market India",
+    "category": "Financial News",
     "sourceName": "Economic Times Top Stories",
-    "id": 6
+    "id": 15
   },
   {
     "title": "Trump: Meet with Zelenskiy, Netanyahu 'positive'",
     "url": "https://economictimes.indiatimes.com/news/international/world-news/donald-trump-says-meetings-with-zelenskiy-and-netanyahu-were-positive/articleshow/132697270.cms",
     "text": "Trump: Meet with Zelenskiy, Netanyahu 'positive'",
-    "category": "Stock Market India",
+    "category": "Financial News",
     "sourceName": "Economic Times Top Stories",
-    "id": 7
+    "id": 16
   },
   {
     "title": "Patchy rains may hit rural lending; banks cautious",
     "url": "https://economictimes.indiatimes.com/industry/banking/finance/banking/patchy-rains-may-hit-rural-lending-banks-stay-cautious/articleshow/132693687.cms",
     "text": "Patchy rains may hit rural lending; banks cautious",
-    "category": "Stock Market India",
+    "category": "Financial News",
     "sourceName": "Economic Times Top Stories",
-    "id": 8
-  },
-  {
-    "title": "From Gift Nifty, US Fed meeting to oil prices: 8 key things that changed for Indian stock market overnight",
-    "url": "https://www.livemint.com/market/stock-market-news/from-gift-nifty-us-fed-meeting-to-oil-prices-8-key-things-that-changed-for-indian-stock-market-overnight-11785288308839.html",
-    "text": "Gift Nifty was trading around the 24,253 level, a premium of nearly 154 points from the Nifty futures’ previous close, indicating a gap-down start for the Indian stock market indices.",
-    "category": "Markets & Mutual Funds",
-    "sourceName": "LiveMint Markets",
-    "id": 9
-  },
-  {
-    "title": "Crude oil prices rebound after falling 14% in three sessions amid escalation in US-Iran war; Brent crude at $86/bbl",
-    "url": "https://www.livemint.com/market/commodities/crude-oil-prices-rebound-after-falling-14-in-three-sessions-amid-rising-tensions-in-middle-east-brent-crudeat-86bbl-11785287091708.html",
-    "text": "US-Iran war: Brent crude futures advanced $2.71, or 3.2%, to $86.80 a barrel after dropping over 14% in last three session, while US West Texas Intermediate (WTI) crude gained $2.26, or 3.4%, to trade at $81.95 per barrel.",
-    "category": "Markets & Mutual Funds",
-    "sourceName": "LiveMint Markets",
-    "id": 10
-  },
-  {
-    "title": "Breakout stocks to buy or sell: Sumeet Bagadia recommends five shares to buy today — 29 July 2026",
-    "url": "https://www.livemint.com/market/stock-market-news/breakout-stocks-to-buy-or-sell-sumeet-bagadia-recommends-five-shares-to-buy-today-29-july-2026-11785285795137.html",
-    "text": "Breakout stocks to buy or sell: Sumeet Bagadia recommends five breakout stocks to buy today — eClerx Services, Universal Cables, Five-Star Business Finance, Mankind Pharma, and Knowledge Marine &amp; Engineering Works.",
-    "category": "Markets & Mutual Funds",
-    "sourceName": "LiveMint Markets",
-    "id": 11
-  },
-  {
-    "title": "JSW One Platforms appoints bankers for $350-400 million IPO next year",
-    "url": "https://www.livemint.com/market/ipo/jsw-one-platforms-appoints-bankers-for-350-400-million-ipo-next-year-11785242943980.html",
-    "text": "The Sajjan Jindal-led B2B marketplace joins India’s growing digital commerce listing pipeline as it prepares for a public debut.",
-    "category": "Markets & Mutual Funds",
-    "sourceName": "LiveMint Markets",
-    "id": 12
-  },
-  {
-    "title": "UCO Bank plans $500-million overseas fundraise",
-    "url": "https://economictimes.indiatimes.com/markets/stocks/news/uco-bank-plans-500-million-overseas-fundraise/articleshow/132697193.cms",
-    "text": "UCO Bank plans to raise $500 million through foreign currency deposits and overseas borrowings. This move joins other lenders accessing the central bank's concessional funding window. The facility has already attracted over $32 billion in foreign currency inflows. Non-resident deposits have been the primary driver of this significant mobilization. This initiative aims to strengthen India's foreign exchange reserves effectively.",
-    "category": "Loans & FDs",
-    "sourceName": "Economic Times Stocks",
-    "id": 13
-  },
-  {
-    "title": "PPFAS valuation climbs after Rajeev Thakkar sells stake to WhiteOak AIF",
-    "url": "https://economictimes.indiatimes.com/markets/stocks/news/rajeev-thakkar-sells-small-stake-ppfas-gets-a-price-tag/articleshow/132697104.cms",
-    "text": "Rajeev Thakkar sold a stake in PPFAS to WhiteOak Capital's AIF. This transaction valued the unlisted asset management company at nearly ₹15,800 crore. Promoters Neil and Khushboo Parikh also recently sold a stake in PPFAS. These deals provide valuation insights for the closely held company. PPFAS reported increased revenue and net profit in the last fiscal year.",
-    "category": "Loans & FDs",
-    "sourceName": "Economic Times Stocks",
-    "id": 14
-  },
-  {
-    "title": "D-St set for a positive opening as GIFT Nifty signals firm start",
-    "url": "https://economictimes.indiatimes.com/markets/stocks/news/pre-market-action-heres-the-trade-setup-for-todays-session/articleshow/132686656.cms",
-    "text": "Indian stock markets experienced a muted trading session on Tuesday. The Sensex and Nifty indices erased early gains to close in the red. Broader markets showed mixed performance, with small caps declining and mid caps advancing. The Indian rupee strengthened for a third consecutive session against the US dollar. Foreign investors were net sellers, while domestic institutions were net buyers.",
-    "category": "Loans & FDs",
-    "sourceName": "Economic Times Stocks",
-    "id": 15
-  },
-  {
-    "title": "Stocks in news: L&T, Tata Capital, Ambuja Cements, Suzlon Energy, RVNL",
-    "url": "https://economictimes.indiatimes.com/markets/stocks/news/stocks-in-news-lt-tata-capital-ambuja-cements-suzlon-energy-rvnl/articleshow/132687151.cms",
-    "text": "Indian stock markets closed lower on Tuesday after early gains faded. Larsen & Toubro and Tata Capital reported strong profit growth for the quarter. Ambuja Cement and Suzlon Energy, however, saw their profits decline year-on-year. RVNL announced a record date for its final dividend and secured a new order. Phoenix Mills posted a profit increase, while VST Industries experienced a profit drop.",
-    "category": "Loans & FDs",
-    "sourceName": "Economic Times Stocks",
-    "id": 16
-  },
-  {
-    "title": "100% US tariffs incoming for India? Russia sanctions bill authored by late Lindsey Graham clears first Senate hurdle",
-    "url": "https://www.livemint.com/news/us-news/100-us-tariffs-incoming-for-india-russia-sanctions-bill-authored-by-late-lindsey-graham-clears-first-senate-hurdle-11785288021067.html",
-    "text": "The bill was passed soon after the funeral of late Senator Lindsey Graham, who was its author.",
-    "category": "Credit Cards",
-    "sourceName": "LiveMint News",
     "id": 17
   },
   {
-    "title": "US-Iran war LIVE: US and Saudi Arabia launch joint strikes on Iran-backed groups in Iraq",
-    "url": "https://www.livemint.com/news/us-news/us-iran-war-live-updates-strait-of-hormuz-gulf-conflict-trump-saudi-arabia-israel-ceasefire-deal-11785284336756.html",
-    "text": "US-Iran war LIVE: TUS military says it conducted joint strikes with Saudi Arabia in Iraq against Iran-aligned militant groups directed by the IRGC to target US forces and Saudi energy infrastructure. CENTCOM says the attacks on US forces were unsuccessful.",
-    "category": "Credit Cards",
-    "sourceName": "LiveMint News",
+    "title": "CJP on warpath again? Spokesman drops big hint",
+    "url": "https://economictimes.indiatimes.com/news/india/cjp-warns-streets-of-india-will-once-again-become-the-voice-of-its-young-if-centres-july-25-assurances-are-broken/articleshow/132687214.cms",
+    "text": "CJP on warpath again? Spokesman drops big hint",
+    "category": "Financial News",
+    "sourceName": "Economic Times Top Stories",
     "id": 18
   },
   {
-    "title": "US Senate confirms Trump-nominee Jay Clayton as Director of National Intelligence: Who is he?",
-    "url": "https://www.livemint.com/news/us-news/us-senate-confirms-trump-nominee-jay-clayton-as-director-of-national-intelligence-who-is-he-11785283349100.html",
-    "text": "The US Senate confirmed Jay Clayton as Director of National Intelligence in a 51-47 party-line vote. Democrats opposed his nomination over his refusal to explicitly acknowledge Joe Biden's 2020 election victory and concerns about political influence on intelligence agencies.",
-    "category": "Credit Cards",
-    "sourceName": "LiveMint News",
+    "title": "What pvt banks earned from minimum balance fines",
+    "url": "https://economictimes.indiatimes.com/industry/banking/finance/banking/minimum-balance-charges-swell-pvt-banks-coffers-by-nearly-rs-5000-cr-in-fy26/articleshow/132687499.cms",
+    "text": "What pvt banks earned from minimum balance fines",
+    "category": "Financial News",
+    "sourceName": "Economic Times Top Stories",
     "id": 19
   },
   {
-    "title": "American Airlines flights resume after IT outage causes groundings across US",
-    "url": "https://www.livemint.com/news/us-news/all-american-airlines-flights-not-in-air-grounded-across-us-due-to-it-outage-11785281940049.html",
-    "text": "The notice came amid a number of US East Coast airports experiencing delays and ground stops owing to thunderstorms.",
-    "category": "Credit Cards",
-    "sourceName": "LiveMint News",
+    "title": "Adani to set up 2,000-bed hospital in Bengal",
+    "url": "https://economictimes.indiatimes.com/news/india/west-bengal-gearing-up-healthcare-infra-adani-to-set-up-2000-bed-hospital/articleshow/132694099.cms",
+    "text": "Adani to set up 2,000-bed hospital in Bengal",
+    "category": "Financial News",
+    "sourceName": "Economic Times Top Stories",
     "id": 20
+  },
+  {
+    "title": "Kia’s vehicles are about to get a smart upgrade, starting in 2027",
+    "url": "https://electrek.co/2026/07/28/kias-vehicles-smart-upgrade-2027/",
+    "text": "Starting next year, Kia will begin launching vehicles equipped with Hyundai’s new high-tech infotainment system.",
+    "category": "Cars & EVs",
+    "sourceName": "Electrek",
+    "id": 21
+  },
+  {
+    "title": "Vermont’s largest energy source is now a virtual power plant",
+    "url": "https://electrek.co/2026/07/28/vermonts-largest-energy-source-is-now-a-virtual-power-plant/",
+    "text": "Green Mountain Power’s virtual power plant (VPP) – the state’s largest energy source – cut an estimated $6 million from all customers’ peak electricity costs during Vermont’s early July heat wave.",
+    "category": "Cars & EVs",
+    "sourceName": "Electrek",
+    "id": 22
+  },
+  {
+    "title": "Tesla self-driving manager describes scary conditions in robotaxi testing",
+    "url": "https://electrek.co/2026/07/28/tesla-self-driving-manager-rolling-hazards-lawsuit/",
+    "text": "A former Tesla manager who ran the company’s “Full Self-Driving” test fleet in Houston says the operation was so understaffed that its cars became “rolling hazards on public streets,” according to a lawsuit. The manager, Javier Medrano, filed the wrongful-termination complaint in Houston federal court, and its contents were reported this week. He oversaw the fleet before Tesla launched its driverless “Robotaxi” in the city.",
+    "category": "Cars & EVs",
+    "sourceName": "Electrek",
+    "id": 23
+  },
+  {
+    "title": "You’ve heard of shared e-bikes. Now check out Veo’s new shared e-trike",
+    "url": "https://electrek.co/2026/07/28/youve-heard-of-shared-e-bikes-now-check-out-veos-new-shared-e-trike/",
+    "text": "If you’ve spent any time in a city with shared micromobility, you’ve probably seen fleets of rental e-bikes and e-scooters waiting on street corners. But one company is betting that the next evolution of shared transportation isn’t just another bike or scooter – it’s an electric trike.",
+    "category": "Cars & EVs",
+    "sourceName": "Electrek",
+    "id": 24
+  },
+  {
+    "title": "Mercedes’ new GLA EV leaks a day ahead of its official debut",
+    "url": "https://electrek.co/2026/07/28/mercedes-new-gla-ev-leaks-day-ahead-of-debut/",
+    "text": "The GLA is the smallest, most affordable SUV Mercedes-Benz offers. Ahead of its debut on July 29, the first image of the all-new GLA EV leaked online.",
+    "category": "Cars & EVs",
+    "sourceName": "Electrek",
+    "id": 25
+  },
+  {
+    "title": "Saudi Prince Alwaleed takes 5% Lucid (LCID) stake, stock jumps 25%",
+    "url": "https://electrek.co/2026/07/28/saudi-prince-alwaleed-5-percent-lucid-stake-lcid/",
+    "text": "Saudi billionaire Prince Alwaleed bin Talal has disclosed a 5% stake in Lucid Group, and the market read it as a fresh vote of Saudi confidence in the cash-strapped EV maker. Lucid (LCID) shares jumped as much as 25% on Tuesday after the filing surfaced, even though the disclosure itself is passive and mostly a technical formality.",
+    "category": "Cars & EVs",
+    "sourceName": "Electrek",
+    "id": 26
+  },
+  {
+    "title": "Greenworks 80V CrossoverT riding mower with 600W turbo charger $1,200 off, Camplux 3.5kW to 27kW water heaters, more",
+    "url": "https://electrek.co/2026/07/28/greenworks-80v-crossovert-riding-mower-camplux-water-heaters-more/",
+    "text": "Our Tuesday Green Deals this week are all about home maintenance and improvements, led by the $1,200 savings on Greenworks’ 80V CrossoverT 30-inch Cordless Electric Riding Mower that comes with 4x 6.0Ah batteries and a 600W turbo wall charger at a new $2,500 low. Next, we have 3.5kW to 27kW Camplux Tankless Electric Water Heaters at some of their lowest 2026 prices starting from $108, as well as the meross 2-Zone Wi-Fi Smart Water Timer at its $80 low. There are also amazing chances to score savings for Worx’s popular 13A Electric Leaf Mulcher, the Aerocart 8-in-1 Yard Cart, EGO’s 56V 5.0Ah Battery, and more. As always, you can find all the hangover deals from this week down at the bottom of the page, like yesterday’s Bluetti exclusive roadtrip-ready power station deals (with new lows), the launch deal on Heybike’s CityScape 2.0 e-bike, and more. Head below for other New Green Deals we’ve found today and, of course, Electrek’s best EV buying and leasing deals. Also, check out the new E",
+    "category": "Cars & EVs",
+    "sourceName": "Electrek",
+    "id": 27
+  },
+  {
+    "title": "Baidu’s Apollo Go begins London robotaxi testing with Uber and Lyft",
+    "url": "https://electrek.co/2026/07/28/baidu-apollo-go-london-robotaxi-testing-uber-lyft/",
+    "text": "Baidu’s Apollo Go started robotaxi road testing in London today, and it’s doing it with both of ride-hailing’s biggest names at once — Uber and Freenow by Lyft. The launch lands days after Apollo Go ran the first fully driverless trial in any right-hand-drive market, in Hong Kong. Two milestones in one week, on opposite ends of the world.",
+    "category": "Cars & EVs",
+    "sourceName": "Electrek",
+    "id": 28
+  },
+  {
+    "title": "Volkswagen launches the cheaper ID. Polo EV after securing 25,000 orders in weeks",
+    "url": "https://electrek.co/2026/07/28/volkswagen-launches-cheaper-id-polo-ev-orders-25000/",
+    "text": "Volkswagen opened pre-orders for the ID. Polo with the smaller 37 kWh battery, starting at under $30,000. The lower-priced model arrives after Volkswagen’s new EV received 25,000 orders weeks after it went on sale.",
+    "category": "Cars & EVs",
+    "sourceName": "Electrek",
+    "id": 29
+  },
+  {
+    "title": "BMW ramps up iX3 output as orders near 100,000",
+    "url": "https://electrek.co/2026/07/28/bmw-ramps-up-ix3-output-orders-near-100000/",
+    "text": "The new BMW iX3 has already received nearly 100,000 orders. Now, BMW is ramping up production at a record pace to meet the strong demand.",
+    "category": "Cars & EVs",
+    "sourceName": "Electrek",
+    "id": 30
+  },
+  {
+    "title": "Zcash says Ironwood proof rules out undetectable counterfeiting bugs",
+    "url": "https://cointelegraph.com/news/zcash-ironwood-proof-counterfeiting-orchard-flaw",
+    "text": "Zcash researchers published more than 2,700 machine-checked theorems designed to rule out undetectable counterfeiting bugs in Ironwood.",
+    "category": "Crypto",
+    "sourceName": "CoinTelegraph",
+    "id": 31
+  },
+  {
+    "title": "European financial institutions launch RL1 cooperative blockchain network",
+    "url": "https://cointelegraph.com/news/european-financial-institutions-launch-rl1-blockchain",
+    "text": "RL1 began operations as a member-owned blockchain cooperative backed by 10 European financial institutions, including ABN AMRO, DekaBank and Natixis CIB.",
+    "category": "Crypto",
+    "sourceName": "CoinTelegraph",
+    "id": 32
+  },
+  {
+    "title": "Myanmar parliament passes crypto scam bill with penalties up to life",
+    "url": "https://cointelegraph.com/news/myanmar-parliament-crypto-scam-bill-life-sentences",
+    "text": "Myanmar lawmakers approved an anti-online scam bill whose draft proposed prison terms of 10 years to life for crypto scams and operating scam centers.",
+    "category": "Crypto",
+    "sourceName": "CoinTelegraph",
+    "id": 33
+  },
+  {
+    "title": "Visa outlines stablecoin strategy during Q3 earnings call",
+    "url": "https://cointelegraph.com/news/visa-earnings-stablecoin-strategy",
+    "text": "Visa said it is investing across the stablecoin stack, highlighting OpenUSD, tokenized deposits and AI-powered commerce during the company’s third-quarter earnings call.",
+    "category": "Crypto",
+    "sourceName": "CoinTelegraph",
+    "id": 34
+  },
+  {
+    "title": "Morgan Stanley expands crypto lineup with Ether, Solana ETPs",
+    "url": "https://cointelegraph.com/news/morgan-stanley-expands-crypto-lineup-with-ether-solana-etps",
+    "text": "The new exchange-traded products track Ether and Solana, offer staking rewards and follow the firm’s Bitcoin fund launched earlier this year.",
+    "category": "Crypto",
+    "sourceName": "CoinTelegraph",
+    "id": 35
+  },
+  {
+    "title": "AmericanFortress proposes quantum-safe crypto wallet protection without fund migration",
+    "url": "https://cointelegraph.com/news/americanfortress-proposes-quantum-safe-crypto-wallet-protection-without-fund-migration",
+    "text": "The proposed cryptographic scheme aims to protect existing Bitcoin, Ethereum and Solana wallets from future quantum attacks without requiring users to move funds or change wallet addresses.",
+    "category": "Crypto",
+    "sourceName": "CoinTelegraph",
+    "id": 36
+  },
+  {
+    "title": "Here’s what happened in crypto today",
+    "url": "https://cointelegraph.com/news/what-happened-in-crypto-today",
+    "text": "Need to know what happened in crypto today? Here is the latest news on daily trends and events impacting Bitcoin price, blockchain, DeFi, Web3 and crypto regulation.",
+    "category": "Crypto",
+    "sourceName": "CoinTelegraph",
+    "id": 37
+  },
+  {
+    "title": "Galaxy, MARA Holdings deepen Texas expansion with land acquisitions",
+    "url": "https://cointelegraph.com/news/galaxy-mara-texas-land-deals-ai-bitcoin-data-centers",
+    "text": "The crypto-focused companies announced separate acquisitions as demand for power-intensive AI and digital infrastructure continues to grow.",
+    "category": "Crypto",
+    "sourceName": "CoinTelegraph",
+    "id": 38
+  },
+  {
+    "title": "Bitcoin lows pierce $63K as Asia chip-stock crash spreads to Wall Street",
+    "url": "https://cointelegraph.com/markets/bitcoin-lows-pierce-63k-as-asia-chip-stock-crash-spills",
+    "text": "Bitcoin and crypto dropped as contagion from a major Asia stock-market correction spreads to the US at the Wall Street open.",
+    "category": "Crypto",
+    "sourceName": "CoinTelegraph",
+    "id": 39
+  },
+  {
+    "title": "Kraken opens Jersey Mike’s IPO to retail investors through tokenized shares and direct allocations",
+    "url": "https://cointelegraph.com/news/kraken-opens-jersey-mikes-ipo-to-retail-investors-through-tokenized-shares-and-direct-allocations",
+    "text": "Eligible US users can request IPO allocations, while customers in more than 110 countries gain access to tokenized Jersey Mike’s shares backed 1:1 by the underlying stock.",
+    "category": "Crypto",
+    "sourceName": "CoinTelegraph",
+    "id": 40
+  },
+  {
+    "title": "Cyera agrees to acquire Oasis Security for $1B to safeguard proliferating AI agents",
+    "url": "https://techcrunch.com/2026/07/28/cyera-agrees-to-acquire-oasis-security-for-1b-to-safeguard-proliferating-ai-agents/",
+    "text": "The deal is Cyera's third acquisition this year.",
+    "category": "Technology",
+    "sourceName": "TechCrunch",
+    "id": 41
+  },
+  {
+    "title": "Bot-detection startup Spur nabs $200M from Insight",
+    "url": "https://techcrunch.com/2026/07/28/bot-detection-startup-spur-nabs-200m-from-insight/",
+    "text": "Spur Intelligence has raised a $200 million round from Insight Partners for its tech that can identify legit human traffic from bots.",
+    "category": "Technology",
+    "sourceName": "TechCrunch",
+    "id": 42
+  },
+  {
+    "title": "MCP startup Runlayer accuses Rippling of stealing its product idea",
+    "url": "https://techcrunch.com/2026/07/28/mcp-startup-runlayer-accuses-rippling-of-stealing-its-product-idea/",
+    "text": "Runlayer is suing Rippling after Rippling evaluated the startup's MCP gateway product and then opted to build one itself.",
+    "category": "Technology",
+    "sourceName": "TechCrunch",
+    "id": 43
+  },
+  {
+    "title": "Sam Altman is ready to decelerate",
+    "url": "https://techcrunch.com/2026/07/28/sam-altman-is-ready-to-decelerate/",
+    "text": "His change of position comes after \"the first security incident that I have felt very viscerally.\"",
+    "category": "Technology",
+    "sourceName": "TechCrunch",
+    "id": 44
+  },
+  {
+    "title": "Ozlo’s Sleepbuds 2 build on Bose’s sleep earbud legacy",
+    "url": "https://techcrunch.com/2026/07/28/ozlos-sleepbuds-2-build-on-boses-sleep-earbud-legacy/",
+    "text": "Ozlo’s first major update to its sleep earbuds introduces longer battery life, improved connectivity, enhanced audio, and new sleep features as the startup continues the product line once abandoned by Bose.",
+    "category": "Technology",
+    "sourceName": "TechCrunch",
+    "id": 45
+  },
+  {
+    "title": "The robot NASA hired to lift a orbital telescope tumbled out of control",
+    "url": "https://techcrunch.com/2026/07/28/the-robot-nasa-hired-to-lift-a-orbital-telescope-is-tumbling-out-of-control/",
+    "text": "According to NASA, two of the three reaction wheels that control the spacecraft's alignment have failed, and there are problems with one of the spacecraft's thruster systems.",
+    "category": "Technology",
+    "sourceName": "TechCrunch",
+    "id": 46
+  },
+  {
+    "title": "Waymo, robotaxi operators face fresh scrutiny over emergency response failures",
+    "url": "https://techcrunch.com/2026/07/28/waymo-robotaxi-operators-face-fresh-scrutiny-over-emergency-response-failures/",
+    "text": "Rep. Kevin Mullin (D-California ) has proposed a bill that would direct federal regulators to establish minimum national safety standards for autonomous vehicle operators.",
+    "category": "Technology",
+    "sourceName": "TechCrunch",
+    "id": 47
+  },
+  {
+    "title": "eBay reaches $56M settlement with e-commerce newsletter writers it terrorized in 2019",
+    "url": "https://techcrunch.com/2026/07/28/ebay-reaches-56m-settlement-with-e-commerce-newsletter-writers-it-terrorized-in-2019/",
+    "text": "Ina and David Steiner inspired the ire of high-level eBay executives after occasionally criticizing the company in their newsletter. In 2019, a plot was concocted to intimidate the couple into halting their negative coverage.",
+    "category": "Technology",
+    "sourceName": "TechCrunch",
+    "id": 48
+  },
+  {
+    "title": "These App Store hidden gems prove there’s still room for great software in the AI era",
+    "url": "https://techcrunch.com/2026/07/28/these-app-store-hidden-gems-prove-theres-still-room-for-great-software-in-the-ai-era/",
+    "text": "Despite predictions that AI agents could make traditional apps obsolete, developers are shipping new software faster than ever. From smarter bookmarking tools and neighborhood marketplaces to digital pen pals and nature journals, here are the latest App Store finds worth adding to your Home Screen.",
+    "category": "Technology",
+    "sourceName": "TechCrunch",
+    "id": 49
+  },
+  {
+    "title": "HBO Max embraces vertical video with a new ‘Shorts’ feed",
+    "url": "https://techcrunch.com/2026/07/28/hbo-max-embraces-vertical-video-with-a-new-shorts-feed/",
+    "text": "HBO Max, like other streaming platforms, is rethinking content discovery as large libraries are making it hard for viewers to find something to watch and as audiences become accustomed to short-form content on platforms like TikTok and Instagram Reels.",
+    "category": "Technology",
+    "sourceName": "TechCrunch",
+    "id": 50
   }
 ]

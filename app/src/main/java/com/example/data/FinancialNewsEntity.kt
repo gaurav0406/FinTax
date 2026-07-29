@@ -12,7 +12,8 @@ data class FinancialNewsEntity(
     val summaryWhoImpacted: String,
     val summaryActionableTakeaway: String,
     val summaryText: String,
-    val category: String, // 'Credit Cards', 'ITR & Tax', 'Loans & FDs', 'Markets & Mutual Funds', 'RBI & Policy'
+    val category: String, // Broad category
+    val topicCluster: String = "Latest Updates", // Dynamic Google News-style cluster tag
     val financialActionUrl: String? = null,
     val sourceUrl: String,
     val sourceName: String = "Indian Financial Feed",
@@ -31,9 +32,7 @@ data class FinancialNewsEntity(
 
     val isFinancialCategory: Boolean
         get() = when (category.trim()) {
-            "Stock Market India", "ITR & Tax", "Credit Cards", "Loans & FDs", "Markets & Mutual Funds",
-            "RBI & Policy", "FinTech & Crypto", "Smart Investing", "Personal Finance",
-            "Cars & EV", "Video Shorts" -> true
+            "Financial News", "Credit Cards", "Mutual Funds", "Crypto" -> true
             else -> false
         }
 

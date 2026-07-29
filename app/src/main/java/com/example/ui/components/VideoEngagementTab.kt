@@ -79,7 +79,7 @@ private fun getVideoMetaData(category: String, newsId: Int, sourceName: String? 
             initialLikes = 1240 + (newsId * 37) % 800,
             tags = listOf("#CreditCards", "#Cashback", "#CardDeals")
         )
-        "ITR & Tax" -> VideoNewsMetaData(
+        "Financial News" -> VideoNewsMetaData(
             creatorName = "Tax Wise Desk",
             creatorHandle = "@taxwise_official",
             creatorAvatarUrl = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",

@@ -20,7 +20,7 @@ object NewsProcessorService {
                       "reason": "Provide 2 to 4 lines explaining why the government, entity, or individual has taken this decision/action in English. Do NOT include prefixes like 'Reason:'.",
                       "financial_impact": "What is the financial impact or the benefits users can gain in English? Use 2 to 3 lines. Use crisp, quantifiable numbers and bullet points.",
                       "action": "Provide actionable steps (2 to 3 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
-                      "category": "One of: Stock Market India, ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
+                      "category": "One of: Financial News, Credit Cards, Mutual Funds, Sports, Cars & EVs, Education, Crypto, Technology"
                     }
                 """.trimIndent()
 
@@ -46,7 +46,7 @@ object NewsProcessorService {
                         summaryWhoImpacted = llmResult.optString("impacted_users", ""),
                         summaryActionableTakeaway = llmResult.optString("action", ""),
                         summaryText = llmResult.optString("reason", ""),
-                        category = llmResult.optString("category", "ITR & Tax"),
+                        category = llmResult.optString("category", "Financial News"),
                         financialActionUrl = sourceUrl,
                         sourceUrl = sourceUrl,
                         sourceName = "AI Summarized News",
@@ -82,7 +82,7 @@ object NewsProcessorService {
                   "reason": "Provide 2 to 4 lines explaining why the government, entity, or individual has taken this decision/action in English. Do NOT include prefixes like 'Reason:'.",
                   "financial_impact": "What is the financial impact or the benefits users can gain in English? Use 2 to 3 lines. Use crisp, quantifiable numbers and bullet points.",
                   "action": "Provide actionable steps (2 to 3 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
-                  "category": "One of: Stock Market India, ITR & Tax, Credit Cards, Loans & FDs, Markets & Mutual Funds, FinTech & Crypto, Startup Ecosystem"
+                  "category": "One of: Financial News, Credit Cards, Mutual Funds, Sports, Cars & EVs, Education, Crypto, Technology"
                 }
             """.trimIndent()
 
@@ -121,7 +121,7 @@ object NewsProcessorService {
                         summaryWhoImpacted = llmResult.optString("impacted_users", ""),
                         summaryActionableTakeaway = llmResult.optString("action", ""),
                         summaryText = llmResult.optString("reason", ""),
-                        category = llmResult.optString("category", "ITR & Tax"),
+                        category = llmResult.optString("category", "Financial News"),
                         financialActionUrl = pair.second,
                         sourceUrl = pair.second,
                         sourceName = "AI Summarized News",
@@ -141,8 +141,7 @@ object NewsProcessorService {
 
     fun generateFallbackImpact(category: String): String {
         return when (category) {
-            "Stock Market India" -> "• Market Momentum: Sensex & Nifty rally led by Banking & Tech sector bluechips\n• Investor Takeaway: +₹4,200 Cr FII net buying boosting domestic equity sentiment"
-            "ITR & Tax" -> "• Estimated Tax Savings: ₹15,600 - ₹25,000/yr for ₹7L-15L bracket\n• Cash Flow Impact: +₹2,083/mo net take-home salary increase"
+            "Financial News" -> "• Market Update: Latest developments impacting indices and policies\n• Investor Takeaway: Adjust portfolio based on the latest macroeconomic news"
             "Credit Cards" -> "• Direct Cash Impact: -₹350/mo on utility fees or +5% (₹400/mo) fuel waiver\n• Net Annual Return: ~₹4,800/yr optimized card savings"
             "Loans & FDs" -> "• Interest Yield / Outlay: 8.25% return (+₹8,250/yr on ₹1L deposit) or +₹320/mo on ₹50L Home Loan EMI"
             "Markets & Mutual Funds" -> "• Liquidity Boost: T+0 payout frees up cash 48 hours earlier for reinvestment\n• Portfolio Yield: +1.2% CAGR impact from reduced holding lag"
@@ -171,11 +170,11 @@ object NewsProcessorService {
             rawText.contains("sport", true) || rawText.contains("cricket", true) || rawText.contains("match", true) -> "Sports"
             rawText.contains("startup", true) || rawText.contains("funding", true) || rawText.contains("founder", true) -> "Startup Ecosystem"
             rawText.contains("crypto", true) || rawText.contains("bitcoin", true) || rawText.contains("fintech", true) -> "FinTech & Crypto"
-            else -> "ITR & Tax"
+            else -> "Financial News"
         }
 
         val actionUrl = when (category) {
-            "ITR & Tax" -> "https://eportal.incometax.gov.in"
+            "Financial News" -> "https://www.nseindia.com"
             "Credit Cards" -> "https://www.sbicard.com"
             "RBI & Policy" -> "https://www.rbi.org.in"
             else -> "https://www.moneycontrol.com"
@@ -186,7 +185,7 @@ object NewsProcessorService {
         val p3 = "Review official portal notices before the next tax quarter deadline."
         
         val fallbackImpact = when (category) {
-            "ITR & Tax" -> "• Estimated Tax Savings: ₹15,600 - ₹25,000/yr for ₹7L-15L bracket\n• Cash Flow Impact: +₹2,083/mo net take-home salary increase"
+            "Financial News" -> "• Market Update: Latest developments impacting indices and policies\n• Investor Takeaway: Adjust portfolio based on the latest macroeconomic news"
             "Credit Cards" -> "• Direct Cash Impact: -₹350/mo on utility fees or +5% (₹400/mo) fuel waiver\n• Net Annual Return: ~₹4,800/yr optimized card savings"
             "Loans & FDs" -> "• Interest Yield / Outlay: 8.25% return (+₹8,250/yr on ₹1L deposit) or +₹320/mo on ₹50L Home Loan EMI"
             "Markets & Mutual Funds" -> "• Liquidity Boost: T+0 payout frees up cash 48 hours earlier for reinvestment\n• Portfolio Yield: +1.2% CAGR impact from reduced holding lag"

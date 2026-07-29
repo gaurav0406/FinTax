@@ -23,7 +23,8 @@ data class SupabaseNewsDto(
     @Json(name = "imageUrl") val imageUrl: String? = null,
     @Json(name = "publishedAt") val publishedAt: Long? = null,
     @Json(name = "audioUrl") val audioUrl: String? = null,
-    @Json(name = "financialActionUrl") val financialActionUrl: String? = null
+    @Json(name = "financialActionUrl") val financialActionUrl: String? = null,
+    @Json(name = "topicCluster") val topicCluster: String? = null
 ) {
     fun toEntity(): FinancialNewsEntity? {
         val newsTitle = title ?: return null
@@ -68,7 +69,8 @@ data class SupabaseNewsDto(
             summaryWhoImpacted = summaryWhoImpacted ?: "Taxpayers, Investors & General Public",
             summaryActionableTakeaway = summaryActionableTakeaway ?: "Check official updates.",
             summaryText = summaryText ?: summaryWhatHappened ?: newsTitle,
-            category = category ?: "Stock Market India",
+            category = category ?: "Financial News",
+            topicCluster = topicCluster ?: "Latest Updates",
             financialActionUrl = financialActionUrl,
             sourceUrl = newsUrl,
             sourceName = sourceName ?: "Indian Financial Feed",

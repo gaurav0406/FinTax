@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 FinTax Audio News - High-Performance Zero-Dependency Financial News Scraper & NLP Pipeline
-Features:
-1. Fast multi-feed RSS parser (<0.5s runtime using Python stdlib).
-2. Gemini 2.0 Flash batch structured summarization via REST API.
-3. Generates local JSON artifacts: processed_scraped_data.json & raw_scraped_data.json.
-4. Direct Supabase REST API insert/upsert integration with exact table schema.
-"""
 
+Features:
+1. Hybrid scraping: Combines RSS feeds with Free Financial APIs (e.g., Finnhub)
+2. Gemini 2.0 Flash batch structured summarization via REST API.
+3. Google News Architecture: Fixed top-level Categories + Dynamic Topic Clusters.
+4. Generates local JSON artifacts: processed_scraped_data.json & raw_scraped_data.json.
+5. Direct Supabase REST API insert/upsert integration with exact table schema.
+"""
 import os
 import sys
 import time
@@ -23,6 +24,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(me
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", os.getenv("SUPABASE_KEY", ""))
+FINNHUB_API_KEY = os.getenv("FINNHUB_API_KEY", "")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RAW_DATA_FILE = os.path.join(BASE_DIR, "raw_scraped_data.json")
@@ -30,48 +32,91 @@ PROCESSED_DATA_FILE = os.path.join(BASE_DIR, "processed_scraped_data.json")
 
 FEEDS = [
     {
-        "category": "ITR & Tax",
+        "category": "Financial News",
         "url": "https://www.livemint.com/rss/money",
         "sourceName": "LiveMint Personal Finance"
     },
     {
-        "category": "Stock Market India",
+        "category": "Financial News",
         "url": "https://economictimes.indiatimes.com/rssfeedstopstories.cms",
         "sourceName": "Economic Times Top Stories"
     },
     {
-        "category": "Markets & Mutual Funds",
-        "url": "https://www.livemint.com/rss/markets",
-        "sourceName": "LiveMint Markets"
-    },
-    {
-        "category": "Loans & FDs",
-        "url": "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146843.cms",
-        "sourceName": "Economic Times Stocks"
-    },
-    {
         "category": "Credit Cards",
-        "url": "https://www.livemint.com/rss/news",
-        "sourceName": "LiveMint News"
+        "url": "https://www.forbes.com/advisor/credit-cards/feed/",
+        "sourceName": "Forbes Advisor"
+    },
+    {
+        "category": "Mutual Funds",
+        "url": "https://www.livemint.com/rss/mutual-funds",
+        "sourceName": "LiveMint Mutual Funds"
+    },
+    {
+        "category": "Sports",
+        "url": "https://www.espn.com/espn/rss/news",
+        "sourceName": "ESPN Top News"
+    },
+    {
+        "category": "Cars & EVs",
+        "url": "https://electrek.co/feed/",
+        "sourceName": "Electrek"
+    },
+    {
+        "category": "Education",
+        "url": "https://www.edweek.org/feed",
+        "sourceName": "Education Week"
+    },
+    {
+        "category": "Crypto",
+        "url": "https://cointelegraph.com/rss",
+        "sourceName": "CoinTelegraph"
+    },
+    {
+        "category": "Technology",
+        "url": "https://techcrunch.com/feed/",
+        "sourceName": "TechCrunch"
     }
 ]
 
-def clean_html_text(raw_text: str) -> str:
-    if not raw_text:
-        return ""
-    text = raw_text.replace('<![CDATA[', '').replace(']]>', '')
-    text = re.sub(r'<[^>]+>', ' ', text)
+def clean_html_text(text: str) -> str:
     text = unescape(text)
-    return " ".join(text.split())
+    text = re.sub(r'<[^>]+>', '', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
-def fetch_rss_feed_fast(feed_info: dict, max_items: int = 4) -> list:
+def fetch_api_news_finnhub(max_items: int = 10) -> list:
+    if not FINNHUB_API_KEY or "YOUR_" in FINNHUB_API_KEY:
+        logging.info("Finnhub API key not provided, skipping API fetch.")
+        return []
+    
+    items = []
+    try:
+        url = f"https://finnhub.io/api/v1/news?category=general&token={FINNHUB_API_KEY}"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            
+            for article in data[:max_items]:
+                items.append({
+                    "title": article.get("headline", "")[:250],
+                    "url": article.get("url", ""),
+                    "text": article.get("summary", "")[:1000],
+                    "category": "Financial News",
+                    "sourceName": article.get("source", "Finnhub API")
+                })
+    except Exception as e:
+        logging.warning(f"Error fetching from Finnhub API: {e}")
+    
+    return items
+
+def fetch_rss_feed_fast(feed_info: dict, max_items: int = 10) -> list:
     items = []
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     try:
         req = urllib.request.Request(feed_info["url"], headers=headers)
-        with urllib.request.urlopen(req, timeout=5) as response:
+        with urllib.request.urlopen(req, timeout=8) as response:
             xml_data = response.read().decode('utf-8', errors='ignore')
-
+        
         xml_clean = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F]', '', xml_data)
         item_blocks = re.findall(r'<item>(.*?)</item>', xml_clean, re.DOTALL | re.IGNORECASE)
         
@@ -80,11 +125,11 @@ def fetch_rss_feed_fast(feed_info: dict, max_items: int = 4) -> list:
             title_m = re.search(r'<title>(.*?)</title>', cb, re.DOTALL | re.IGNORECASE)
             link_m = re.search(r'<link>(.*?)</link>', cb, re.DOTALL | re.IGNORECASE)
             desc_m = re.search(r'<(?:description|summary)>(.*?)</(?:description|summary)>', cb, re.DOTALL | re.IGNORECASE)
-
+            
             title = clean_html_text(title_m.group(1)) if title_m else ""
             link = clean_html_text(link_m.group(1)) if link_m else ""
             desc = clean_html_text(desc_m.group(1)) if desc_m else title
-
+            
             if title and link:
                 clean_link = link.split("?")[0]
                 items.append({
@@ -105,8 +150,10 @@ def call_gemini_batch_api(items: list) -> dict:
 
     simplified = [{"id": item["id"], "title": item["title"], "content": item["text"]} for item in items]
     
-    prompt = f"""You are an expert Indian Financial News & Tax Journalist.
-Analyze these news items and produce structured, actionable JSON summaries tailored for Indian taxpayers and retail investors.
+    prompt = f"""You are an expert Journalist and Analyst.
+Analyze these news items and produce structured, actionable JSON summaries.
+If the news is about Mutual Funds, emphasize fund performance (best/lowest).
+If the news is about Credit Cards, highlight updates to policies and rewards.
 
 Output MUST be strictly valid JSON without markdown code blocks.
 
@@ -117,13 +164,14 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
 [
   {{
     "id": <number matching input id>,
-    "title": "Catchy headline for Indian taxpayers/investors (Max 10 words)",
-    "summary": "Clear 2-line summary of what happened.",
-    "who_impacted": "Salaried Employees, Individual Taxpayers & Investors",
-    "reason": "Detailed 2-3 line explanation of why this decision or market event occurred.",
-    "financial_impact": "• Tax Benefit / Yield: Quantifiable monetary details in 2 bullet points.",
-    "action": "Actionable financial steps in 2 lines.",
-    "category": "Must be EXACTLY ONE of ['Credit Cards', 'ITR & Tax', 'Loans & FDs', 'Markets & Mutual Funds', 'Stock Market India', 'Startup Ecosystem']"
+    "title": "Catchy headline (Max 10 words)",
+    "summary": "Detailed 5-6 line summary of the article, covering all key points.",
+    "who_impacted": "Who does this impact? (e.g. Salaried Employees, Tech Enthusiasts, Sports Fans)",
+    "reason": "Why it matters: Provide 3-4 bullet points explaining the core reasons or causes.",
+    "financial_impact": "Financial impacts/benefits: Provide 3-4 bullet points detailing monetary effects or benefits.",
+    "action": "Actionable steps: Provide 3-4 bullet points of suggestions on what a user/investor/reader should do.",
+    "category": "Must be EXACTLY ONE of ['Financial News', 'Credit Cards', 'Mutual Funds', 'Sports', 'Cars & EVs', 'Education', 'Crypto', 'Technology']",
+    "topic_cluster": "Dynamic 2-3 word topic tag (e.g. 'Tech Earnings', 'RBI Policy', 'EV Market')"
   }}
 ]
 """
@@ -141,7 +189,7 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
             headers={'Content-Type': 'application/json'},
             method='POST'
         )
-        with urllib.request.urlopen(req, timeout=12) as resp:
+        with urllib.request.urlopen(req, timeout=25) as resp:
             data = json.loads(resp.read().decode('utf-8'))
             text_resp = data["candidates"][0]["content"]["parts"][0]["text"].strip()
             
@@ -162,12 +210,13 @@ def generate_fallback_llm_summary(item: dict) -> dict:
     return {
         "id": item["id"],
         "title": title[:250],
-        "summary": f"Key update regarding {title}. Indian taxpayers and retail investors should review compliance norms.",
-        "who_impacted": "Salaried Individuals, Individual Taxpayers & Retail Investors",
-        "reason": f"Government and regulatory updates issued regarding {category} compliance and financial planning.",
-        "financial_impact": f"• Quantifiable Benefit: Optimizes annual tax liabilities and investment yields\n• Compliance Savings: Avoid late filing penalties under FY2025-26 rules",
-        "action": f"Review official guidelines on e-filing portal for {category}.",
-        "category": category
+        "summary": f"Key update regarding {title}. Here is a 5-6 line placeholder summary because the NLP service was unavailable.",
+        "who_impacted": "General Audience",
+        "reason": "• Point 1 about why it matters\n• Point 2 about why it matters\n• Point 3 about why it matters",
+        "financial_impact": "• Point 1 on financial impact\n• Point 2 on financial impact\n• Point 3 on financial impact",
+        "action": "• Action step 1\n• Action step 2\n• Action step 3",
+        "category": category,
+        "topic_cluster": "Latest Updates"
     }
 
 def push_to_supabase_rest(records: list):
@@ -185,21 +234,23 @@ def push_to_supabase_rest(records: list):
 
     now_ms = int(time.time() * 1000)
     payload = []
+
     for r in records:
         llm = r["llm_summary"]
         payload.append({
             "title": r["title"][:250],
             "summaryWhatHappened": llm.get("summary", "")[:1000],
             "summaryWhoImpacted": llm.get("who_impacted", "")[:500],
-            "summaryActionableTakeaway": llm.get("action", "")[:500],
+            "summaryActionableTakeaway": llm.get("action", "")[:1000],
             "summaryText": llm.get("reason", "")[:1500],
             "category": r["category"][:50],
-            "financialActionUrl": "https://eportal.incometax.gov.in",
+            "financialActionUrl": "https://example.com",
             "sourceUrl": r["url"],
             "sourceName": r["sourceName"][:90],
             "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=60",
-            "financialImpactBullets": llm.get("financial_impact", "")[:1000],
-            "publishedAt": now_ms
+            "financialImpactBullets": llm.get("financial_impact", "")[:1500],
+            "publishedAt": now_ms,
+            "topicCluster": llm.get("topic_cluster", "Latest Updates")[:50]
         })
 
     try:
@@ -211,14 +262,24 @@ def push_to_supabase_rest(records: list):
 
 def main():
     start_time = time.time()
-    logging.info("Starting ultra-fast news scraper & artifact generator...")
+    logging.info("Starting hybrid API + RSS news scraper & artifact generator...")
 
     raw_items = []
     seen_urls = set()
     item_id = 1
 
+    # 1. Fetch from Free API (if key present)
+    api_items = fetch_api_news_finnhub(max_items=5)
+    for it in api_items:
+        if it["url"] not in seen_urls:
+            it["id"] = item_id
+            raw_items.append(it)
+            seen_urls.add(it["url"])
+            item_id += 1
+
+    # 2. Fetch from RSS Feeds
     for feed in FEEDS:
-        items = fetch_rss_feed_fast(feed, max_items=4)
+        items = fetch_rss_feed_fast(feed, max_items=10)
         for it in items:
             if it["url"] not in seen_urls:
                 it["id"] = item_id
@@ -226,15 +287,22 @@ def main():
                 seen_urls.add(it["url"])
                 item_id += 1
 
-    logging.info(f"Scraped {len(raw_items)} articles in {time.time() - start_time:.2f} seconds.")
+    logging.info(f"Collected {len(raw_items)} raw articles in {time.time() - start_time:.2f} seconds.")
 
-    # Call Gemini in 1 batch
-    llm_map = call_gemini_batch_api(raw_items)
+    # Call Gemini in batches of 15 to avoid large payload errors
+    llm_map = {}
+    batch_size = 15
+    for i in range(0, len(raw_items), batch_size):
+        batch = raw_items[i:i+batch_size]
+        batch_map = call_gemini_batch_api(batch)
+        llm_map.update(batch_map)
+        time.sleep(1) # Simple rate limit
 
     processed_list = []
     for item in raw_items:
         summary_obj = llm_map.get(item["id"], generate_fallback_llm_summary(item))
         cat = summary_obj.get("category", item["category"])
+        
         processed_item = {
             "id": item["id"],
             "title": summary_obj.get("title", item["title"])[:250],
@@ -249,18 +317,19 @@ def main():
                 "reason": summary_obj.get("reason", ""),
                 "financial_impact": summary_obj.get("financial_impact", ""),
                 "action": summary_obj.get("action", ""),
-                "category": cat
+                "category": cat,
+                "topic_cluster": summary_obj.get("topic_cluster", "Latest Updates")
             }
         }
         processed_list.append(processed_item)
 
-    # Save artifacts in backend_pipeline AND backend folders
+    # Save artifacts
     dirs_to_save = [
         BASE_DIR,
         os.path.join(BASE_DIR, "..", "backend"),
         os.path.join(BASE_DIR, "..")
     ]
-
+    
     for target_dir in dirs_to_save:
         if os.path.exists(target_dir):
             try:

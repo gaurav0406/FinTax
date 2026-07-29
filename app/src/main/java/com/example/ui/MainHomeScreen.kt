@@ -129,22 +129,14 @@ enum class ActiveDrawerDialog {
 
 val CATEGORIES = listOf(
     "All",
-    "Stock Market India",
+    "Financial News",
     "Credit Cards",
-    "ITR & Tax",
-    "Loans & FDs",
-    "Markets & Mutual Funds",
-    "RBI & Policy",
-    "Entertainment",
-    "Technology Insights",
-    "AI & New Happenings",
-    "FinTech & Crypto",
-    "Startup Ecosystem",
-    "Smart Investing",
-    "Personal Finance",
+    "Mutual Funds",
     "Sports",
-    "Cars & EV",
-    "Education"
+    "Cars & EVs",
+    "Education",
+    "Crypto",
+    "Technology"
 )
 
 @OptIn(ExperimentalMaterial3Api::class)

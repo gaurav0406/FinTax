@@ -27,7 +27,7 @@ data class ProcessedScrapedDataDto(
             summaryWhoImpacted = llmSummary?.whoImpacted ?: "Taxpayers, Investors & General Public",
             summaryActionableTakeaway = llmSummary?.action ?: "Check official updates.",
             summaryText = llmSummary?.reason ?: text ?: newsTitle,
-            category = llmSummary?.category ?: category ?: "Stock Market India",
+            category = llmSummary?.category ?: category ?: "Financial News",
             sourceUrl = newsUrl,
             sourceName = sourceName ?: "Indian Financial Feed",
             imageUrl = imageUrl,
