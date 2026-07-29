@@ -182,26 +182,38 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
         "generationConfig": {"response_mime_type": "application/json"}
     }
 
-    try:
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode('utf-8'),
-            headers={'Content-Type': 'application/json'},
-            method='POST'
-        )
-        with urllib.request.urlopen(req, timeout=25) as resp:
-            data = json.loads(resp.read().decode('utf-8'))
-            text_resp = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+    max_retries = 4
+    for attempt in range(max_retries):
+        try:
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode('utf-8'),
+                headers={'Content-Type': 'application/json'},
+                method='POST'
+            )
+            with urllib.request.urlopen(req, timeout=25) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+                text_resp = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                
+                if text_resp.startswith("```json"): text_resp = text_resp[7:]
+                if text_resp.startswith("```"): text_resp = text_resp[3:]
+                if text_resp.endswith("```"): text_resp = text_resp[:-3]
+                
+                parsed_list = json.loads(text_resp.strip())
+                return {int(obj["id"]): obj for obj in parsed_list if "id" in obj}
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                delay = 2 ** attempt * 5  # 5s, 10s, 20s, 40s
+                logging.warning(f"Rate limited (429). Retrying in {delay} seconds...")
+                time.sleep(delay)
+            else:
+                logging.error(f"Gemini API HTTP Error: {e}")
+                break
+        except Exception as e:
+            logging.error(f"Gemini API call failed: {e}")
+            break
             
-            if text_resp.startswith("```json"): text_resp = text_resp[7:]
-            if text_resp.startswith("```"): text_resp = text_resp[3:]
-            if text_resp.endswith("```"): text_resp = text_resp[:-3]
-            
-            parsed_list = json.loads(text_resp.strip())
-            return {int(obj["id"]): obj for obj in parsed_list if "id" in obj}
-    except Exception as e:
-        logging.error(f"Gemini API call failed: {e}")
-        return {}
+    return {}
 
 def generate_fallback_llm_summary(item: dict) -> dict:
     title = item["title"]
@@ -249,14 +261,16 @@ def push_to_supabase_rest(records: list):
             "sourceName": r["sourceName"][:90],
             "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=60",
             "financialImpactBullets": llm.get("financial_impact", "")[:1500],
-            "publishedAt": now_ms,
-            "topicCluster": llm.get("topic_cluster", "Latest Updates")[:50]
+            "publishedAt": now_ms
         })
 
     try:
         req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers, method='POST')
         with urllib.request.urlopen(req, timeout=10) as resp:
             logging.info(f"Supabase REST push SUCCESS! Status: {resp.status}")
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode('utf-8')
+        logging.error(f"Supabase REST upload failed: HTTP Error {e.code}: {e.reason} - {error_body}")
     except Exception as e:
         logging.error(f"Supabase REST upload failed: {e}")
 
@@ -296,7 +310,7 @@ def main():
         batch = raw_items[i:i+batch_size]
         batch_map = call_gemini_batch_api(batch)
         llm_map.update(batch_map)
-        time.sleep(1) # Simple rate limit
+        time.sleep(5) # Strict rate limit to avoid 429s
 
     processed_list = []
     for item in raw_items:
