@@ -60,7 +60,11 @@ class MainHomeScreenTest {
         composeTestRule.onNodeWithTag("nav_tab_deals").performClick()
         composeTestRule.waitForIdle()
 
-        // Check profile tab
+        // Check profile tab (open drawer first)
+        composeTestRule.onNodeWithTag("top_bar_back_button").performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag("top_bar_menu_button").performClick()
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("nav_tab_profile").performClick()
         composeTestRule.waitForIdle()
     }

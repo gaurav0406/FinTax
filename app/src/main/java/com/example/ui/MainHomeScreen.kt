@@ -112,6 +112,20 @@ import com.example.ui.components.DealsAndOffersTab
 import com.example.ui.components.VideoEngagementTab
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.activity.compose.BackHandler
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Switch
+import androidx.compose.material3.TextButton
+
+enum class ActiveDrawerDialog {
+    NONE, SETTINGS, NOTIFICATIONS, ABOUT, HELP
+}
 
 val CATEGORIES = listOf(
     "All",
@@ -249,8 +263,30 @@ fun MainHomeScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val uriHandler = LocalUriHandler.current
+    var activeDialog by remember { mutableStateOf(ActiveDrawerDialog.NONE) }
     val privacyPolicyUrl = "https://example.com/privacy-policy"
     val termsOfServiceUrl = "https://example.com/terms-of-service"
+    val activity = (LocalContext.current as? Activity)
+
+    BackHandler(enabled = true) {
+        when {
+            drawerState.isOpen -> {
+                scope.launch { drawerState.close() }
+            }
+            selectedNewsForComments != null -> {
+                selectedNewsForComments = null
+            }
+            activeDialog != ActiveDrawerDialog.NONE -> {
+                activeDialog = ActiveDrawerDialog.NONE
+            }
+            activeTab != 0 -> {
+                viewModel.setActiveTab(0)
+            }
+            else -> {
+                activity?.finish()
+            }
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -258,16 +294,27 @@ fun MainHomeScreen(
             ModalDrawerSheet {
                 Spacer(Modifier.height(12.dp))
                 if (userProfileState != null) {
-                    Text(
-                        text = "Hello, ${userProfileState!!.userName}",
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                    Text(
-                        text = "Age: ${userProfileState!!.age} | ${userProfileState!!.city}",
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Surface(
+                        onClick = {
+                            viewModel.setActiveTab(6)
+                            scope.launch { drawerState.close() }
+                        },
+                        color = Color.Transparent,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = "Hello, ${userProfileState!!.userName}",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Age: ${userProfileState!!.age} | ${userProfileState!!.city}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextSecondary
+                            )
+                        }
+                    }
                 }
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 NavigationDrawerItem(
@@ -277,43 +324,68 @@ fun MainHomeScreen(
                     onClick = { 
                         viewModel.setActiveTab(6)
                         scope.launch { drawerState.close() }
-                    }
+                    },
+                    modifier = Modifier.testTag("nav_tab_profile")
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                     label = { Text("Settings") },
-                    selected = false,
-                    onClick = { /* TODO */ }
+                    selected = activeDialog == ActiveDrawerDialog.SETTINGS,
+                    onClick = { 
+                        activeDialog = ActiveDrawerDialog.SETTINGS
+                        scope.launch { drawerState.close() }
+                    },
+                    modifier = Modifier.testTag("drawer_item_settings")
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Notifications, contentDescription = null) },
                     label = { Text("Notifications") },
-                    selected = false,
-                    onClick = { /* TODO */ }
+                    selected = activeDialog == ActiveDrawerDialog.NOTIFICATIONS,
+                    onClick = { 
+                        activeDialog = ActiveDrawerDialog.NOTIFICATIONS
+                        scope.launch { drawerState.close() }
+                    },
+                    modifier = Modifier.testTag("drawer_item_notifications")
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Info, contentDescription = null) },
                     label = { Text("About") },
-                    selected = false,
-                    onClick = { /* TODO */ }
+                    selected = activeDialog == ActiveDrawerDialog.ABOUT,
+                    onClick = { 
+                        activeDialog = ActiveDrawerDialog.ABOUT
+                        scope.launch { drawerState.close() }
+                    },
+                    modifier = Modifier.testTag("drawer_item_about")
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.HelpOutline, contentDescription = null) },
                     label = { Text("Help & Support") },
-                    selected = false,
-                    onClick = { /* TODO */ }
+                    selected = activeDialog == ActiveDrawerDialog.HELP,
+                    onClick = { 
+                        activeDialog = ActiveDrawerDialog.HELP
+                        scope.launch { drawerState.close() }
+                    },
+                    modifier = Modifier.testTag("drawer_item_help")
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Info, contentDescription = null) },
                     label = { Text("Privacy Policy") },
                     selected = false,
-                    onClick = { uriHandler.openUri(privacyPolicyUrl) }
+                    onClick = { 
+                        try { uriHandler.openUri(privacyPolicyUrl) } catch (_: Exception) {}
+                        scope.launch { drawerState.close() }
+                    },
+                    modifier = Modifier.testTag("drawer_item_privacy")
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Info, contentDescription = null) },
                     label = { Text("Terms of Service") },
                     selected = false,
-                    onClick = { uriHandler.openUri(termsOfServiceUrl) }
+                    onClick = { 
+                        try { uriHandler.openUri(termsOfServiceUrl) } catch (_: Exception) {}
+                        scope.launch { drawerState.close() }
+                    },
+                    modifier = Modifier.testTag("drawer_item_terms")
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 NavigationDrawerItem(
@@ -324,7 +396,9 @@ fun MainHomeScreen(
                         if (userProfileState != null) {
                             viewModel.saveUserProfile(userProfileState!!.copy(isLoggedIn = false, hasLoggedOut = true))
                         }
-                    }
+                        scope.launch { drawerState.close() }
+                    },
+                    modifier = Modifier.testTag("drawer_item_logout")
                 )
             }
         },
@@ -335,12 +409,28 @@ fun MainHomeScreen(
         topBar = {
             TopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                        Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = "Menu",
-                            tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else TextPrimary
-                        )
+                    if (activeTab != 0) {
+                        IconButton(
+                            onClick = { viewModel.setActiveTab(0) },
+                            modifier = Modifier.testTag("top_bar_back_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back to Feed",
+                                tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else TextPrimary
+                            )
+                        }
+                    } else {
+                        IconButton(
+                            onClick = { scope.launch { drawerState.open() } },
+                            modifier = Modifier.testTag("top_bar_menu_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Menu",
+                                tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else TextPrimary
+                            )
+                        }
                     }
                 },
                 title = {
@@ -361,23 +451,45 @@ fun MainHomeScreen(
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
+                            val headerTitle = when (activeTab) {
+                                0 -> "FinTax Inshorts"
+                                1 -> "Community Forum"
+                                2 -> "Saved Reads"
+                                3 -> "Tax Calculator"
+                                4 -> "Deals & Offers"
+                                5 -> "Video Reels"
+                                6 -> "User Profile"
+                                else -> "FinTax Inshorts"
+                            }
+                            val headerSubtitle = when (activeTab) {
+                                0 -> if (useInshortsViewMode) "60-Sec Personal Finance Digest" else "All Financial Stories"
+                                1 -> "Discuss Tax, Stocks & Investing"
+                                2 -> "Your Bookmarked Reads"
+                                3 -> "Compare Old vs New Tax Regime"
+                                4 -> "Exclusive Financial Offers"
+                                5 -> "60-Sec Financial Video Shorts"
+                                6 -> "Manage Personal Information"
+                                else -> ""
+                            }
                             Text(
-                                text = "FinTax Inshorts",
+                                text = headerTitle,
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 19.sp,
                                     color = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else TextPrimary
                                 )
                             )
-                            Text(
-                                text = if (activeTab == 5) "60-Sec Financial Video Reels" else "60-Sec Personal Finance Digest",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 10.sp,
-                                    letterSpacing = 1.sp,
-                                    color = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) MinimalPurpleLightContainer else TextSecondary
+                            if (headerSubtitle.isNotEmpty()) {
+                                Text(
+                                    text = headerSubtitle,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 10.sp,
+                                        letterSpacing = 1.sp,
+                                        color = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) MinimalPurpleLightContainer else TextSecondary
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 },
@@ -606,9 +718,333 @@ fun MainHomeScreen(
                     onDismiss = { selectedNewsForComments = null }
                 )
             }
+
+            when (activeDialog) {
+                ActiveDrawerDialog.SETTINGS -> SettingsDialog(
+                    userProfile = userProfileState,
+                    onSaveProfile = { viewModel.saveUserProfile(it) },
+                    onRefreshFeeds = { viewModel.refreshFeeds() },
+                    onDismiss = { activeDialog = ActiveDrawerDialog.NONE }
+                )
+                ActiveDrawerDialog.NOTIFICATIONS -> NotificationsDialog(
+                    onDismiss = { activeDialog = ActiveDrawerDialog.NONE }
+                )
+                ActiveDrawerDialog.ABOUT -> AboutDialog(
+                    onDismiss = { activeDialog = ActiveDrawerDialog.NONE }
+                )
+                ActiveDrawerDialog.HELP -> HelpSupportDialog(
+                    onDismiss = { activeDialog = ActiveDrawerDialog.NONE }
+                )
+                ActiveDrawerDialog.NONE -> {}
+            }
         }
     }
     }
+}
+
+@Composable
+private fun SettingsDialog(
+    userProfile: UserProfileEntity?,
+    onSaveProfile: (UserProfileEntity) -> Unit,
+    onRefreshFeeds: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    var autoPlayAudio by remember { mutableStateOf(userProfile?.autoPlayAudio ?: false) }
+    var dailyDigestEnabled by remember { mutableStateOf(true) }
+    val context = LocalContext.current
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Settings, contentDescription = null, tint = MinimalPurplePrimary)
+                Spacer(Modifier.width(8.dp))
+                Text("App Settings", fontWeight = FontWeight.Bold)
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Auto-play Audio", style = MaterialTheme.typography.titleMedium)
+                        Text("Automatically play narration on scrolling cards", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    }
+                    Switch(
+                        checked = autoPlayAudio,
+                        onCheckedChange = { 
+                            autoPlayAudio = it
+                            if (userProfile != null) {
+                                onSaveProfile(userProfile.copy(autoPlayAudio = it))
+                            }
+                        }
+                    )
+                }
+
+                HorizontalDivider()
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Daily Digest Alerts", style = MaterialTheme.typography.titleMedium)
+                        Text("Receive 9:00 AM personal finance notification", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    }
+                    Switch(
+                        checked = dailyDigestEnabled,
+                        onCheckedChange = { dailyDigestEnabled = it }
+                    )
+                }
+
+                HorizontalDivider()
+
+                Surface(
+                    onClick = {
+                        onRefreshFeeds()
+                        Toast.makeText(context, "Syncing latest feed from Supabase...", Toast.LENGTH_SHORT).show()
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    color = MinimalPurpleLightContainer,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = null, tint = MinimalPurpleDark)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Force Refresh Live Feeds", fontWeight = FontWeight.Bold, color = MinimalPurpleDark)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Done", fontWeight = FontWeight.Bold, color = MinimalPurplePrimary)
+            }
+        }
+    )
+}
+
+@Composable
+private fun NotificationsDialog(
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    var taxDeadlines by remember { mutableStateOf(true) }
+    var dailyDigest by remember { mutableStateOf(true) }
+    var marketAlerts by remember { mutableStateOf(true) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Notifications, contentDescription = null, tint = MinimalPurplePrimary)
+                Spacer(Modifier.width(8.dp))
+                Text("Notification Schedule", fontWeight = FontWeight.Bold)
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Surface(
+                    color = MinimalSecondaryContainer,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text("Active Retention Schedule", fontWeight = FontWeight.Bold, color = MinimalPurpleDark)
+                        Text("• Daily Financial Digest: 9:00 AM IST", style = MaterialTheme.typography.bodySmall, color = TextPrimary)
+                        Text("• ITR & Tax Due Dates: Active", style = MaterialTheme.typography.bodySmall, color = TextPrimary)
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Daily 9 AM Finance Summary", style = MaterialTheme.typography.bodyMedium)
+                    Switch(checked = dailyDigest, onCheckedChange = { dailyDigest = it })
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Tax Filing Deadline Reminders", style = MaterialTheme.typography.bodyMedium)
+                    Switch(checked = taxDeadlines, onCheckedChange = { taxDeadlines = it })
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Breaking Market Alerts", style = MaterialTheme.typography.bodyMedium)
+                    Switch(checked = marketAlerts, onCheckedChange = { marketAlerts = it })
+                }
+
+                Surface(
+                    onClick = {
+                        RetentionNotificationScheduler.scheduleDailyNotifications(context)
+                        Toast.makeText(context, "Test notification scheduled for 9:00 AM!", Toast.LENGTH_SHORT).show()
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    color = MinimalPurplePrimary,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(Icons.Default.Notifications, contentDescription = null, tint = Color.White)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Trigger Test Notification", fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close", fontWeight = FontWeight.Bold, color = MinimalPurplePrimary)
+            }
+        }
+    )
+}
+
+@Composable
+private fun AboutDialog(
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Info, contentDescription = null, tint = MinimalPurplePrimary)
+                Spacer(Modifier.width(8.dp))
+                Text("About FinTax Inshorts", fontWeight = FontWeight.Bold)
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "FinTax Inshorts v1.0.0",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "A smart 60-second financial news & tax digest application engineered for Indian taxpayers, investors, and professionals.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextPrimary
+                )
+                HorizontalDivider()
+                Text(
+                    text = "🚀 Key Features & Pipeline",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MinimalPurpleDark
+                )
+                Text("• 60-sec AI Batch Summarization via Gemini 2.0 Flash", style = MaterialTheme.typography.bodySmall)
+                Text("• Real-time Supabase Database Syncing", style = MaterialTheme.typography.bodySmall)
+                Text("• Audio TTS Narration with 1.0x-2.0x playback", style = MaterialTheme.typography.bodySmall)
+                Text("• Old vs New Income Tax Calculator FY 2025-26", style = MaterialTheme.typography.bodySmall)
+                Text("• Community Discussions & Community Polls", style = MaterialTheme.typography.bodySmall)
+                HorizontalDivider()
+                Text(
+                    text = "Disclaimer: News summaries are AI-assisted for quick scanning. Please consult a qualified Chartered Accountant (CA) or financial advisor before making official tax or investment decisions.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextSecondary
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Got It", fontWeight = FontWeight.Bold, color = MinimalPurplePrimary)
+            }
+        }
+    )
+}
+
+@Composable
+private fun HelpSupportDialog(
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.HelpOutline, contentDescription = null, tint = MinimalPurplePrimary)
+                Spacer(Modifier.width(8.dp))
+                Text("Help & Support", fontWeight = FontWeight.Bold)
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text("Frequently Asked Questions", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
+                Column {
+                    Text("Q: How are news summaries generated?", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
+                    Text("A: Our automated python pipeline scrapes verified Indian financial RSS feeds, batches articles, and uses Gemini 2.0 Flash to extract structured key takeaways.", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                }
+
+                Column {
+                    Text("Q: How do I use the Tax Calculator?", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
+                    Text("A: Navigate to the Taxes tab, enter your gross annual income, standard deduction, 80C investments, and compare Old vs New regime taxes instantly.", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                }
+
+                Column {
+                    Text("Q: How do audio summaries work?", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
+                    Text("A: Tap the speaker icon on any news card to listen to the audio summary. Use the floating player bar at the bottom to adjust playback speed.", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                }
+
+                HorizontalDivider()
+
+                Surface(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = Uri.parse("mailto:support@fintaxinshorts.app")
+                            putExtra(Intent.EXTRA_SUBJECT, "FinTax Inshorts Support Request")
+                        }
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Email support at: support@fintaxinshorts.app", Toast.LENGTH_LONG).show()
+                        }
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    color = MinimalPurplePrimary,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(Icons.Default.HelpOutline, contentDescription = null, tint = Color.White)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Contact Support Team", fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close", fontWeight = FontWeight.Bold, color = MinimalPurplePrimary)
+            }
+        }
+    )
 }
 
 @Composable
