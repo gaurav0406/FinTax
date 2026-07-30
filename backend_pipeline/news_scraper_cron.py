@@ -80,6 +80,31 @@ FEEDS = [
         "category": "Technology",
         "url": "https://techcrunch.com/feed/",
         "sourceName": "TechCrunch"
+    },
+    {
+        "category": "Entertainment",
+        "url": "https://www.bollywoodhungama.com/rss/news.xml",
+        "sourceName": "Bollywood Hungama"
+    },
+    {
+        "category": "ITR & Tax",
+        "url": "https://economictimes.indiatimes.com/wealth/tax/rssfeeds/897228639.cms",
+        "sourceName": "ET Tax"
+    },
+    {
+        "category": "Loans & FDs",
+        "url": "https://economictimes.indiatimes.com/wealth/borrow/rssfeeds/897228726.cms",
+        "sourceName": "ET Borrow"
+    },
+    {
+        "category": "Markets & Mutual Funds",
+        "url": "https://www.livemint.com/rss/markets",
+        "sourceName": "LiveMint Markets"
+    },
+    {
+        "category": "RBI & Policy",
+        "url": "https://economictimes.indiatimes.com/news/economy/policy/rssfeeds/104276.cms",
+        "sourceName": "ET Economy"
     }
 ]
 
@@ -147,7 +172,7 @@ def detect_category(title: str, text: str, feed_category: str) -> str:
         return "Cars & EVs"
 
     # Default to feed category if specific, otherwise "Financial News"
-    if feed_category in ["Credit Cards", "Mutual Funds", "Crypto", "Cars & EVs", "Technology", "Sports", "Education"]:
+    if feed_category in ["Credit Cards", "Mutual Funds", "Crypto", "Cars & EVs", "Technology", "Sports", "Education", "Entertainment", "ITR & Tax", "Loans & FDs", "Markets & Mutual Funds", "RBI & Policy"]:
         return feed_category
         
     return "Financial News"
@@ -204,6 +229,17 @@ def fetch_rss_feed_fast(feed_info: dict, max_items: int = 10) -> list:
             link = clean_html_text(link_m.group(1)) if link_m else ""
             desc = clean_html_text(desc_m.group(1)) if desc_m else title
             
+            pubDate_m = re.search(r'<pubDate>(.*?)</pubDate>', cb, re.DOTALL | re.IGNORECASE)
+            pub_time = None
+            if pubDate_m:
+                import email.utils
+                try:
+                    parsed_tuple = email.utils.parsedate_tz(pubDate_m.group(1))
+                    if parsed_tuple:
+                        pub_time = email.utils.mktime_tz(parsed_tuple)
+                except:
+                    pass
+            
             if title and link:
                 clean_link = link.split("?")[0]
                 items.append({
@@ -211,7 +247,8 @@ def fetch_rss_feed_fast(feed_info: dict, max_items: int = 10) -> list:
                     "url": clean_link,
                     "text": desc[:1000] if len(desc) > 10 else title,
                     "category": feed_info["category"],
-                    "sourceName": feed_info["sourceName"]
+                    "sourceName": feed_info["sourceName"],
+                    "publishedAt": int(pub_time * 1000) if pub_time else None
                 })
     except Exception as e:
         logging.warning(f"Error reading feed {feed_info['url']}: {e}")
@@ -242,10 +279,10 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
     "title": "Catchy headline (Max 10 words)",
     "summary": "Detailed 5-6 line summary of the article, covering all key points.",
     "who_impacted": "Who does this impact? (e.g. Salaried Employees, Tech Enthusiasts, Sports Fans)",
-    "reason": "Provide 3-4 crisp bullet points explaining the core reasons or causes. Do NOT use introductory labels.",
+    "reason": "Write a 3-4 sentence engaging, conversational TV news-anchor script explaining why this news matters and the core reasons behind it. Act like a live news anchor speaking to the audience (e.g., 'Here is why this matters to you...', 'The driving force behind this update is...'). Do NOT use bullet points. Ensure it reads smoothly for Text-to-Speech audio.",
     "financial_impact": "Provide 3-4 crisp bullet points detailing monetary effects or benefits. Do NOT use introductory labels.",
     "action": "Provide 3-4 crisp bullet points of suggestions on what a user/investor/reader should do. Do NOT use introductory labels.",
-    "category": "Must be EXACTLY ONE of ['Financial News', 'Credit Cards', 'Mutual Funds', 'Sports', 'Cars & EVs', 'Education', 'Crypto', 'Technology']",
+    "category": "Must be EXACTLY ONE of ['Financial News', 'Credit Cards', 'Mutual Funds', 'Sports', 'Cars & EVs', 'Education', 'Crypto', 'Technology', 'Entertainment', 'ITR & Tax', 'Loans & FDs', 'Markets & Mutual Funds', 'RBI & Policy']",
     "topic_cluster": "Dynamic 2-3 word topic tag (e.g. 'Tech Earnings', 'RBI Policy', 'EV Market')"
   }}
 ]
@@ -257,7 +294,7 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
         "generationConfig": {"response_mime_type": "application/json"}
     }
 
-    max_retries = 4
+    max_retries = 2
     for attempt in range(max_retries):
         try:
             req = urllib.request.Request(
@@ -278,9 +315,8 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
                 return {int(obj["id"]): obj for obj in parsed_list if "id" in obj}
         except urllib.error.HTTPError as e:
             if e.code == 429:
-                delay = 2 ** attempt * 5  # 5s, 10s, 20s, 40s
-                logging.warning(f"Rate limited (429). Retrying in {delay} seconds...")
-                time.sleep(delay)
+                logging.warning("Rate limited (429). Falling back immediately.")
+                break
             else:
                 logging.error(f"Gemini API HTTP Error: {e}")
                 break
@@ -348,7 +384,7 @@ def push_to_supabase_rest(records: list):
             "sourceName": r["sourceName"][:90],
             "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=60",
             "financialImpactBullets": llm.get("financial_impact", "")[:1500],
-            "publishedAt": now_ms
+            "publishedAt": r.get("publishedAt") or now_ms
         })
 
     try:
@@ -397,7 +433,7 @@ def main():
         batch = raw_items[i:i+batch_size]
         batch_map = call_gemini_batch_api(batch)
         llm_map.update(batch_map)
-        time.sleep(5) # Strict rate limit to avoid 429s
+        time.sleep(15) # Strict rate limit to avoid 429s
 
     processed_list = []
     for item in raw_items:

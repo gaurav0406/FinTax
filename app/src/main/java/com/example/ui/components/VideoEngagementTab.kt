@@ -347,7 +347,7 @@ fun VideoEngagementTab(
                 // Video Grid / Cards Feed Mode
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(12.dp),
+                    contentPadding = PaddingValues(start=12.dp, top=12.dp, end=12.dp, bottom=120.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxSize()
@@ -582,7 +582,7 @@ fun VideoReelItem(
         Column(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 12.dp, bottom = 100.dp),
+                .padding(end = 12.dp, bottom = 120.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
@@ -710,7 +710,7 @@ fun VideoReelItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomStart)
-                .padding(start = 16.dp, end = 72.dp, bottom = 24.dp)
+                .padding(start = 16.dp, end = 72.dp, bottom = 100.dp)
         ) {
             // Creator Handle & Verified Badge
             Row(

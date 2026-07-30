@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS public.financial_news (
     title VARCHAR(255) NOT NULL,
     summary JSONB NOT NULL, -- Stores array of 3 bullet points
     summary_text TEXT NOT NULL, -- Plain text <60 words for TTS audio
-    category VARCHAR(50) NOT NULL CHECK (category IN ('Credit Cards', 'ITR & Tax', 'Loans & FDs', 'Markets & Mutual Funds', 'RBI & Policy')),
+    category VARCHAR(50) NOT NULL,
     financial_action_url TEXT,
     source_url TEXT UNIQUE NOT NULL,
     source_name VARCHAR(100),

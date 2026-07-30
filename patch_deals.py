@@ -1,22 +1,18 @@
-import re
+import sys
 
 with open("app/src/main/java/com/example/ui/components/DealsAndOffersTab.kt", "r") as f:
     content = f.read()
 
-old_list_call = """        LazyColumn(
-            contentPadding = PaddingValues(bottom = 80.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(sampleDeals) { deal ->"""
-new_list_call = """        LazyColumn(
-            contentPadding = PaddingValues(bottom = 80.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            item {
-                AdMobNativeExpressCard()
-            }
-            items(sampleDeals) { deal ->"""
-content = content.replace(old_list_call, new_list_call)
+target = """        LazyColumn(
+            contentPadding = PaddingValues(bottom = 80.dp),"""
 
-with open("app/src/main/java/com/example/ui/components/DealsAndOffersTab.kt", "w") as f:
-    f.write(content)
+replacement = """        LazyColumn(
+            contentPadding = PaddingValues(bottom = 120.dp),"""
+
+if target in content:
+    content = content.replace(target, replacement)
+    with open("app/src/main/java/com/example/ui/components/DealsAndOffersTab.kt", "w") as f:
+        f.write(content)
+    print("Success Deals")
+else:
+    print("Not found Deals")

@@ -513,6 +513,8 @@ fun TaxCalculatorTab(
                 }
             }
         }
+        
+        Spacer(modifier = Modifier.height(120.dp))
     }
 }
 

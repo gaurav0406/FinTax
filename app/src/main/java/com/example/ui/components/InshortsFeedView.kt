@@ -558,7 +558,7 @@ fun InshortsNewsCardItem(
 
                 // Bottom Section: Metrics & Actions
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 100.dp)
                 ) {
 
                     Spacer(modifier = Modifier.height(16.dp))

@@ -4,6 +4,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -568,8 +569,19 @@ fun MainHomeScreen(
 
                 // Bottom Navigation Bar
                 NavigationBar(
-                    containerColor = if (isDarkTab) Color(0xFF16171E) else MinimalSurfaceVariant,
-                    tonalElevation = 2.dp
+                    containerColor = Color.Transparent,
+                    tonalElevation = 0.dp,
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp, vertical = 12.dp)
+                        .background(
+                            color = if (isDarkTab) Color(0xFF16171E).copy(alpha = 0.6f) else MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                            shape = RoundedCornerShape(32.dp)
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = if (isDarkTab) Color.White.copy(alpha = 0.1f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(32.dp)
+                        )
                 ) {
                     NavigationBarItem(
                         selected = activeTab == 0,
@@ -661,7 +673,7 @@ fun MainHomeScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(top = innerPadding.calculateTopPadding())
         ) {
             when (activeTab) {
                 0 -> {
@@ -1089,26 +1101,7 @@ private fun StandardCardListView(
                     .background(MaterialTheme.colorScheme.background)
                     .padding(vertical = 4.dp)
             ) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = onSearchQueryChange,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                        .testTag("search_news_input"),
-                    placeholder = { Text("Search ITR, Repo Rate, Section 80C...") },
-                    leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
-                    singleLine = true,
-                    shape = RoundedCornerShape(50),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedBorderColor = MinimalBorder,
-                        focusedBorderColor = MinimalPurplePrimary
-                    )
-                )
 
-                Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
                     modifier = Modifier
@@ -1187,7 +1180,7 @@ private fun StandardCardListView(
                 }
             } else {
                 LazyColumn(
-                    contentPadding = PaddingValues(bottom = 16.dp),
+                    contentPadding = PaddingValues(bottom = 120.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     if (dailyDigestList.isNotEmpty()) {

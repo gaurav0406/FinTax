@@ -166,7 +166,7 @@ fun DealsAndOffersTab() {
         }
 
         LazyColumn(
-            contentPadding = PaddingValues(bottom = 80.dp),
+            contentPadding = PaddingValues(bottom = 120.dp),
             modifier = Modifier.fillMaxSize()
         ) {
             // Google AdMob Sponsored Card Placement at top of deals
