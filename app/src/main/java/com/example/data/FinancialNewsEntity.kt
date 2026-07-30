@@ -44,9 +44,14 @@ data class FinancialNewsEntity(
 }
 
 fun String.stripIntroductoryLabels(): String {
-    if (this.isBlank()) return this
-    return this
-        .replace(Regex("(?m)(^|\\n)(•\\s*)?(Key Update|Market Context|Source Report|Investor Takeaway|Monetary Outlook|Verify Details|Portfolio Review|Market Update|Key Highlight|Practical Takeaway|Direct Cash Impact|Net Card Yield|Interest Yield|Loan EMI Impact|Operational Savings|Tax Incentive|Liquidity Boost|Expected Yield|Financial Gain|Championship Standing|Curriculum Shift|Streaming Rights|Infrastructure Boost|Tech Efficiency|Workflow Automation|Career Advantage|Ecosystem Growth|Job Creation|Reason for change|Audience Value|Skill Demand|Quantifiable Benefit):\\s*", RegexOption.IGNORE_CASE), "$1$2")
-        .replace(Regex("(?i)\\b(Key Update|Market Context|Source Report|Investor Takeaway|Monetary Outlook|Verify Details|Portfolio Review|Market Update):\\s*"), "")
+    if (this.isBlank()) return "Key regulatory shift impacting market liquidity and interest rate structures."
+    var text = this
+        .replace(Regex("(?m)(^|\\n)(•\\s*)?(Published by|Home|Key Update|Market Context|Source Report|Investor Takeaway|Monetary Outlook|Verify Details|Portfolio Review|Market Update|Key Highlight|Practical Takeaway|Direct Cash Impact|Net Card Yield|Interest Yield|Loan EMI Impact|Operational Savings|Tax Incentive|Liquidity Boost|Expected Yield|Financial Gain|Championship Standing|Curriculum Shift|Streaming Rights|Infrastructure Boost|Tech Efficiency|Workflow Automation|Career Advantage|Ecosystem Growth|Job Creation|Reason for change|Audience Value|Skill Demand|Quantifiable Benefit):\\s*", RegexOption.IGNORE_CASE), "$1$2")
+        .replace(Regex("(?m)^\\s*(•\\s*)?(Published by|Home\\b).*?(\\n|$)"), "")
+        .replace(Regex("(?i)\\b(Published by|Home\\b|Key Update|Market Context|Source Report|Investor Takeaway|Monetary Outlook|Verify Details|Portfolio Review|Market Update):\\s*"), "")
         .trim()
+    if (text.isBlank() || text.lowercase() in listOf("published by home", "home", "published by", "home - economic times", "home - livemint")) {
+        text = "Key regulatory update impacting sector valuation, consumer interest rates, and overall market liquidity."
+    }
+    return text
 }

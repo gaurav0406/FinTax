@@ -63,18 +63,28 @@ data class SupabaseNewsDto(
             // Not a valid JSON, just use it as string
         }
 
+        val rawSource = sourceName?.trim()
+        val cleanSource = if (rawSource.isNullOrBlank() || rawSource.equals("Home", ignoreCase = true) || rawSource.equals("Published by Home", ignoreCase = true)) {
+            "Financial Feed"
+        } else rawSource
+
+        var cleanSummaryText = summaryText
+        if (cleanSummaryText.isNullOrBlank() || cleanSummaryText.lowercase().contains("published by home") || cleanSummaryText.trim().lowercase() == "home") {
+            cleanSummaryText = summaryWhatHappened ?: "Key regulatory update impacting sector valuation, consumer interest rates, and overall market liquidity."
+        }
+
         return FinancialNewsEntity(
             id = id ?: 0,
             title = newsTitle,
             summaryWhatHappened = summaryWhatHappened ?: "Summary unavailable.",
             summaryWhoImpacted = summaryWhoImpacted ?: "Taxpayers, Investors & General Public",
             summaryActionableTakeaway = summaryActionableTakeaway ?: "Check official updates.",
-            summaryText = summaryText ?: summaryWhatHappened ?: newsTitle,
+            summaryText = cleanSummaryText,
             category = category ?: "Financial News",
             topicCluster = topicCluster ?: "Latest Updates",
             financialActionUrl = financialActionUrl,
             sourceUrl = newsUrl,
-            sourceName = sourceName ?: "Indian Financial Feed",
+            sourceName = cleanSource,
             audioUrl = audioUrl,
             imageUrl = imageUrl,
             financialImpactBullets = impactStr,

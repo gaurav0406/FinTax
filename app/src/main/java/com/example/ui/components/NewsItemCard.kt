@@ -379,8 +379,8 @@ fun NewsItemCard(
                         showJargonSheet = true
                     },
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp,
+                        fontSize = 15.sp,
+                        lineHeight = 21.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
@@ -394,8 +394,8 @@ fun NewsItemCard(
                 Text(
                     text = news.summaryWhoImpacted,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp,
+                        fontSize = 15.sp,
+                        lineHeight = 21.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
@@ -415,8 +415,8 @@ fun NewsItemCard(
                         showJargonSheet = true
                     },
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp,
+                        fontSize = 15.sp,
+                        lineHeight = 21.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
@@ -450,8 +450,8 @@ fun NewsItemCard(
                 Text(
                     text = cardImpact.stripIntroductoryLabels(),
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp,
+                        fontSize = 15.sp,
+                        lineHeight = 21.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
@@ -465,8 +465,8 @@ fun NewsItemCard(
                 Text(
                     text = news.summaryActionableTakeaway.stripIntroductoryLabels(),
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp,
+                        fontSize = 15.sp,
+                        lineHeight = 21.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )

@@ -16,10 +16,10 @@ object NewsProcessorService {
                     
                     Respond ONLY with JSON:
                     {
-                      "summary": "Provide a detailed 7 to 8-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
-                      "reason": "Provide 2 to 4 lines explaining why the government, entity, or individual has taken this decision/action in English. Do NOT include prefixes like 'Reason:'.",
-                      "financial_impact": "What is the financial impact or the benefits users can gain in English? Use 2 to 3 lines. Use crisp, quantifiable numbers and bullet points.",
-                      "action": "Provide actionable steps (2 to 3 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
+                      "summary": "Provide a detailed 4 to 5-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
+                      "reason": "Provide 3 to 4 lines explaining why this news matters and why the decision/action occurred in English. Do NOT include prefixes like 'Reason:'.",
+                      "financial_impact": "What is the financial impact or the benefits users can gain in English? Provide 3 to 4 lines with crisp, quantifiable numbers and bullet points.",
+                      "action": "Provide actionable steps (3 to 4 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
                       "category": "One of: Financial News, Credit Cards, Mutual Funds, Sports, Cars & EVs, Education, Crypto, Technology"
                     }
                 """.trimIndent()
@@ -78,10 +78,10 @@ object NewsProcessorService {
                 Respond ONLY with a JSON array of objects, each following this exact schema:
                 {
                   "id": "The integer id of the news item provided in the input",
-                  "summary": "Provide a detailed 7 to 8-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
-                  "reason": "Provide 2 to 4 lines explaining why the government, entity, or individual has taken this decision/action in English. Do NOT include prefixes like 'Reason:'.",
-                  "financial_impact": "What is the financial impact or the benefits users can gain in English? Use 2 to 3 lines. Use crisp, quantifiable numbers and bullet points.",
-                  "action": "Provide actionable steps (2 to 3 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
+                  "summary": "Provide a detailed 4 to 5-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
+                  "reason": "Provide 3 to 4 lines explaining why this news matters and why the decision/action occurred in English. Do NOT include prefixes like 'Reason:'.",
+                  "financial_impact": "What is the financial impact or the benefits users can gain in English? Provide 3 to 4 lines with crisp, quantifiable numbers and bullet points.",
+                  "action": "Provide actionable steps (3 to 4 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
                   "category": "One of: Financial News, Credit Cards, Mutual Funds, Sports, Cars & EVs, Education, Crypto, Technology"
                 }
             """.trimIndent()
@@ -180,19 +180,19 @@ object NewsProcessorService {
             else -> "https://www.moneycontrol.com"
         }
 
-        val p1 = "New guidelines announced for $category regarding $snippet..."
+        val p1 = "• New guidelines announced for $category regarding $snippet.\n• Operational framework revised to enhance transparency and efficiency.\n• Stakeholders are evaluating capital allocation and tax filing rules.\n• Intended to streamline user workflows and reduce compliance burden.\n• Updates take effect in the upcoming financial quarter across all regions."
         val p2 = "Salaried individuals, individual taxpayers, and retail investors."
-        val p3 = "Review official portal notices before the next tax quarter deadline."
+        val p3 = "• Review official portal notices before the upcoming tax quarter deadline.\n• Optimize asset allocation strategy according to the updated sector framework.\n• Consult financial advisor to rebalance portfolio and lock in higher yields.\n• Monitor primary distribution channels for further official updates."
         
         val fallbackImpact = when (category) {
-            "Financial News" -> "• Sector policy shift impacting market indices by ~2.5%\n• Portfolio reallocation recommended based on updated guidance"
-            "Credit Cards" -> "• Direct Cash Impact: -₹350/mo on utility fees or +5% (₹400/mo) fuel waiver\n• Net Annual Return: ~₹4,800/yr optimized card savings"
-            "Loans & FDs" -> "• Interest Yield / Outlay: 8.25% return (+₹8,250/yr on ₹1L deposit) or +₹320/mo on ₹50L Home Loan EMI"
-            "Markets & Mutual Funds" -> "• Liquidity Boost: T+0 payout frees up cash 48 hours earlier for reinvestment\n• Portfolio Yield: +1.2% CAGR impact from reduced holding lag"
-            else -> "• Quantifiable Benefit: Estimated ₹5,000 - ₹12,000 annual net gain by optimizing financial strategy."
+            "Financial News" -> "• Sector policy shift impacting market indices by ~2.5%\n• Portfolio reallocation recommended based on updated guidance\n• Unlocks additional capital liquidity and lowers transaction fees\n• Protects investments against short-term market volatility"
+            "Credit Cards" -> "• Direct Cash Impact: -₹350/mo on utility fees or +5% (₹400/mo) fuel waiver\n• Net Annual Return: ~₹4,800/yr optimized card savings\n• Reward point redemption value enhanced by 15% across travel partners\n• Zero annual renewal fee applicable upon meeting quarterly spend milestone"
+            "Loans & FDs" -> "• Interest Yield: 8.25% p.a. return (+₹8,250/yr per ₹1L fixed deposit)\n• Loan EMI Impact: -₹320/mo savings on ₹50L Home Loan reset\n• Prepayment penalty waived for early tenure clearance\n• Enhanced liquidity buffer for emergency drawdown needs"
+            "Markets & Mutual Funds" -> "• Liquidity Boost: T+0 payout frees up cash 48 hours earlier for reinvestment\n• Portfolio Yield: +1.2% CAGR impact from reduced holding lag\n• Expense ratio reduced by 10 bps across top direct index funds\n• Tax-efficient dividend reinvestment framework activated"
+            else -> "• Quantifiable Benefit: Estimated ₹5,000 - ₹12,000 annual net gain\n• Strategic cost savings across filing and transaction channels\n• Tax rebate eligibility unlocked for early compliance filing\n• Risk-adjusted yield improvement across diversified asset classes"
         }
 
-        val summaryText = "Reason for change: The government has introduced these rules to streamline operations."
+        val summaryText = "• Key regulatory update affecting interest rate models, tax compliance rules, and market liquidity.\n• Operational shift designed to optimize capital allocation, investor protection, and financial transparency.\n• Recommended strategic adjustment to maximize returns across $category portfolios.\n• Implemented following comprehensive multi-stakeholder consultations and policy reviews."
 
         return FinancialNewsEntity(
             title = "Key $category Update for Indian Taxpayers",

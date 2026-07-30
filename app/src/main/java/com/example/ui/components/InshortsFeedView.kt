@@ -763,8 +763,8 @@ private fun InshortsBulletPoint(
                 Text(
                     text = content,
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        fontSize = 12.sp,
-                        lineHeight = 16.sp,
+                        fontSize = 14.sp,
+                        lineHeight = 19.sp,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.95f)
                     )
                 )

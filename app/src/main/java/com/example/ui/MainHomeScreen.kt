@@ -696,6 +696,7 @@ fun MainHomeScreen(
                         StandardCardListView(
                             newsList = filteredNewsList,
                             dailyDigestList = dailyDigestList,
+                            allNewsList = allNewsList,
                             categories = orderedCategories,
                             selectedCategory = selectedCategory,
                             searchQuery = searchQuery,
@@ -1078,6 +1079,7 @@ private fun HelpSupportDialog(
 private fun StandardCardListView(
     newsList: List<FinancialNewsEntity>,
     dailyDigestList: List<FinancialNewsEntity> = emptyList(),
+    allNewsList: List<FinancialNewsEntity> = emptyList(),
     categories: List<String>,
     selectedCategory: String,
     searchQuery: String,
@@ -1187,7 +1189,7 @@ private fun StandardCardListView(
                         item {
                             com.example.ui.components.DailyDigestCard(
                                 newsList = dailyDigestList,
-                                allNewsList = newsList,
+                                allNewsList = if (allNewsList.isNotEmpty()) allNewsList else newsList,
                                 onCategoryClick = onSelectCategory
                             )
                         }
