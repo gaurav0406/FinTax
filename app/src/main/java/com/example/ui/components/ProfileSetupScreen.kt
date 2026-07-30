@@ -219,8 +219,8 @@ fun ProfileSetupScreen(
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isLoggedIn) Color(0xFFE0E0E0) else MinimalPurpleDark,
-                        contentColor = if (isLoggedIn) MaterialTheme.colorScheme.onSurface else Color.White
+                        containerColor = if (isLoggedIn) MaterialTheme.colorScheme.errorContainer else MinimalPurpleDark,
+                        contentColor = if (isLoggedIn) MaterialTheme.colorScheme.onErrorContainer else Color.White
                     ),
                     shape = RoundedCornerShape(24.dp),
                     modifier = Modifier
@@ -229,7 +229,8 @@ fun ProfileSetupScreen(
                 ) {
                     Text(
                         text = if (isLoggedIn) "Disconnect Google Account" else "G  Sign In with Google",
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = if (isLoggedIn) MaterialTheme.colorScheme.onErrorContainer else Color.White
                     )
                 }
             }

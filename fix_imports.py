@@ -1,16 +1,10 @@
-import sys
-import glob
-
-files = glob.glob("app/src/main/java/com/example/ui/**/*.kt", recursive=True)
-
-for file in files:
-    with open(file, "r") as f:
-        lines = f.readlines()
+for file_path in ["app/src/main/java/com/example/ui/components/InshortsFeedView.kt", "app/src/main/java/com/example/ui/components/NewsItemCard.kt"]:
+    with open(file_path, "r") as f:
+        content = f.read()
     
-    with open(file, "w") as f:
-        for line in lines:
-            if "import com.example.ui.theme.MaterialTheme" in line:
-                continue
-            if "import MaterialTheme.colorScheme" in line:
-                continue
-            f.write(line)
+    if "import com.example.data.stripIntroductoryLabels" not in content:
+        content = "import com.example.data.stripIntroductoryLabels\n" + content
+        with open(file_path, "w") as f:
+            f.write(content)
+    print(f"Added import to {file_path}")
+

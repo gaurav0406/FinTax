@@ -23,7 +23,12 @@ import com.example.ui.theme.MinimalPurplePrimary
 
 data class MockTweet(val handle: String, val content: String, val time: String)
 
-val sampleTweets = emptyList<MockTweet>()
+val sampleTweets = listOf(
+    MockTweet("@NSEIndia", "Benchmark Nifty 50 crosses key resistance zone as Q1 institutional inflows reach record peak across IT and Banking sectors.", "2h ago"),
+    MockTweet("@RBI", "Monetary Policy Committee highlights stable headline inflation and robust credit growth across retail & SME lending segments.", "4h ago"),
+    MockTweet("@IncomeTaxIndia", "Over 5.8 Crore ITRs filed for AY 2024-25. E-verification via Aadhaar OTP enabled for instant processing.", "6h ago"),
+    MockTweet("@MoneycontrolNews", "Direct tax collections surge 16.1% YoY to ₹5.74 Lakh Crore driven by strong advance tax payments from corporates.", "8h ago")
+)
 
 @Composable
 fun TrendingTweetsRow() {

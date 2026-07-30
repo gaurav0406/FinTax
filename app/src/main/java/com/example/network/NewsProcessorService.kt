@@ -141,7 +141,7 @@ object NewsProcessorService {
 
     fun generateFallbackImpact(category: String): String {
         return when (category) {
-            "Financial News" -> "• Market Update: Latest developments impacting indices and policies\n• Investor Takeaway: Adjust portfolio based on the latest macroeconomic news"
+            "Financial News" -> "• Sector policy shift impacting market indices by ~2.5%\n• Portfolio reallocation recommended based on updated guidance"
             "Credit Cards" -> "• Direct Cash Impact: -₹350/mo on utility fees or +5% (₹400/mo) fuel waiver\n• Net Annual Return: ~₹4,800/yr optimized card savings"
             "Loans & FDs" -> "• Interest Yield / Outlay: 8.25% return (+₹8,250/yr on ₹1L deposit) or +₹320/mo on ₹50L Home Loan EMI"
             "Markets & Mutual Funds" -> "• Liquidity Boost: T+0 payout frees up cash 48 hours earlier for reinvestment\n• Portfolio Yield: +1.2% CAGR impact from reduced holding lag"
@@ -185,7 +185,7 @@ object NewsProcessorService {
         val p3 = "Review official portal notices before the next tax quarter deadline."
         
         val fallbackImpact = when (category) {
-            "Financial News" -> "• Market Update: Latest developments impacting indices and policies\n• Investor Takeaway: Adjust portfolio based on the latest macroeconomic news"
+            "Financial News" -> "• Sector policy shift impacting market indices by ~2.5%\n• Portfolio reallocation recommended based on updated guidance"
             "Credit Cards" -> "• Direct Cash Impact: -₹350/mo on utility fees or +5% (₹400/mo) fuel waiver\n• Net Annual Return: ~₹4,800/yr optimized card savings"
             "Loans & FDs" -> "• Interest Yield / Outlay: 8.25% return (+₹8,250/yr on ₹1L deposit) or +₹320/mo on ₹50L Home Loan EMI"
             "Markets & Mutual Funds" -> "• Liquidity Boost: T+0 payout frees up cash 48 hours earlier for reinvestment\n• Portfolio Yield: +1.2% CAGR impact from reduced holding lag"

@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.data.stripIntroductoryLabels
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -509,19 +511,19 @@ fun InshortsNewsCardItem(
                         icon = Icons.Default.Newspaper,
                         iconColor = MaterialTheme.colorScheme.primary,
                         label = "Summary",
-                        content = news.summaryWhatHappened
+                        content = news.summaryWhatHappened.stripIntroductoryLabels()
                     )
                     
                     InshortsBulletPoint(
                         icon = Icons.Default.Info,
                         iconColor = MaterialTheme.colorScheme.primary,
                         label = "Why It Matters",
-                        content = news.summaryText
+                        content = news.summaryText.stripIntroductoryLabels()
                     )
                     val calculatedImpact = news.financialImpactBullets ?: if (news.isFinancialCategory) {
                         when (news.category) {
-                            "Financial News" -> "• Market Update: Latest developments impacting indices and policies\n• Investor Takeaway: Adjust portfolio based on the latest macroeconomic news"
-                            "Credit Cards" -> "• Direct Cash Impact: -₹350/mo on utility caps or +5% (₹400/mo) on fuel\n• Net Card Yield: ~₹4,800/yr optimized cashback return"
+                            "Financial News" -> "• Regulatory policy shift impacting sector valuations by ~2.5%\n• Capital allocation adjustment advised to optimize net return"
+                            "Credit Cards" -> "• Utility fee caps adjusted by -₹350/mo or +5% fuel waiver benefit\n• Optimized annual cashback yield estimated at ₹4,800/yr"
                             "Loans & FDs" -> "• Interest Yield: 8.25% p.a. (+₹8,250/yr per ₹1L deposit)\n• Loan EMI Impact: +₹320/mo on ₹50L Home Loan reset"
                             "Markets & Mutual Funds" -> "• Liquidity Boost: T+0 payout frees funds 48 hrs faster\n• Expected Yield: +1.2% CAGR boost from faster reinvestment"
                             "Cars & EV" -> "• Operational Savings: ~₹7,000/mo (₹84,000/yr) vs Petrol vehicle\n• Tax Incentive: Sec 80EEB tax deduction up to ₹1.5 Lakhs"
@@ -534,20 +536,20 @@ fun InshortsNewsCardItem(
                             "Entertainment" -> "• Streaming Rights: Major platform licensing and high viewer engagement\n• Audience Value: Broader access to premium digital content bundles"
                             "Technology Insights" -> "• Infrastructure Boost: Domestic manufacturing expansion and supply chain growth\n• Tech Efficiency: Lower reliance on component imports"
                             "AI & New Happenings" -> "• Workflow Automation: Accelerated developer productivity & AI deployment\n• Career Advantage: High demand for generative AI skills"
-                            else -> "• Key Highlight: Major developments and strategic updates in this domain\n• Practical Takeaway: Core insights and essential knowledge for readers"
+                            else -> "• Core operational developments affecting market performance\n• Strategic findings for long-term planning"
                         }
                     }
                     InshortsBulletPoint(
                         icon = if (news.isFinancialCategory) Icons.Default.Calculate else Icons.Default.Info,
                         iconColor = MaterialTheme.colorScheme.primary,
                         label = "Financial Impact & Benefits",
-                        content = calculatedImpact
+                        content = calculatedImpact.stripIntroductoryLabels()
                     )
                     InshortsBulletPoint(
                         icon = Icons.Default.CheckCircle,
                         iconColor = MaterialTheme.colorScheme.primary,
                         label = "Actionable Takeaways",
-                        content = news.summaryActionableTakeaway
+                        content = news.summaryActionableTakeaway.stripIntroductoryLabels()
                     )
                     
                     if (news.category.contains("Market", ignoreCase = true) || news.category.contains("Funds", ignoreCase = true)) {
@@ -838,3 +840,5 @@ fun BullishBearishWidget(newsId: Int) {
         }
     }
 }
+
+

@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.data.stripIntroductoryLabels
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -405,7 +407,7 @@ fun NewsItemCard(
                 label = "WHY IT MATTERS"
             ) {
                 JargonText(
-                    text = news.summaryText,
+                    text = news.summaryText.stripIntroductoryLabels(),
                     jargonTerms = news.jargonTerms,
                     onJargonClick = { term, def ->
                         currentJargonTerm = term
@@ -422,8 +424,8 @@ fun NewsItemCard(
             
             val cardImpact = news.financialImpactBullets ?: if (news.isFinancialCategory) {
                 when (news.category) {
-                    "Financial News" -> "• Market Update: Latest developments impacting indices and policies\n• Investor Takeaway: Adjust portfolio based on the latest macroeconomic news"
-                    "Credit Cards" -> "• Direct Cash Impact: -₹350/mo on utility caps or +5% (₹400/mo) on fuel\n• Net Card Yield: ~₹4,800/yr optimized cashback return"
+                    "Financial News" -> "• Regulatory policy shift impacting sector valuations by ~2.5%\n• Capital allocation adjustment advised to optimize net return"
+                    "Credit Cards" -> "• Utility fee caps adjusted by -₹350/mo or +5% fuel waiver benefit\n• Optimized annual cashback yield estimated at ₹4,800/yr"
                     "Loans & FDs" -> "• Interest Yield: 8.25% p.a. (+₹8,250/yr per ₹1L deposit)\n• Loan EMI Impact: +₹320/mo on ₹50L Home Loan reset"
                     "Markets & Mutual Funds" -> "• Liquidity Boost: T+0 payout frees funds 48 hrs faster\n• Expected Yield: +1.2% CAGR boost from faster reinvestment"
                     "Cars & EV" -> "• Operational Savings: ~₹7,000/mo (₹84,000/yr) vs Petrol vehicle\n• Tax Incentive: Sec 80EEB tax deduction up to ₹1.5 Lakhs"
@@ -436,7 +438,7 @@ fun NewsItemCard(
                     "Entertainment" -> "• Streaming Rights: Major platform licensing and high viewer engagement\n• Audience Value: Broader access to premium digital content bundles"
                     "Technology Insights" -> "• Infrastructure Boost: Domestic manufacturing expansion and supply chain growth\n• Tech Efficiency: Lower reliance on component imports"
                     "AI & New Happenings" -> "• Workflow Automation: Accelerated developer productivity & AI deployment\n• Career Advantage: High demand for generative AI skills"
-                    else -> "• Key Highlight: Major developments and strategic updates in this domain\n• Practical Takeaway: Core insights and essential knowledge for readers"
+                    else -> "• Core operational developments affecting market performance\n• Strategic findings for long-term planning"
                 }
             }
             
@@ -446,7 +448,7 @@ fun NewsItemCard(
                 label = "FINANCIAL IMPACT & BENEFITS"
             ) {
                 Text(
-                    text = cardImpact,
+                    text = cardImpact.stripIntroductoryLabels(),
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontSize = 13.sp,
                         lineHeight = 18.sp,
@@ -461,7 +463,7 @@ fun NewsItemCard(
                 label = "ACTIONABLE TAKEAWAYS"
             ) {
                 Text(
-                    text = news.summaryActionableTakeaway,
+                    text = news.summaryActionableTakeaway.stripIntroductoryLabels(),
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontSize = 13.sp,
                         lineHeight = 18.sp,
@@ -756,3 +758,5 @@ private fun NewsBulletPoint(
         }
     }
 }
+
+

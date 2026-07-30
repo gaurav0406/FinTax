@@ -141,7 +141,15 @@ fun VideoEngagementTab(
         "All", "60s Shorts", "Tax Hacks", "Market Reels", "AI & Tech", "FinTech", "Startups", "Personal Finance"
     )
 
-    val videoNewsList = newsList.filter { it.sourceUrl.contains("youtube.com") }
+    val context = LocalContext.current
+    val videoNewsList = remember(newsList) {
+        val dbVideos = newsList.filter { it.sourceUrl.contains("youtube.com") }
+        if (dbVideos.isNotEmpty()) {
+            dbVideos
+        } else {
+            loadYouTubeVideosFromAssets(context)
+        }
+    }
     val filteredVideoNews = remember(videoNewsList, selectedVideoCategory) {
         if (selectedVideoCategory == "All") {
             videoNewsList
@@ -994,3 +1002,49 @@ fun VideoStoryDetailDialog(
     )
 }
 
+
+fun loadYouTubeVideosFromAssets(context: android.content.Context): List<FinancialNewsEntity> {
+    return try {
+        val jsonString = context.assets.open("videos.json").bufferedReader().use { it.readText() }
+        val jsonArray = org.json.JSONArray(jsonString)
+        val list = mutableListOf<FinancialNewsEntity>()
+        for (i in 0 until jsonArray.length()) {
+            val obj = jsonArray.getJSONObject(i)
+            val idStr = obj.optString("id", "")
+            val title = obj.optString("title", "Financial Short")
+            val channelName = obj.optString("channelName", "Finance Shorts")
+            val videoUrl = obj.optString("videoUrl", "https://www.youtube.com/watch?v=$idStr")
+            val thumbnailUrl = obj.optString("thumbnailUrl", "https://i.ytimg.com/vi/$idStr/hqdefault.jpg")
+            
+            val cat = when {
+                title.contains("Job", true) || title.contains("AI", true) -> "AI & Tech"
+                title.contains("VC", true) || title.contains("Startup", true) -> "Startups"
+                title.contains("Tax", true) -> "Tax Hacks"
+                else -> "Market Reels"
+            }
+            
+            list.add(
+                FinancialNewsEntity(
+                    id = 9500 + i,
+                    title = title,
+                    summaryWhatHappened = title,
+                    summaryWhoImpacted = "Retail Investors & Salaried Professionals",
+                    summaryActionableTakeaway = "Watch this 60s financial reel for practical market tips and tax optimization strategies.",
+                    summaryText = "Key breakdown on market dynamics and personal financial growth.",
+                    category = cat,
+                    financialActionUrl = videoUrl,
+                    sourceUrl = videoUrl,
+                    sourceName = channelName,
+                    imageUrl = thumbnailUrl,
+                    audioUrl = null,
+                    financialImpactBullets = "• Instant actionable insights for financial growth\n• Simplified 60s breakdown of market regulations",
+                    readCount = 1200 + i * 340,
+                    shareCount = 450 + i * 82
+                )
+            )
+        }
+        list
+    } catch (e: Exception) {
+        emptyList()
+    }
+}

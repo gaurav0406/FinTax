@@ -42,3 +42,11 @@ data class FinancialNewsEntity(
     val impactSectionTitleMixedCase: String
         get() = if (isFinancialCategory) "Quantifiable Financial Impact" else "Key Takeaways"
 }
+
+fun String.stripIntroductoryLabels(): String {
+    if (this.isBlank()) return this
+    return this
+        .replace(Regex("(?m)(^|\\n)(•\\s*)?(Key Update|Market Context|Source Report|Investor Takeaway|Monetary Outlook|Verify Details|Portfolio Review|Market Update|Key Highlight|Practical Takeaway|Direct Cash Impact|Net Card Yield|Interest Yield|Loan EMI Impact|Operational Savings|Tax Incentive|Liquidity Boost|Expected Yield|Financial Gain|Championship Standing|Curriculum Shift|Streaming Rights|Infrastructure Boost|Tech Efficiency|Workflow Automation|Career Advantage|Ecosystem Growth|Job Creation|Reason for change|Audience Value|Skill Demand|Quantifiable Benefit):\\s*", RegexOption.IGNORE_CASE), "$1$2")
+        .replace(Regex("(?i)\\b(Key Update|Market Context|Source Report|Investor Takeaway|Monetary Outlook|Verify Details|Portfolio Review|Market Update):\\s*"), "")
+        .trim()
+}
