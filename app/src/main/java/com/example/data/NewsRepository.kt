@@ -91,22 +91,9 @@ class NewsRepository(private val dao: FinancialNewsDao) {
         // Ensure initial asset seed if DB is empty and remove any old placeholder rows
         seedInitialDataIfEmpty(context)
 
-        // Fetch directly from Supabase REST API using Cost-Optimized Delta Querying
+        // Fetch directly from Supabase REST API
         try {
-            val latestTimestamp = dao.getLatestPublishedAt()
-            val timeFilter = if (latestTimestamp != null && latestTimestamp > 0) {
-                "gt.$latestTimestamp"
-            } else null
-
-            var dtos = com.example.network.supabase.SupabaseClient.apiService.getLiveNews(
-                publishedAtFilter = timeFilter,
-                limit = if (timeFilter != null) 50 else 30
-            )
-
-            // Fallback to top recent articles if delta returned no items or on fresh sync
-            if (dtos.isEmpty() && timeFilter != null) {
-                dtos = com.example.network.supabase.SupabaseClient.apiService.getLiveNews(limit = 20)
-            }
+            var dtos = com.example.network.supabase.SupabaseClient.apiService.getLiveNews(limit = 100)
 
             if (dtos.isNotEmpty()) {
                 val entities = dtos.mapNotNull { it.toEntity() }.filter { !it.isPlaceholder() }
@@ -123,6 +110,8 @@ class NewsRepository(private val dao: FinancialNewsDao) {
                     }
 
                     if (dedupedEntities.isNotEmpty()) {
+                        // Clear old unbookmarked news from local Room cache so feed reflects fresh Supabase dataset
+                        dao.deleteAllUnbookmarked()
                         dao.insertNews(dedupedEntities)
                     }
                 }

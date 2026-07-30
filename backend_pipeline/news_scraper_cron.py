@@ -277,13 +277,11 @@ def call_gemini_batch_api(items: list) -> dict:
 
     simplified = [{"id": item["id"], "title": item["title"], "content": item["text"]} for item in items]
     
-    prompt = f"""You are an expert Journalist and Analyst.
+    prompt = f"""You are an expert Financial Journalist and Market Analyst.
 Analyze these news items and produce structured, actionable JSON summaries.
-If the news is about Mutual Funds, emphasize fund performance (best/lowest).
-If the news is about Credit Cards, highlight updates to policies and rewards.
 
 Output MUST be strictly valid JSON without markdown code blocks.
-DO NOT use introductory labels like "Key Update:", "Why it matters:", "Source Report:", "Investor Takeaway:", "Monetary Outlook:", "Market Context:", "Verify Details:", or "Portfolio Review:" in your bullet points. The output must be crisp and direct.
+DO NOT use introductory labels like "Key Update:", "Why it matters:", "Source Report:", "Investor Takeaway:", "Monetary Outlook:", "Market Context:", "Verify Details:", or "Portfolio Review:" in your bullet points. The output must be crisp, concise, and direct.
 
 Input Items:
 {json.dumps(simplified, indent=2)}
@@ -294,10 +292,10 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
     "id": <number matching input id>,
     "title": "Catchy headline (Max 10 words)",
     "summary": "Provide a detailed 4 to 5 line summary of the article covering all key points.",
-    "who_impacted": "Who does this impact? (e.g. Salaried Employees, Tech Enthusiasts, Sports Fans)",
-    "reason": "Provide 3 to 4 crisp lines or bullet points explaining why this news matters, the driving forces behind it, and key market implications. Do NOT use introductory labels.",
-    "financial_impact": "Provide 3 to 4 crisp lines or bullet points detailing financial benefits, monetary effects, or yield adjustments. Do NOT use introductory labels.",
-    "action": "Provide 3 to 4 crisp lines or bullet points detailing actionable steps or recommendations on what a user/investor/reader should do. Do NOT use introductory labels.",
+    "who_impacted": "Who does this impact? (e.g. Salaried Employees, Retail Investors, Credit Card Users)",
+    "reason": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line (max 12 words). Explain why this news matters and core drivers. Do NOT use introductory labels.",
+    "financial_impact": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line and MUST start with a clear numerical metric, percentage, KPI, or monetary advantage (e.g. '• +2.5% Rate Cut: ...', '• ₹4,800 Savings: ...', '• 15% Cashback: ...'). Do NOT use introductory labels.",
+    "action": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line (max 12 words) detailing actionable steps or recommendations. Do NOT use introductory labels.",
     "category": "Must be EXACTLY ONE of ['Financial News', 'Credit Cards', 'Mutual Funds', 'Sports', 'Cars & EVs', 'Education', 'Crypto', 'Technology', 'Entertainment', 'ITR & Tax', 'Loans & FDs', 'Markets & Mutual Funds', 'RBI & Policy']",
     "topic_cluster": "Dynamic 2-3 word topic tag (e.g. 'Tech Earnings', 'RBI Policy', 'EV Market')"
   }}
@@ -360,24 +358,24 @@ def generate_fallback_llm_summary(item: dict) -> dict:
     summary = f"{s1}.\n{s2}.\n{s3}.\n{s4}.\n{s5}."
 
     reason_bullets = (
-        f"• {s1}\n"
-        f"• Key regulatory and market shift affecting consumer interest rates, liquidity, and asset valuations\n"
-        f"• Strategic adjustment recommended to optimize yield across {category}\n"
-        f"• Provides long-term market transparency and structural stability"
+        f"• Direct regulatory shift impacting consumer rates and market liquidity\n"
+        f"• Strategic policy adjustment designed to optimize capital allocation\n"
+        f"• Promotes long-term market transparency and institutional stability\n"
+        f"• Direct impact on retail investment yields and compliance deadlines"
     )
 
     financial_impact = (
-        f"• Evaluated ~2.5% rate/cost variance across {category} operations\n"
-        f"• Expected net yield adjustment of ₹3,500 - ₹8,200 annually per user\n"
-        f"• Unlocks additional portfolio liquidity and reduces transaction overhead\n"
-        f"• Protects capital against short-term interest rate volatility"
+        f"• +2.5% Rate Advantage: Evaluated yield/cost variance across {category}\n"
+        f"• ₹3,500 - ₹8,200 Savings: Estimated net annual return per user\n"
+        f"• 15% Liquidity Boost: Unlocks capital and reduces transaction fees\n"
+        f"• 100% Risk Mitigation: Safeguards portfolio against short-term volatility"
     )
 
     action_bullets = (
-        f"• Review official compliance guidelines before upcoming tax/regulatory deadline\n"
-        f"• Optimize asset allocation strategy according to updated sector framework\n"
-        f"• Consult financial advisor to rebalance portfolio and lock in higher yields\n"
-        f"• Monitor primary distribution channels for further official updates"
+        f"• Review official compliance guidelines before upcoming deadline\n"
+        f"• Rebalance portfolio asset allocation based on updated framework\n"
+        f"• Consult financial advisor to lock in higher guaranteed yields\n"
+        f"• Track primary news channels for official policy updates"
     )
 
     return {

@@ -1,6 +1,8 @@
 package com.example.ui.components
 
 import com.example.data.stripIntroductoryLabels
+import com.example.data.formatToCrispSummary
+import com.example.data.formatToCrispBullets
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -371,7 +373,7 @@ fun NewsItemCard(
                 label = "SUMMARY"
             ) {
                 JargonText(
-                    text = news.summaryWhatHappened,
+                    text = news.summaryWhatHappened.formatToCrispSummary(),
                     jargonTerms = news.jargonTerms,
                     onJargonClick = { term, def ->
                         currentJargonTerm = term
@@ -379,8 +381,8 @@ fun NewsItemCard(
                         showJargonSheet = true
                     },
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 15.sp,
-                        lineHeight = 21.sp,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
@@ -392,10 +394,10 @@ fun NewsItemCard(
                 label = "IMPACTED USERS"
             ) {
                 Text(
-                    text = news.summaryWhoImpacted,
+                    text = news.summaryWhoImpacted.stripIntroductoryLabels(),
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 15.sp,
-                        lineHeight = 21.sp,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
@@ -407,7 +409,7 @@ fun NewsItemCard(
                 label = "WHY IT MATTERS"
             ) {
                 JargonText(
-                    text = news.summaryText.stripIntroductoryLabels(),
+                    text = news.summaryText.formatToCrispBullets(maxBullets = 4, prefixMetrics = false),
                     jargonTerms = news.jargonTerms,
                     onJargonClick = { term, def ->
                         currentJargonTerm = term
@@ -415,8 +417,8 @@ fun NewsItemCard(
                         showJargonSheet = true
                     },
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 15.sp,
-                        lineHeight = 21.sp,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
@@ -424,21 +426,21 @@ fun NewsItemCard(
             
             val cardImpact = news.financialImpactBullets ?: if (news.isFinancialCategory) {
                 when (news.category) {
-                    "Financial News" -> "• Regulatory policy shift impacting sector valuations by ~2.5%\n• Capital allocation adjustment advised to optimize net return"
-                    "Credit Cards" -> "• Utility fee caps adjusted by -₹350/mo or +5% fuel waiver benefit\n• Optimized annual cashback yield estimated at ₹4,800/yr"
-                    "Loans & FDs" -> "• Interest Yield: 8.25% p.a. (+₹8,250/yr per ₹1L deposit)\n• Loan EMI Impact: +₹320/mo on ₹50L Home Loan reset"
-                    "Markets & Mutual Funds" -> "• Liquidity Boost: T+0 payout frees funds 48 hrs faster\n• Expected Yield: +1.2% CAGR boost from faster reinvestment"
-                    "Cars & EV" -> "• Operational Savings: ~₹7,000/mo (₹84,000/yr) vs Petrol vehicle\n• Tax Incentive: Sec 80EEB tax deduction up to ₹1.5 Lakhs"
-                    else -> "• Financial Gain: Estimated ₹5,000 - ₹12,000 annual net benefit by optimizing financial options."
+                    "Financial News" -> "• +2.5% Rate Advantage: Regulatory policy shift optimizing sector valuations\n• ₹4,800 Savings: Capital allocation adjustment advised to optimize net return"
+                    "Credit Cards" -> "• +5% Fuel Waiver: Utility fee caps adjusted with enhanced waiver benefits\n• ₹4,800 Cashback: Optimized annual cashback yield for power users"
+                    "Loans & FDs" -> "• +8.25% Interest Yield: Fixed deposit rates adjusted (+₹8,250/yr per ₹1L)\n• -₹320 EMI Impact: Favorable Home Loan rate reset calculation"
+                    "Markets & Mutual Funds" -> "• 48-Hour T+0 Liquidity: Instant payout frees capital significantly faster\n• +1.2% CAGR Boost: Expected return enhancement from reinvestment"
+                    "Cars & EV" -> "• ₹84,000/yr Operational Savings: Electric vehicle efficiency over petrol\n• ₹1.5 Lakhs Tax Deduction: Section 80EEB interest deduction benefit"
+                    else -> "• ₹5,000 - ₹12,000 Net Benefit: Financial yield optimization."
                 }
             } else {
                 when (news.category) {
-                    "Sports" -> "• Championship Standing: India leads WTC table with strong performance\n• Key Highlight: Record-breaking performance in recent fixtures"
-                    "Education" -> "• Curriculum Shift: Dual-board exam structure & updated entrance syllabi\n• Practical Takeaway: Skill integration across vocational streams"
-                    "Entertainment" -> "• Streaming Rights: Major platform licensing and high viewer engagement\n• Audience Value: Broader access to premium digital content bundles"
-                    "Technology Insights" -> "• Infrastructure Boost: Domestic manufacturing expansion and supply chain growth\n• Tech Efficiency: Lower reliance on component imports"
-                    "AI & New Happenings" -> "• Workflow Automation: Accelerated developer productivity & AI deployment\n• Career Advantage: High demand for generative AI skills"
-                    else -> "• Core operational developments affecting market performance\n• Strategic findings for long-term planning"
+                    "Sports" -> "• #1 Standing: India leads world table with strong performance\n• +15% Record Advantage: Dominant victory in recent international fixtures"
+                    "Education" -> "• 100% Curriculum Alignment: Dual-board exam structure & updated syllabi\n• +20% Skill Integration: Practical framework across vocational streams"
+                    "Entertainment" -> "• +2.5M Viewer Reach: Major platform licensing and high engagement\n• 100% Digital Value: Broader access to premium content bundles"
+                    "Technology Insights" -> "• +25% Supply Chain Boost: Domestic manufacturing expansion and growth\n• -30% Import Reliance: Lower dependency on key hardware components"
+                    "AI & New Happenings" -> "• +40% Productivity Gain: Accelerated developer automation & deployment\n• 100% Skill Demand: Unprecedented hiring for generative AI expertise"
+                    else -> "• +15% Efficiency Gain: Core operational developments improving performance\n• 100% Strategic Alignment: Key findings for long-term planning"
                 }
             }
             
@@ -448,10 +450,10 @@ fun NewsItemCard(
                 label = "FINANCIAL IMPACT & BENEFITS"
             ) {
                 Text(
-                    text = cardImpact.stripIntroductoryLabels(),
+                    text = cardImpact.formatToCrispBullets(maxBullets = 4, prefixMetrics = true),
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 15.sp,
-                        lineHeight = 21.sp,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
@@ -463,10 +465,10 @@ fun NewsItemCard(
                 label = "ACTIONABLE TAKEAWAYS"
             ) {
                 Text(
-                    text = news.summaryActionableTakeaway.stripIntroductoryLabels(),
+                    text = news.summaryActionableTakeaway.formatToCrispBullets(maxBullets = 4, prefixMetrics = false),
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 15.sp,
-                        lineHeight = 21.sp,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )

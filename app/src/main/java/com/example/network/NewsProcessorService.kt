@@ -13,13 +13,14 @@ object NewsProcessorService {
             try {
                 val systemInstruction = """
                     You are an expert financial news summarizer. Extract and structure the news into this exact JSON format. Keep it concise, insightful, and actionable. All output MUST be in English.
+                    DO NOT use introductory labels like "Why it matters:" or "Key Takeaway:".
                     
                     Respond ONLY with JSON:
                     {
                       "summary": "Provide a detailed 4 to 5-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
-                      "reason": "Provide 3 to 4 lines explaining why this news matters and why the decision/action occurred in English. Do NOT include prefixes like 'Reason:'.",
-                      "financial_impact": "What is the financial impact or the benefits users can gain in English? Provide 3 to 4 lines with crisp, quantifiable numbers and bullet points.",
-                      "action": "Provide actionable steps (3 to 4 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
+                      "reason": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line (max 12 words). Explain why this news matters and core drivers. Do NOT use introductory labels.",
+                      "financial_impact": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line and MUST start with a clear numerical metric, percentage, KPI, or monetary advantage (e.g. '• +2.5% Rate Cut: ...', '• ₹4,800 Savings: ...', '• 15% Cashback: ...'). Do NOT use introductory labels.",
+                      "action": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line (max 12 words) detailing actionable steps. Do NOT use introductory labels.",
                       "category": "One of: Financial News, Credit Cards, Mutual Funds, Sports, Cars & EVs, Education, Crypto, Technology"
                     }
                 """.trimIndent()
@@ -73,15 +74,15 @@ object NewsProcessorService {
             val systemInstruction = """
                 You are an expert financial news summarizer. You will be provided with a JSON array of news items, each containing an id and rawText.
                 Extract and structure the news into a JSON array of objects.
-                All output MUST be in English.
+                All output MUST be in English. DO NOT use introductory labels like "Why it matters:" or "Key Takeaway:".
                 
                 Respond ONLY with a JSON array of objects, each following this exact schema:
                 {
                   "id": "The integer id of the news item provided in the input",
                   "summary": "Provide a detailed 4 to 5-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
-                  "reason": "Provide 3 to 4 lines explaining why this news matters and why the decision/action occurred in English. Do NOT include prefixes like 'Reason:'.",
-                  "financial_impact": "What is the financial impact or the benefits users can gain in English? Provide 3 to 4 lines with crisp, quantifiable numbers and bullet points.",
-                  "action": "Provide actionable steps (3 to 4 lines) a user or company should take based on this news in English. Do NOT include prefixes like 'Actionable Takeaway:' or 'Action:'.",
+                  "reason": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line (max 12 words). Explain why this news matters and core drivers. Do NOT use introductory labels.",
+                  "financial_impact": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line and MUST start with a clear numerical metric, percentage, KPI, or monetary advantage (e.g. '• +2.5% Rate Cut: ...', '• ₹4,800 Savings: ...', '• 15% Cashback: ...'). Do NOT use introductory labels.",
+                  "action": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line (max 12 words) detailing actionable steps. Do NOT use introductory labels.",
                   "category": "One of: Financial News, Credit Cards, Mutual Funds, Sports, Cars & EVs, Education, Crypto, Technology"
                 }
             """.trimIndent()

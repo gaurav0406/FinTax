@@ -37,6 +37,9 @@ interface FinancialNewsDao {
     @Query("DELETE FROM financial_news WHERE summaryWhatHappened LIKE '%placeholder%' OR summaryText LIKE '%Point 1%' OR summaryWhatHappened LIKE '%NLP service%'")
     suspend fun deletePlaceholders()
 
+    @Query("DELETE FROM financial_news WHERE isBookmarked = 0")
+    suspend fun deleteAllUnbookmarked()
+
     @Query("DELETE FROM financial_news WHERE id = :id")
     suspend fun deleteNewsById(id: Int)
 
