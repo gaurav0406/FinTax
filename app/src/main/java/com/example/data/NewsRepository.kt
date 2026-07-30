@@ -48,75 +48,73 @@ class NewsRepository(private val dao: FinancialNewsDao) {
         return dao.searchNews(query)
     }
 
-    suspend fun seedInitialDataIfEmpty() {
+    suspend fun seedInitialDataIfEmpty(context: android.content.Context? = null) {
         val profile = dao.getUserProfile().first()
         if (profile == null) {
             dao.saveUserProfile(UserProfileEntity())
         }
+
+        dao.deletePlaceholders()
+
+        val currentCount = dao.getAllNews().first().size
+        if (currentCount == 0 && context != null) {
+            try {
+                val jsonString = context.assets.open("processed_scraped_data.json").bufferedReader().use { it.readText() }
+                val moshi = com.squareup.moshi.Moshi.Builder().add(com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory()).build()
+                val listType = com.squareup.moshi.Types.newParameterizedType(List::class.java, com.example.network.ProcessedScrapedDataDto::class.java)
+                val adapter = moshi.adapter<List<com.example.network.ProcessedScrapedDataDto>>(listType)
+                val dtos = adapter.fromJson(jsonString)
+                if (!dtos.isNullOrEmpty()) {
+                    val entities = dtos.mapNotNull { it.toEntity() }.filter { !it.isPlaceholder() }
+                    if (entities.isNotEmpty()) {
+                        dao.insertNews(entities)
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("NewsRepository", "Asset seed failed: ${e.message}")
+            }
+        }
     }
-    
+
+    private fun FinancialNewsEntity.isPlaceholder(): Boolean {
+        return summaryWhatHappened.contains("placeholder", ignoreCase = true) ||
+                summaryText.contains("Point 1", ignoreCase = true) ||
+                summaryWhatHappened.contains("NLP service", ignoreCase = true) ||
+                financialImpactBullets?.contains("Point 1", ignoreCase = true) == true
+    }
+
     private fun normalizeTitle(title: String): String {
         return title.lowercase().filter { it.isLetterOrDigit() }
     }
 
-    suspend fun fetchLiveNewsFromSupabase() {
-        var loaded = false
+    suspend fun fetchLiveNewsFromSupabase(context: android.content.Context? = null) {
+        // Ensure initial asset seed if DB is empty and remove any old placeholder rows
+        seedInitialDataIfEmpty(context)
 
-        // 1. Try fetching directly from Supabase REST API
+        // Fetch directly from Supabase REST API
         try {
             val dtos = com.example.network.supabase.SupabaseClient.apiService.getLiveNews()
             if (dtos.isNotEmpty()) {
-                val entities = dtos.mapNotNull { it.toEntity() }
+                val entities = dtos.mapNotNull { it.toEntity() }.filter { !it.isPlaceholder() }
                 if (entities.isNotEmpty()) {
-                    val existingNormalized = dao.getAllNews().first().map { normalizeTitle(it.title) }.toSet()
-                    val newEntities = mutableListOf<FinancialNewsEntity>()
                     val seenInBatch = mutableSetOf<String>()
+                    val dedupedEntities = mutableListOf<FinancialNewsEntity>()
 
                     for (entity in entities) {
                         val norm = normalizeTitle(entity.title)
-                        if (norm.isNotBlank() && norm !in existingNormalized && norm !in seenInBatch) {
-                            newEntities.add(entity)
+                        if (norm.isNotBlank() && norm !in seenInBatch) {
+                            dedupedEntities.add(entity)
                             seenInBatch.add(norm)
                         }
                     }
 
-                    if (newEntities.isNotEmpty()) {
-                        dao.insertNews(newEntities)
+                    if (dedupedEntities.isNotEmpty()) {
+                        dao.insertNews(dedupedEntities)
                     }
-                    loaded = true
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.e("NewsRepository", "Supabase REST fetch failed: ${e.message}")
-        }
-
-        // 2. Fallback to GitHub raw processed dataset if Supabase REST unavailable or unconfigured
-        if (!loaded) {
-            try {
-                val dtos = com.example.network.LiveNewsClient.apiService.getProcessedData()
-                if (dtos.isNotEmpty()) {
-                    val entities = dtos.mapNotNull { it.toEntity() }
-                    if (entities.isNotEmpty()) {
-                        val existingNormalized = dao.getAllNews().first().map { normalizeTitle(it.title) }.toSet()
-                        val newEntities = mutableListOf<FinancialNewsEntity>()
-                        val seenInBatch = mutableSetOf<String>()
-
-                        for (entity in entities) {
-                            val norm = normalizeTitle(entity.title)
-                            if (norm.isNotBlank() && norm !in existingNormalized && norm !in seenInBatch) {
-                                newEntities.add(entity)
-                                seenInBatch.add(norm)
-                            }
-                        }
-
-                        if (newEntities.isNotEmpty()) {
-                            dao.insertNews(newEntities)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("NewsRepository", "GitHub processed data fetch failed: ${e.message}")
-            }
+            android.util.Log.e("NewsRepository", "Supabase REST fetch error: ${e.message}", e)
         }
     }
 

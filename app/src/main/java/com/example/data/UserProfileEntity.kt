@@ -16,5 +16,6 @@ data class UserProfileEntity(
     val city: String = "Mumbai",
     val mobileNumber: String = "+91 98765 43210",
     val selectedCategories: String = "Financial News,Credit Cards,Mutual Funds,Sports,Cars & EVs,Education,Crypto,Technology",
-    val autoPlayAudio: Boolean = false
+    val autoPlayAudio: Boolean = false,
+    val jobProfile: String = ""
 )

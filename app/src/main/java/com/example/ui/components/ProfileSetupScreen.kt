@@ -66,12 +66,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.UserProfileEntity
 import com.example.ui.NewsViewModel
-import com.example.ui.theme.MinimalBackground
+
 import com.example.ui.theme.MinimalPurpleDark
 import com.example.ui.theme.MinimalPurpleLightContainer
 import com.example.ui.theme.MinimalPurplePrimary
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
 
 val ALL_INTEREST_CATEGORIES = listOf(
     "Financial News",
@@ -116,17 +114,18 @@ fun ProfileSetupScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(androidx.compose.ui.graphics.Color.White)
-            .background(MinimalBackground)
+            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         // Google Sign In Banner Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(
@@ -156,7 +155,7 @@ fun ProfileSetupScreen(
                                 text = if (isLoggedIn) "Google Account Connected" else "Sign in with Google",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = TextPrimary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             if (isLoggedIn) {
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -171,7 +170,7 @@ fun ProfileSetupScreen(
                         Text(
                             text = email,
                             style = MaterialTheme.typography.bodySmall,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -221,7 +220,7 @@ fun ProfileSetupScreen(
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isLoggedIn) Color(0xFFE0E0E0) else MinimalPurpleDark,
-                        contentColor = if (isLoggedIn) TextPrimary else Color.White
+                        contentColor = if (isLoggedIn) MaterialTheme.colorScheme.onSurface else Color.White
                     ),
                     shape = RoundedCornerShape(24.dp),
                     modifier = Modifier
@@ -241,16 +240,17 @@ fun ProfileSetupScreen(
         // Personal Details Form
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = "Personal Information",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -315,21 +315,22 @@ fun ProfileSetupScreen(
         // Multi-select Interest Categories Tab setup
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = "Select Your Interest Categories",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "Choose multiple topics to customize your daily quick updates",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -353,10 +354,10 @@ fun ProfileSetupScreen(
                                 }
                                 .border(
                                     width = 1.dp,
-                                    color = if (isSelected) MinimalPurpleDark else Color.LightGray,
+                                    color = if (isSelected) MinimalPurplePrimary else Color.Gray.copy(alpha = 0.5f),
                                     shape = RoundedCornerShape(20.dp)
                                 ),
-                            color = if (isSelected) MinimalPurpleLightContainer else Color.White
+                            color = if (isSelected) MinimalPurpleLightContainer else MaterialTheme.colorScheme.surface
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -375,7 +376,7 @@ fun ProfileSetupScreen(
                                     text = category,
                                     fontSize = 13.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSelected) MinimalPurpleDark else TextPrimary
+                                    color = if (isSelected) MinimalPurpleDark else MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -389,16 +390,17 @@ fun ProfileSetupScreen(
         // Settings Tab setup
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = "App Settings",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(
@@ -411,12 +413,12 @@ fun ProfileSetupScreen(
                             text = "Auto-play News Audio",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = TextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "Automatically start audio playback when expanding a news card.",
                             style = MaterialTheme.typography.bodySmall,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Switch(
@@ -495,7 +497,7 @@ fun ProfileSetupScreen(
             onClick = { showPrivacyPolicy = true },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text("Privacy Policy", color = TextSecondary, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
+            Text("Privacy Policy", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
         }
 
         Spacer(modifier = Modifier.height(8.dp))

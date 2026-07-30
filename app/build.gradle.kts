@@ -72,6 +72,7 @@ googleServices { missingGoogleServicesStrategy = MissingGoogleServicesStrategy.W
 // Some unused dependencies are commented out below instead of being removed.
 // This makes it easy to add them back in the future if needed.
 dependencies {
+    implementation(libs.androidx.work.runtime.ktx)
   implementation(platform(libs.firebase.bom))
   implementation(libs.firebase.crashlytics)
   implementation(libs.firebase.analytics)

@@ -34,11 +34,17 @@ interface FinancialNewsDao {
     @Query("UPDATE financial_news SET isBookmarked = :isBookmarked WHERE id = :id")
     suspend fun updateBookmark(id: Int, isBookmarked: Boolean)
 
+    @Query("DELETE FROM financial_news WHERE summaryWhatHappened LIKE '%placeholder%' OR summaryText LIKE '%Point 1%' OR summaryWhatHappened LIKE '%NLP service%'")
+    suspend fun deletePlaceholders()
+
     @Query("DELETE FROM financial_news WHERE id = :id")
     suspend fun deleteNewsById(id: Int)
 
     @Query("DELETE FROM financial_news")
     suspend fun deleteAll()
+    
+    @Query("DELETE FROM financial_news WHERE publishedAt < :threshold")
+    suspend fun deleteOldNews(threshold: Long)
 
     // --- User Profile ---
     @Query("SELECT * FROM user_profile WHERE id = 1")

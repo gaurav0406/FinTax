@@ -21,7 +21,7 @@ object SupabaseClient {
             } else null
         } catch (e: Exception) {
             null
-        } ?: "https://your-project.supabase.co/"
+        } ?: "https://frldttulizmyaqpmluqz.supabase.co/"
     }
 
     fun getSupabaseKey(): String {
@@ -31,7 +31,7 @@ object SupabaseClient {
             if (!key.isNullOrBlank() && !key.contains("YOUR_SUPABASE")) key else null
         } catch (e: Exception) {
             null
-        } ?: ""
+        } ?: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZybGR0dHVsaXpteWFxcG1sdXF6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDgwNjkwMCwiZXhwIjoyMTAwNDgyOTAwfQ.cB-qICUgrVsbPfJTfuvTYMQcAda5y0eTLupBTsUQT5U"
     }
 
     private val moshi = Moshi.Builder()

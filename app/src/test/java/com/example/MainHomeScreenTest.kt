@@ -30,6 +30,9 @@ class MainHomeScreenTest {
     @Before
     fun setup() {
         val application = ApplicationProvider.getApplicationContext<Application>()
+        if (com.google.firebase.FirebaseApp.getApps(application).isEmpty()) {
+            com.google.firebase.FirebaseApp.initializeApp(application)
+        }
         val db = AppDatabase.getDatabase(application)
         val dao = db.financialNewsDao()
         kotlinx.coroutines.runBlocking {

@@ -102,7 +102,7 @@ fun LoginScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 repeat(pagerState.pageCount) { iteration ->
-                    val color = if (pagerState.currentPage == iteration) MaterialTheme.colorScheme.primary else Color.LightGray
+                    val color = if (pagerState.currentPage == iteration) MaterialTheme.colorScheme.primary else Color.Gray.copy(alpha = 0.3f)
                     Box(
                         modifier = Modifier
                             .padding(2.dp)

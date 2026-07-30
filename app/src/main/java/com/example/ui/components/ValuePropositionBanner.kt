@@ -91,13 +91,13 @@ fun ValuePropositionBanner(modifier: Modifier = Modifier) {
                         text = valueProp.title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = com.example.ui.theme.TextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = valueProp.description,
                         style = MaterialTheme.typography.bodySmall,
-                        color = com.example.ui.theme.TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

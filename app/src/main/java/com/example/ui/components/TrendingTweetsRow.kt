@@ -20,8 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.theme.MinimalPurpleLightContainer
 import com.example.ui.theme.MinimalPurplePrimary
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
 
 data class MockTweet(val handle: String, val content: String, val time: String)
 
@@ -33,7 +31,7 @@ fun TrendingTweetsRow() {
         Text(
             text = "Trending on FinTwit",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = TextPrimary,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
         )
         LazyRow(
@@ -61,22 +59,22 @@ fun TrendingTweetsRow() {
                             Text(
                                 text = tweet.time,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = TextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = tweet.content,
                             style = MaterialTheme.typography.bodySmall.copy(lineHeight = 18.sp),
-                            color = TextPrimary,
+                            color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 4,
                             overflow = TextOverflow.Ellipsis
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                            Icon(Icons.Default.Comment, contentDescription = null, modifier = Modifier.size(16.dp), tint = TextSecondary)
-                            Icon(Icons.Default.Repeat, contentDescription = null, modifier = Modifier.size(16.dp), tint = TextSecondary)
-                            Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(16.dp), tint = TextSecondary)
+                            Icon(Icons.Default.Comment, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Icon(Icons.Default.Repeat, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }

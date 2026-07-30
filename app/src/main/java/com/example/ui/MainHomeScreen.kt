@@ -1,5 +1,8 @@
 package com.example.ui
 
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +27,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Code
@@ -32,9 +37,9 @@ import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.ViewDay
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -71,15 +76,13 @@ import com.example.ui.components.InshortsFeedView
 import com.example.ui.components.NewsItemCard
 import com.example.ui.components.PythonPipelineTab
 import com.example.ui.components.TaxCalculatorTab
-import com.example.ui.theme.MinimalBackground
+
 import com.example.ui.theme.MinimalBorder
 import com.example.ui.theme.MinimalPurpleDark
 import com.example.ui.theme.MinimalPurpleLightContainer
 import com.example.ui.theme.MinimalPurplePrimary
 import com.example.ui.theme.MinimalSecondaryContainer
 import com.example.ui.theme.MinimalSurfaceVariant
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
@@ -131,12 +134,13 @@ val CATEGORIES = listOf(
     "All",
     "Financial News",
     "Credit Cards",
-    "Mutual Funds",
-    "Sports",
-    "Cars & EVs",
-    "Education",
+    "ITR & Tax",
+    "Loans & FDs",
+    "Markets & Mutual Funds",
+    "RBI & Policy",
     "Crypto",
-    "Technology"
+    "Education",
+    "Entertainment"
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -162,11 +166,14 @@ fun MainHomeScreen(
         userProfileState?.selectedCategories?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
     }
 
-    val orderedCategories = remember(userSelectedCategories) {
+    val orderedCategories = remember(userSelectedCategories, allNewsList) {
         if (userSelectedCategories.isEmpty()) {
-            CATEGORIES
+            val dynamicCategories = allNewsList.map { it.category }.distinct().filter { it.isNotBlank() && it != "All" }
+            val combined = (CATEGORIES.filter { it != "All" } + dynamicCategories).distinct()
+            listOf("All") + combined
         } else {
-            val baseCategories = CATEGORIES.filter { it != "All" }
+            val dynamicCategories = allNewsList.map { it.category }.distinct().filter { it.isNotBlank() && it != "All" }
+            val baseCategories = (CATEGORIES.filter { it != "All" } + dynamicCategories).distinct()
             val selectedInBase = baseCategories.filter { cat ->
                 userSelectedCategories.any { it.equals(cat, ignoreCase = true) }
             }
@@ -196,11 +203,8 @@ fun MainHomeScreen(
     }
 
     val dailyDigestList = remember(allNewsList) {
-        val now = System.currentTimeMillis()
-        allNewsList
-            .filter { now - it.publishedAt <= 24L * 60 * 60 * 1000 }
-            .sortedByDescending { it.publishedAt }
-            .take(5)
+        if (allNewsList.isEmpty()) emptyList()
+        else allNewsList.sortedByDescending { it.publishedAt }.take(5)
     }
 
     LaunchedEffect(Unit) {
@@ -208,6 +212,28 @@ fun MainHomeScreen(
     }
 
     if (userProfileState != null) {
+        if (!userProfileState!!.isOnboarded && !userProfileState!!.hasLoggedOut) {
+            com.example.ui.components.OnboardingScreen(
+                initialName = userProfileState!!.userName,
+                initialCity = userProfileState!!.city,
+                onComplete = { name, age, city, mobile, categories, jobProfile ->
+                    val profile = userProfileState!!.copy(
+                        isLoggedIn = true,
+                        isOnboarded = true,
+                        hasLoggedOut = false,
+                        userName = name,
+                        age = age,
+                        city = city,
+                        mobileNumber = mobile,
+                        selectedCategories = categories.joinToString(","),
+                        jobProfile = jobProfile
+                    )
+                    viewModel.saveUserProfile(profile)
+                }
+            )
+            return
+        }
+
         if (!userProfileState!!.isLoggedIn) {
             if (userProfileState!!.hasLoggedOut) {
                 com.example.ui.components.LogoutScreen(
@@ -229,25 +255,6 @@ fun MainHomeScreen(
                     }
                 )
             }
-            return
-        }
-        
-        if (!userProfileState!!.isOnboarded) {
-            com.example.ui.components.OnboardingScreen(
-                initialName = userProfileState!!.userName,
-                initialCity = userProfileState!!.city,
-                onComplete = { name, age, city, mobile, categories ->
-                    val profile = userProfileState!!.copy(
-                        isOnboarded = true,
-                        userName = name,
-                        age = age,
-                        city = city,
-                        mobileNumber = mobile,
-                        selectedCategories = categories.joinToString(",")
-                    )
-                    viewModel.saveUserProfile(profile)
-                }
-            )
             return
         }
     }
@@ -303,7 +310,7 @@ fun MainHomeScreen(
                             Text(
                                 text = "Age: ${userProfileState!!.age} | ${userProfileState!!.city}",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = TextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -397,7 +404,7 @@ fun MainHomeScreen(
     ) {
         Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color(0xFF0D0E12) else MinimalBackground,
+        containerColor = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color(0xFF0D0E12) else MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 navigationIcon = {
@@ -409,7 +416,7 @@ fun MainHomeScreen(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back to Feed",
-                                tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else TextPrimary
+                                tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     } else {
@@ -420,7 +427,7 @@ fun MainHomeScreen(
                             Icon(
                                 imageVector = Icons.Default.Menu,
                                 contentDescription = "Menu",
-                                tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else TextPrimary
+                                tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -468,7 +475,7 @@ fun MainHomeScreen(
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 19.sp,
-                                    color = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else TextPrimary
+                                    color = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else MaterialTheme.colorScheme.onSurface
                                 )
                             )
                             if (headerSubtitle.isNotEmpty()) {
@@ -478,7 +485,7 @@ fun MainHomeScreen(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 10.sp,
                                         letterSpacing = 1.sp,
-                                        color = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) MinimalPurpleLightContainer else TextSecondary
+                                        color = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) MinimalPurpleLightContainer else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 )
                             }
@@ -486,6 +493,18 @@ fun MainHomeScreen(
                     }
                 },
                 actions = {
+                    val systemTheme = androidx.compose.foundation.isSystemInDarkTheme()
+                    IconButton(
+                        onClick = { viewModel.toggleTheme(systemTheme) },
+                        modifier = Modifier.testTag("toggle_theme_button")
+                    ) {
+                        val isDark = viewModel.isDarkTheme.collectAsState().value ?: systemTheme
+                        Icon(
+                            imageVector = if (isDark) Icons.Default.WbSunny else Icons.Default.NightsStay,
+                            contentDescription = "Toggle Theme",
+                            tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                     if (activeTab == 0) {
                         IconButton(
                             onClick = { useInshortsViewMode = !useInshortsViewMode },
@@ -494,7 +513,7 @@ fun MainHomeScreen(
                             Icon(
                                 imageVector = if (useInshortsViewMode) Icons.Default.ViewDay else Icons.Default.SwapVert,
                                 contentDescription = "Toggle View Mode",
-                                tint = if (useInshortsViewMode) Color.White else TextPrimary
+                                tint = if (useInshortsViewMode) Color.White else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -506,13 +525,13 @@ fun MainHomeScreen(
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Refresh Feeds",
-                            tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else TextPrimary
+                            tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color(0xFF0D0E12) else MinimalBackground,
-                    titleContentColor = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else TextPrimary
+                    containerColor = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color(0xFF0D0E12) else MaterialTheme.colorScheme.surface,
+                    titleContentColor = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else MaterialTheme.colorScheme.onSurface
                 )
             )
         },
@@ -560,8 +579,8 @@ fun MainHomeScreen(
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (isDarkTab) Color.Gray else TextSecondary,
-                            unselectedTextColor = if (isDarkTab) Color.Gray else TextSecondary
+                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         modifier = Modifier.testTag("nav_tab_feed")
                     )
@@ -574,8 +593,8 @@ fun MainHomeScreen(
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (isDarkTab) Color.Gray else TextSecondary,
-                            unselectedTextColor = if (isDarkTab) Color.Gray else TextSecondary
+                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         modifier = Modifier.testTag("nav_tab_community")
                     )
@@ -588,8 +607,8 @@ fun MainHomeScreen(
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (isDarkTab) Color.Gray else TextSecondary,
-                            unselectedTextColor = if (isDarkTab) Color.Gray else TextSecondary
+                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         modifier = Modifier.testTag("nav_tab_saved")
                     )
@@ -602,8 +621,8 @@ fun MainHomeScreen(
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (isDarkTab) Color.Gray else TextSecondary,
-                            unselectedTextColor = if (isDarkTab) Color.Gray else TextSecondary
+                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         modifier = Modifier.testTag("nav_tab_tax_calc")
                     )
@@ -616,8 +635,8 @@ fun MainHomeScreen(
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (isDarkTab) Color.Gray else TextSecondary,
-                            unselectedTextColor = if (isDarkTab) Color.Gray else TextSecondary
+                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         modifier = Modifier.testTag("nav_tab_deals")
                     )
@@ -630,8 +649,8 @@ fun MainHomeScreen(
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
                             indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (isDarkTab) Color.Gray else TextSecondary,
-                            unselectedTextColor = if (isDarkTab) Color.Gray else TextSecondary
+                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         modifier = Modifier.testTag("nav_tab_videos")
                     )
@@ -648,7 +667,7 @@ fun MainHomeScreen(
                 0 -> {
                     if (useInshortsViewMode) {
                         InshortsFeedView(
-                            allNewsList = filteredNewsList,
+                            allNewsList = allNewsList,
                             dailyDigestList = dailyDigestList,
                             categories = orderedCategories,
                             selectedCategory = selectedCategory,
@@ -670,6 +689,8 @@ fun MainHomeScreen(
                             searchQuery = searchQuery,
                             playingNewsId = playbackState.activeNewsId,
                             isPlaying = playbackState.isPlaying,
+                            isRefreshing = isRefreshing,
+                            onRefresh = { viewModel.refreshFeeds() },
                             onSelectCategory = { viewModel.setCategory(it) },
                             onSearchQueryChange = { viewModel.setSearchQuery(it) },
                             onPlayAudio = { viewModel.playAudio(it) },
@@ -763,7 +784,7 @@ private fun SettingsDialog(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Auto-play Audio", style = MaterialTheme.typography.titleMedium)
-                        Text("Automatically play narration on scrolling cards", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                        Text("Automatically play narration on scrolling cards", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Switch(
                         checked = autoPlayAudio,
@@ -785,7 +806,7 @@ private fun SettingsDialog(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Daily Digest Alerts", style = MaterialTheme.typography.titleMedium)
-                        Text("Receive 9:00 AM personal finance notification", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                        Text("Receive 9:00 AM personal finance notification", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Switch(
                         checked = dailyDigestEnabled,
@@ -851,8 +872,8 @@ private fun NotificationsDialog(
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text("Active Retention Schedule", fontWeight = FontWeight.Bold, color = MinimalPurpleDark)
-                        Text("• Daily Financial Digest: 9:00 AM IST", style = MaterialTheme.typography.bodySmall, color = TextPrimary)
-                        Text("• ITR & Tax Due Dates: Active", style = MaterialTheme.typography.bodySmall, color = TextPrimary)
+                        Text("• Daily Financial Digest: 9:00 AM IST", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
+                        Text("• ITR & Tax Due Dates: Active", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
 
@@ -935,7 +956,7 @@ private fun AboutDialog(
                 Text(
                     text = "A smart 60-second financial news & tax digest application engineered for Indian taxpayers, investors, and professionals.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 HorizontalDivider()
                 Text(
@@ -953,7 +974,7 @@ private fun AboutDialog(
                 Text(
                     text = "Disclaimer: News summaries are AI-assisted for quick scanning. Please consult a qualified Chartered Accountant (CA) or financial advisor before making official tax or investment decisions.",
                     style = MaterialTheme.typography.labelSmall,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         },
@@ -988,17 +1009,17 @@ private fun HelpSupportDialog(
 
                 Column {
                     Text("Q: How are news summaries generated?", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
-                    Text("A: Our automated python pipeline scrapes verified Indian financial RSS feeds, batches articles, and uses Gemini 2.0 Flash to extract structured key takeaways.", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text("A: Our automated python pipeline scrapes verified Indian financial RSS feeds, batches articles, and uses Gemini 2.0 Flash to extract structured key takeaways.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
                 Column {
                     Text("Q: How do I use the Tax Calculator?", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
-                    Text("A: Navigate to the Taxes tab, enter your gross annual income, standard deduction, 80C investments, and compare Old vs New regime taxes instantly.", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text("A: Navigate to the Taxes tab, enter your gross annual income, standard deduction, 80C investments, and compare Old vs New regime taxes instantly.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
                 Column {
                     Text("Q: How do audio summaries work?", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
-                    Text("A: Tap the speaker icon on any news card to listen to the audio summary. Use the floating player bar at the bottom to adjust playback speed.", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text("A: Tap the speaker icon on any news card to listen to the audio summary. Use the floating player bar at the bottom to adjust playback speed.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
                 HorizontalDivider()
@@ -1039,6 +1060,8 @@ private fun HelpSupportDialog(
     )
 }
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 @Composable
 private fun StandardCardListView(
     newsList: List<FinancialNewsEntity>,
@@ -1048,6 +1071,8 @@ private fun StandardCardListView(
     searchQuery: String,
     playingNewsId: Int?,
     isPlaying: Boolean,
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {},
     onSelectCategory: (String) -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onPlayAudio: (FinancialNewsEntity) -> Unit,
@@ -1061,7 +1086,7 @@ private fun StandardCardListView(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MinimalBackground)
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(vertical = 4.dp)
             ) {
                 OutlinedTextField(
@@ -1072,12 +1097,12 @@ private fun StandardCardListView(
                         .padding(horizontal = 16.dp, vertical = 4.dp)
                         .testTag("search_news_input"),
                     placeholder = { Text("Search ITR, Repo Rate, Section 80C...") },
-                    leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = TextSecondary) },
+                    leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                     singleLine = true,
                     shape = RoundedCornerShape(50),
                     colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.White,
-                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
                         unfocusedBorderColor = MinimalBorder,
                         focusedBorderColor = MinimalPurplePrimary
                     )
@@ -1096,7 +1121,7 @@ private fun StandardCardListView(
                     Icon(
                         imageVector = Icons.Default.FilterList,
                         contentDescription = "Category Filter",
-                        tint = TextSecondary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )
 
@@ -1115,16 +1140,16 @@ private fun StandardCardListView(
                             },
                             shape = RoundedCornerShape(20.dp),
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MinimalSecondaryContainer,
-                                selectedLabelColor = MinimalPurpleDark,
-                                containerColor = Color.Transparent,
-                                labelColor = TextSecondary
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             border = FilterChipDefaults.filterChipBorder(
                                 enabled = true,
                                 selected = isSelected,
-                                borderColor = MinimalBorder,
-                                selectedBorderColor = Color.Transparent
+                                borderColor = MaterialTheme.colorScheme.outline,
+                                selectedBorderColor = MaterialTheme.colorScheme.primary
                             ),
                             modifier = Modifier.testTag("category_chip_$category")
                         )
@@ -1133,56 +1158,62 @@ private fun StandardCardListView(
             }
         }
 
-        if (newsList.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Default.Newspaper,
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = TextSecondary.copy(alpha = 0.5f)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = emptyMessage,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
-                    )
-                }
-            }
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(bottom = 16.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                if (dailyDigestList.isNotEmpty()) {
-                    item {
-                        com.example.ui.components.DailyDigestCard(
-                            newsList = dailyDigestList,
-                            allNewsList = newsList,
-                            onCategoryClick = onSelectCategory
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (newsList.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.Newspaper,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = emptyMessage,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
-                items(newsList, key = { it.id }) { item ->
-                    NewsItemCard(
-                        news = item,
-                        isPlaying = isPlaying && playingNewsId == item.id,
-                        onPlayAudio = { onPlayAudio(item) },
-                        onToggleBookmark = { onToggleBookmark(item) },
-                        onOpenComments = if (onOpenComments != null) { { onOpenComments(item) } } else null,
-                        autoPlayAudio = autoPlayAudio
-                    )
-                }
-                item {
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    if (dailyDigestList.isNotEmpty()) {
+                        item {
+                            com.example.ui.components.DailyDigestCard(
+                                newsList = dailyDigestList,
+                                allNewsList = newsList,
+                                onCategoryClick = onSelectCategory
+                            )
+                        }
+                    }
+                    items(newsList, key = { it.id }) { item ->
+                        NewsItemCard(
+                            news = item,
+                            isPlaying = isPlaying && playingNewsId == item.id,
+                            onPlayAudio = { onPlayAudio(item) },
+                            onToggleBookmark = { onToggleBookmark(item) },
+                            onOpenComments = if (onOpenComments != null) { { onOpenComments(item) } } else null,
+                            autoPlayAudio = autoPlayAudio
+                        )
+                    }
+                    item {
                     com.example.ui.components.TrendingTweetsRow()
                 }
             }
         }
     }
+}
 }

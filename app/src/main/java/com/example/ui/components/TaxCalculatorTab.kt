@@ -66,8 +66,6 @@ import com.example.ui.theme.MinimalBorder
 import com.example.ui.theme.MinimalPurpleDark
 import com.example.ui.theme.MinimalPurpleLightContainer
 import com.example.ui.theme.MinimalPurplePrimary
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.MinimalSecondaryContainer
 import java.text.NumberFormat
 import java.util.Locale
@@ -144,7 +142,7 @@ fun TaxCalculatorTab(
                     Text(
                         text = "${state.currentPolicy.financialYear} Budget Slabs",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -172,7 +170,7 @@ fun TaxCalculatorTab(
                 Surface(
                     onClick = { viewModel.updateGrossIncome(amount) },
                     shape = RoundedCornerShape(20.dp),
-                    color = if (isSelected) MinimalPurplePrimary else Color.White,
+                    color = if (isSelected) MinimalPurplePrimary else MaterialTheme.colorScheme.surface,
                     border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, MinimalBorder) else null,
                     modifier = Modifier.weight(1f).height(40.dp).testTag("preset_salary_$label")
                 ) {
@@ -181,7 +179,7 @@ fun TaxCalculatorTab(
                             text = label,
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = if (isSelected) Color.White else MinimalPurpleDark
+                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
                             )
                         )
                     }
@@ -205,8 +203,8 @@ fun TaxCalculatorTab(
                 colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MinimalPurplePrimary,
                     unfocusedBorderColor = MinimalBorder,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                     focusedTextColor = MinimalPurpleDark,
                     unfocusedTextColor = MinimalPurpleDark
                 ),
@@ -253,7 +251,7 @@ fun TaxCalculatorTab(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-                HorizontalDivider(color = Color.Black.copy(alpha = 0.08f))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
@@ -284,7 +282,7 @@ fun TaxCalculatorTab(
                         modifier = Modifier
                             .width(1.dp)
                             .height(50.dp)
-                            .background(Color.Black.copy(alpha = 0.1f))
+                            .background(MaterialTheme.colorScheme.outlineVariant)
                     )
 
                     Column(
@@ -342,8 +340,8 @@ fun TaxCalculatorTab(
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
                     focusedBorderColor = MinimalPurplePrimary,
                     unfocusedBorderColor = MinimalBorder,
-                    focusedLabelColor = Color.Black,
-                    unfocusedLabelColor = Color.Black
+                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.primary
                 ),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
@@ -382,10 +380,10 @@ fun TaxCalculatorTab(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MinimalPurplePrimary,
                 unfocusedBorderColor = MinimalBorder,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedLabelColor = Color.Black,
-                unfocusedLabelColor = Color.Black
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.primary
             )
         )
 
@@ -405,10 +403,10 @@ fun TaxCalculatorTab(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MinimalPurplePrimary,
                 unfocusedBorderColor = MinimalBorder,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedLabelColor = Color.Black,
-                unfocusedLabelColor = Color.Black
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.primary
             )
         )
 
@@ -428,10 +426,10 @@ fun TaxCalculatorTab(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MinimalPurplePrimary,
                 unfocusedBorderColor = MinimalBorder,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedLabelColor = Color.Black,
-                unfocusedLabelColor = Color.Black
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.primary
             )
         )
 
@@ -451,10 +449,10 @@ fun TaxCalculatorTab(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MinimalPurplePrimary,
                 unfocusedBorderColor = MinimalBorder,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedLabelColor = Color.Black,
-                unfocusedLabelColor = Color.Black
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.primary
             )
         )
 
@@ -474,10 +472,10 @@ fun TaxCalculatorTab(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MinimalPurplePrimary,
                 unfocusedBorderColor = MinimalBorder,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedLabelColor = Color.Black,
-                unfocusedLabelColor = Color.Black
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.primary
             )
         )
 
@@ -509,7 +507,7 @@ fun TaxCalculatorTab(
                     Text(
                         text = "• Standard Deduction of ₹75,000 available for salaried individuals.\n• Full Section 87A Tax Rebate for taxable income up to ₹7 Lakhs (no tax up to ₹7.75 Lakhs gross salary).\n• Revised Slabs: 0-3L (0%), 3-7L (5%), 7-10L (10%), 10-12L (15%), 12-15L (20%), >15L (30%).",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 18.sp
                     )
                 }

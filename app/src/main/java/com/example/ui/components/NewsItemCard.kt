@@ -30,6 +30,11 @@ import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.Newspaper
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.CheckCircle
 
 import com.example.ui.theme.MinimalPurplePrimary
 
@@ -142,9 +147,9 @@ fun NewsItemCard(
             .testTag("news_card_${news.id}"),
         shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-                border = androidx.compose.foundation.BorderStroke(1.dp, androidx.compose.material3.MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+                border = androidx.compose.foundation.BorderStroke(1.dp, androidx.compose.material3.MaterialTheme.colorScheme.outline.copy(alpha = 1.0f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -169,21 +174,6 @@ fun NewsItemCard(
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 fontSize = 10.sp,
                                 letterSpacing = 1.sp
-                            )
-                        )
-                    }
-                    
-                    Surface(
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Text(
-                            text = news.topicCluster,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                fontSize = 10.sp
                             )
                         )
                     }
@@ -373,81 +363,63 @@ fun NewsItemCard(
             Spacer(modifier = Modifier.height(14.dp))
 
             // Summary Breakdown
-            Text(
-                text = "SUMMARY",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    color = MaterialTheme.colorScheme.primary
+            NewsBulletPoint(
+                icon = Icons.Default.Newspaper,
+                iconColor = MaterialTheme.colorScheme.primary,
+                label = "SUMMARY"
+            ) {
+                JargonText(
+                    text = news.summaryWhatHappened,
+                    jargonTerms = news.jargonTerms,
+                    onJargonClick = { term, def ->
+                        currentJargonTerm = term
+                        currentJargonDefinition = def
+                        showJargonSheet = true
+                    },
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            JargonText(
-                text = news.summaryWhatHappened,
-                jargonTerms = news.jargonTerms,
-                onJargonClick = { term, def ->
-                    currentJargonTerm = term
-                    currentJargonDefinition = def
-                    showJargonSheet = true
-                },
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            }
+            
+            NewsBulletPoint(
+                icon = Icons.Default.People,
+                iconColor = MaterialTheme.colorScheme.primary,
+                label = "IMPACTED USERS"
+            ) {
+                Text(
+                    text = news.summaryWhoImpacted,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = "IMPACTED USERS",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    color = MaterialTheme.colorScheme.primary
+            }
+            
+            NewsBulletPoint(
+                icon = Icons.Default.Info,
+                iconColor = MaterialTheme.colorScheme.primary,
+                label = "WHY IT MATTERS"
+            ) {
+                JargonText(
+                    text = news.summaryText,
+                    jargonTerms = news.jargonTerms,
+                    onJargonClick = { term, def ->
+                        currentJargonTerm = term
+                        currentJargonDefinition = def
+                        showJargonSheet = true
+                    },
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = news.summaryWhoImpacted,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = "REASON",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            JargonText(
-                text = news.summaryText,
-                jargonTerms = news.jargonTerms,
-                onJargonClick = { term, def ->
-                    currentJargonTerm = term
-                    currentJargonDefinition = def
-                    showJargonSheet = true
-                },
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = "FINANCIAL IMPACT/BENEFITS",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            )
-            Spacer(modifier = Modifier.height(4.dp))
+            }
+            
             val cardImpact = news.financialImpactBullets ?: if (news.isFinancialCategory) {
                 when (news.category) {
                     "Financial News" -> "• Market Update: Latest developments impacting indices and policies\n• Investor Takeaway: Adjust portfolio based on the latest macroeconomic news"
@@ -467,32 +439,36 @@ fun NewsItemCard(
                     else -> "• Key Highlight: Major developments and strategic updates in this domain\n• Practical Takeaway: Core insights and essential knowledge for readers"
                 }
             }
-            Text(
-                text = cardImpact,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            
+            NewsBulletPoint(
+                icon = if (news.isFinancialCategory) Icons.Default.Calculate else Icons.Default.Info,
+                iconColor = MaterialTheme.colorScheme.primary,
+                label = "FINANCIAL IMPACT & BENEFITS"
+            ) {
+                Text(
+                    text = cardImpact,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = "ACTION",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    color = MaterialTheme.colorScheme.primary
+            }
+            
+            NewsBulletPoint(
+                icon = Icons.Default.CheckCircle,
+                iconColor = MaterialTheme.colorScheme.primary,
+                label = "ACTIONABLE TAKEAWAYS"
+            ) {
+                Text(
+                    text = news.summaryActionableTakeaway,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = news.summaryActionableTakeaway,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            )
+            }
             Spacer(modifier = Modifier.height(16.dp))
 
             // Action Buttons Row
@@ -744,4 +720,39 @@ fun JargonText(
                 }
         }
     )
+}
+
+
+@Composable
+private fun NewsBulletPoint(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconColor: androidx.compose.ui.graphics.Color,
+    label: String,
+    content: @Composable () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+        verticalAlignment = androidx.compose.ui.Alignment.Top
+    ) {
+        androidx.compose.material3.Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = iconColor,
+            modifier = Modifier.padding(top = 2.dp).size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Column {
+            Text(
+                text = label.uppercase(),
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    fontSize = 10.sp,
+                    color = iconColor,
+                    letterSpacing = 0.5.sp
+                )
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            content()
+        }
+    }
 }

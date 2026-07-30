@@ -38,6 +38,18 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
+    private val _isDarkTheme = MutableStateFlow<Boolean?>(null)
+    val isDarkTheme: StateFlow<Boolean?> = _isDarkTheme.asStateFlow()
+    
+    fun toggleTheme(systemTheme: Boolean) {
+        val current = _isDarkTheme.value
+        if (current == null) {
+            _isDarkTheme.value = !systemTheme
+        } else {
+            _isDarkTheme.value = !current
+        }
+    }
+
     private val _aiStatusMessage = MutableStateFlow("")
     val aiStatusMessage: StateFlow<String> = _aiStatusMessage.asStateFlow()
 
@@ -46,9 +58,7 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
         if (query.isNotBlank()) {
             repository.searchNews(query)
         } else {
-            _selectedCategory.flatMapLatest { category ->
-                repository.getNewsByCategory(category)
-            }
+            repository.allNews
         }
     }.stateIn(
         scope = viewModelScope,
@@ -100,7 +110,7 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     init {
         viewModelScope.launch {
             try {
-                repository.fetchLiveNewsFromSupabase()
+                repository.fetchLiveNewsFromSupabase(getApplication())
             } catch (e: Exception) {
                 _aiStatusMessage.value = "Init fetch failed: ${e.message}"
             }
@@ -167,7 +177,7 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
             
             try {
                 // Fetch live news from the backend
-                repository.fetchLiveNewsFromSupabase()
+                repository.fetchLiveNewsFromSupabase(getApplication())
                 _aiStatusMessage.value = "Feeds updated!"
             } catch (e: Exception) {
                 _aiStatusMessage.value = "Failed to fetch live data: ${e.message}"

@@ -10,7 +10,7 @@ val MinimalSecondaryContainer = Color(0xFFE8DEF8)
 val MinimalBackground = Color(0xFFF7F2FA)
 val MinimalSurface = Color(0xFFFFFFFF)
 val MinimalSurfaceVariant = Color(0xFFF3EDF7)
-val MinimalBorder = Color(0xFFE7E0EC)
+val MinimalBorder = Color(0xFFC4BCC9)
 
 val TextPrimary = Color(0xFF1C1B1F)
 val TextSecondary = Color(0xFF49454F)

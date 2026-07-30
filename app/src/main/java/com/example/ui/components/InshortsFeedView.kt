@@ -221,11 +221,18 @@ fun InshortsFeedView(
             val currentCat = displayCategories[page]
             val catNewsList = remember(allNewsList, currentCat) {
                 if (currentCat == "All") allNewsList
-                else allNewsList.filter { it.category.equals(currentCat, ignoreCase = true) }
+                else allNewsList.filter { news ->
+                    news.category.equals(currentCat, ignoreCase = true) ||
+                    news.category.contains(currentCat, ignoreCase = true) ||
+                    (currentCat == "Credit Cards" && (news.category.contains("Card", ignoreCase = true) || news.title.contains("Card", ignoreCase = true))) ||
+                    (currentCat == "ITR & Tax" && (news.category.contains("Tax", ignoreCase = true) || news.category.contains("ITR", ignoreCase = true) || news.title.contains("Tax", ignoreCase = true) || news.title.contains("ITR", ignoreCase = true))) ||
+                    (currentCat == "Loans & FDs" && (news.category.contains("Loan", ignoreCase = true) || news.category.contains("FD", ignoreCase = true) || news.title.contains("Loan", ignoreCase = true) || news.title.contains("FD", ignoreCase = true))) ||
+                    (currentCat == "Markets & Mutual Funds" && (news.category.contains("Mutual", ignoreCase = true) || news.category.contains("Stock", ignoreCase = true) || news.category.contains("Fund", ignoreCase = true) || news.title.contains("Nifty", ignoreCase = true) || news.title.contains("Sensex", ignoreCase = true) || news.title.contains("SIP", ignoreCase = true) || news.title.contains("IPO", ignoreCase = true))) ||
+                    (currentCat == "RBI & Policy" && (news.category.contains("RBI", ignoreCase = true) || news.category.contains("Policy", ignoreCase = true) || news.title.contains("RBI", ignoreCase = true) || news.title.contains("Repo", ignoreCase = true))) ||
+                    (currentCat == "Crypto" && (news.category.contains("Crypto", ignoreCase = true) || news.title.contains("Bitcoin", ignoreCase = true) || news.title.contains("Crypto", ignoreCase = true)))
+                }
             }
-            val displayNewsList = remember(catNewsList, currentCat) {
-                if (currentCat != "All") catNewsList.take(5) else catNewsList
-            }
+            val displayNewsList = catNewsList
 
             val interleavedSlides = remember(displayNewsList, dailyDigestList) {
                 val slides = mutableListOf<FeedSlide>()
@@ -360,15 +367,15 @@ fun InshortsFeedView(
                             },
                             shape = RoundedCornerShape(20.dp),
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MinimalPurplePrimary,
+                                selectedContainerColor = Color.Transparent,
                                 selectedLabelColor = MaterialTheme.colorScheme.onBackground,
-                                containerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.12f),
+                                containerColor = Color.Transparent,
                                 labelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
                             ),
                             border = FilterChipDefaults.filterChipBorder(
                                 enabled = true,
                                 selected = isSelected,
-                                borderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f),
+                                borderColor = Color.Transparent,
                                 selectedBorderColor = Color.Transparent
                             ),
                             modifier = Modifier.testTag("inshorts_category_$category")
@@ -451,20 +458,6 @@ fun InshortsNewsCardItem(
                             )
                         }
 
-                        Surface(
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text(
-                                text = news.topicCluster,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            )
-                        }
-
                         // Page Index Tag
                         Surface(
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.12f),
@@ -514,15 +507,15 @@ fun InshortsNewsCardItem(
                 ) {
                     InshortsBulletPoint(
                         icon = Icons.Default.Newspaper,
-                        iconColor = Color(0xFFCE93D8),
+                        iconColor = MaterialTheme.colorScheme.primary,
                         label = "Summary",
                         content = news.summaryWhatHappened
                     )
                     
                     InshortsBulletPoint(
                         icon = Icons.Default.Info,
-                        iconColor = Color(0xFFFFD54F),
-                        label = "Reason",
+                        iconColor = MaterialTheme.colorScheme.primary,
+                        label = "Why It Matters",
                         content = news.summaryText
                     )
                     val calculatedImpact = news.financialImpactBullets ?: if (news.isFinancialCategory) {
@@ -546,14 +539,14 @@ fun InshortsNewsCardItem(
                     }
                     InshortsBulletPoint(
                         icon = if (news.isFinancialCategory) Icons.Default.Calculate else Icons.Default.Info,
-                        iconColor = if (news.isFinancialCategory) Color(0xFF81C784) else Color(0xFFFFB74D),
-                        label = "Financial Impact/Benefits",
+                        iconColor = MaterialTheme.colorScheme.primary,
+                        label = "Financial Impact & Benefits",
                         content = calculatedImpact
                     )
                     InshortsBulletPoint(
                         icon = Icons.Default.CheckCircle,
-                        iconColor = Color(0xFFA5D6A7),
-                        label = "Action",
+                        iconColor = MaterialTheme.colorScheme.primary,
+                        label = "Actionable Takeaways",
                         content = news.summaryActionableTakeaway
                     )
                     

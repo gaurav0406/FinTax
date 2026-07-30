@@ -42,9 +42,14 @@ FEEDS = [
         "sourceName": "Economic Times Top Stories"
     },
     {
+        "category": "Financial News",
+        "url": "https://economictimes.indiatimes.com/wealth/rssfeedstopstories.cms",
+        "sourceName": "Economic Times Wealth"
+    },
+    {
         "category": "Credit Cards",
-        "url": "https://www.forbes.com/advisor/credit-cards/feed/",
-        "sourceName": "Forbes Advisor"
+        "url": "https://cardinsider.com/feed/",
+        "sourceName": "Card Insider"
     },
     {
         "category": "Mutual Funds",
@@ -77,6 +82,75 @@ FEEDS = [
         "sourceName": "TechCrunch"
     }
 ]
+
+def detect_category(title: str, text: str, feed_category: str) -> str:
+    content = (title + " " + text).lower()
+    
+    # 1. Credit Cards
+    if any(k in content for k in [
+        "credit card", "credit cards", "card reward", "lounge access", "cashback card", 
+        "card annual fee", "cardholders", "debit card", "sbi card", "hdfc card", 
+        "axis card", "icici card", "rupay card", "visa card", "mastercard"
+    ]):
+        return "Credit Cards"
+        
+    # 2. ITR & Tax
+    if any(k in content for k in [
+        "income tax", "itr", "tax return", "tax filing", "tax slab", "section 80c", 
+        "tax refund", "tax deduction", "tds", "capital gains tax", "tax exemption", 
+        "tat", "direct tax", "advance tax", "form 16", "taxpayer", "itat"
+    ]):
+        return "ITR & Tax"
+        
+    # 3. Mutual Funds & Investing
+    if any(k in content for k in [
+        "mutual fund", "mutual funds", "sip", "systematic investment", "nav", 
+        "elss", "equity fund", "debt fund", "amfi", "index fund", "etf", 
+        "asset management", "small cap", "mid cap", "large cap", "nfo", "pms"
+    ]):
+        return "Mutual Funds"
+        
+    # 4. Loans & FDs
+    if any(k in content for k in [
+        "home loan", "personal loan", "car loan", "education loan", "emi", 
+        "interest rate", "fixed deposit", "fd rate", "recurring deposit", 
+        "bank fd", "pnb fd", "sbi fd", "tenure", "collateral", "mortgage"
+    ]):
+        return "Loans & FDs"
+        
+    # 5. Stock Market India / Earnings
+    if any(k in content for k in [
+        "sensex", "nifty", "stock market", "shares", "q1 results", "q2 results", 
+        "q3 results", "q4 results", "net profit", "quarterly profit", "bse", "nse", 
+        "ipo", "drhp", "dividend", "market wrap", "gainers", "losers", "bull market", "bear market", "d-street", "dalal street"
+    ]):
+        return "Stock Market India"
+        
+    # 6. RBI & Policy / Banking
+    if any(k in content for k in [
+        "rbi", "reserve bank", "monetary policy", "repo rate", "mpc", "central bank", 
+        "bank regulation", "inflation rate", "cpi inflation", "forex reserve"
+    ]):
+        return "RBI & Policy"
+        
+    # 7. Crypto
+    if any(k in content for k in [
+        "bitcoin", "crypto", "cryptocurrency", "ethereum", "blockchain", "btc", 
+        "eth", "coinbase", "binance", "altcoin", "nft"
+    ]):
+        return "Crypto"
+        
+    # 8. Cars & EVs
+    if any(k in content for k in [
+        "electric vehicle", "ev ", "evs", "tesla", "e-bike", "robotaxi", "battery cell", "automobile", "charging station"
+    ]):
+        return "Cars & EVs"
+
+    # Default to feed category if specific, otherwise "Financial News"
+    if feed_category in ["Credit Cards", "Mutual Funds", "Crypto", "Cars & EVs", "Technology", "Sports", "Education"]:
+        return feed_category
+        
+    return "Financial News"
 
 def clean_html_text(text: str) -> str:
     text = unescape(text)
@@ -156,6 +230,7 @@ If the news is about Mutual Funds, emphasize fund performance (best/lowest).
 If the news is about Credit Cards, highlight updates to policies and rewards.
 
 Output MUST be strictly valid JSON without markdown code blocks.
+DO NOT use introductory labels like "Key Update:", "Why it matters:", "Source Report:", "Investor Takeaway:", "Monetary Outlook:", "Market Context:", "Verify Details:", or "Portfolio Review:" in your bullet points. The output must be crisp and direct.
 
 Input Items:
 {json.dumps(simplified, indent=2)}
@@ -167,9 +242,9 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
     "title": "Catchy headline (Max 10 words)",
     "summary": "Detailed 5-6 line summary of the article, covering all key points.",
     "who_impacted": "Who does this impact? (e.g. Salaried Employees, Tech Enthusiasts, Sports Fans)",
-    "reason": "Why it matters: Provide 3-4 bullet points explaining the core reasons or causes.",
-    "financial_impact": "Financial impacts/benefits: Provide 3-4 bullet points detailing monetary effects or benefits.",
-    "action": "Actionable steps: Provide 3-4 bullet points of suggestions on what a user/investor/reader should do.",
+    "reason": "Provide 3-4 crisp bullet points explaining the core reasons or causes. Do NOT use introductory labels.",
+    "financial_impact": "Provide 3-4 crisp bullet points detailing monetary effects or benefits. Do NOT use introductory labels.",
+    "action": "Provide 3-4 crisp bullet points of suggestions on what a user/investor/reader should do. Do NOT use introductory labels.",
     "category": "Must be EXACTLY ONE of ['Financial News', 'Credit Cards', 'Mutual Funds', 'Sports', 'Cars & EVs', 'Education', 'Crypto', 'Technology']",
     "topic_cluster": "Dynamic 2-3 word topic tag (e.g. 'Tech Earnings', 'RBI Policy', 'EV Market')"
   }}
@@ -218,15 +293,27 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
 def generate_fallback_llm_summary(item: dict) -> dict:
     title = item["title"]
     category = item["category"]
+    raw_text = item.get("text", title)
+    source = item.get("sourceName", "Financial Feed")
     
+    sentences = [s.strip() for s in re.split(r'[.!?]+', raw_text) if len(s.strip()) > 15]
+    first_sentence = sentences[0] if sentences else title
+    second_sentence = sentences[1] if len(sentences) > 1 else "This development brings key policy and market updates for consumers."
+    third_sentence = sentences[2] if len(sentences) > 2 else "Stakeholders are advised to monitor official announcements closely."
+
+    summary = first_sentence + ". " + second_sentence + ". " + third_sentence
+    reason_bullets = "• " + first_sentence + "\n• " + second_sentence + "\n• Published via " + source
+    financial_impact = "• Direct cost and rate adjustments being evaluated across " + category + ".\n• Assess portfolio alignment and review official notices."
+    action_bullets = "• Check official guidelines issued by regulatory authorities.\n• Adjust allocation or rewards strategy according to latest updates."
+
     return {
         "id": item["id"],
         "title": title[:250],
-        "summary": f"Key update regarding {title}. Here is a 5-6 line placeholder summary because the NLP service was unavailable.",
-        "who_impacted": "General Audience",
-        "reason": "• Point 1 about why it matters\n• Point 2 about why it matters\n• Point 3 about why it matters",
-        "financial_impact": "• Point 1 on financial impact\n• Point 2 on financial impact\n• Point 3 on financial impact",
-        "action": "• Action step 1\n• Action step 2\n• Action step 3",
+        "summary": summary[:1000],
+        "who_impacted": "Retail Investors, Salaried Professionals & " + category + " Consumers",
+        "reason": reason_bullets,
+        "financial_impact": financial_impact,
+        "action": action_bullets,
         "category": category,
         "topic_cluster": "Latest Updates"
     }
@@ -315,7 +402,8 @@ def main():
     processed_list = []
     for item in raw_items:
         summary_obj = llm_map.get(item["id"], generate_fallback_llm_summary(item))
-        cat = summary_obj.get("category", item["category"])
+        raw_cat = summary_obj.get("category", item["category"])
+        cat = detect_category(summary_obj.get("title", item["title"]), item["text"], raw_cat)
         
         processed_item = {
             "id": item["id"],

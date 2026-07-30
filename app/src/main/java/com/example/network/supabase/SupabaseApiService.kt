@@ -64,6 +64,7 @@ data class SupabaseNewsDto(
         }
 
         return FinancialNewsEntity(
+            id = id ?: 0,
             title = newsTitle,
             summaryWhatHappened = summaryWhatHappened ?: "Summary unavailable.",
             summaryWhoImpacted = summaryWhoImpacted ?: "Taxpayers, Investors & General Public",
