@@ -181,27 +181,22 @@ def generate_fallback_llm_summary(item: dict) -> dict:
     second_sentence = sentences[1] if len(sentences) > 1 else "This update highlights key regulatory shifts and market developments."
     third_sentence = sentences[2] if len(sentences) > 2 else "Stakeholders are reviewing operational guidelines and financial models."
     
-    summary = first_sentence + ". " + second_sentence + ". " + third_sentence
-    reason_bullets = "• " + first_sentence + "
-• " + second_sentence + "
-• Core policy shift impacts consumer interest rates and liquidity"
-    financial_impact = "• Evaluated ~2.5% rate/cost variance across " + category + " operations
-• Expected net yield adjustment of ₹3,500 - ₹8,200 annually"
-    action_bullets = "• Review official compliance guidelines before upcoming tax deadline
-• Optimize asset allocation strategy according to updated framework"
+    summary = f"{first_sentence}. {second_sentence}. {third_sentence}"
+    reason_bullets = f"• {first_sentence}\n• {second_sentence}\n• Core policy shift impacts consumer interest rates and liquidity"
+    financial_impact = f"• Evaluated ~2.5% rate/cost variance across {category} operations\n• Expected net yield adjustment of ₹3,500 - ₹8,200 annually"
+    action_bullets = f"• Review official compliance guidelines before upcoming tax deadline\n• Optimize asset allocation strategy according to updated framework"
     
     return {
         "id": item["id"],
         "title": title[:250],
         "summary": summary[:1000],
-        "who_impacted": "Retail Investors, Salaried Professionals & " + category + " Consumers",
+        "who_impacted": f"Retail Investors, Salaried Professionals & {category} Consumers",
         "reason": reason_bullets,
         "financial_impact": financial_impact,
         "action": action_bullets,
         "category": category,
         "topic_cluster": "Latest Updates"
     }
-
 def push_to_supabase_rest(records: list):
     if not SUPABASE_URL or not SUPABASE_KEY or "YOUR_" in SUPABASE_URL:
         logging.info("Supabase push skipped (credentials not set).")
