@@ -33,18 +33,18 @@ PROCESSED_DATA_FILE = os.path.join(BASE_DIR, "processed_scraped_data.json")
 FEEDS = [
     {
         "category": "Credit Cards",
-        "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCn47_i9S_T_i-2fXn-F-A",
-        "sourceName": "Finance with Sharan"
+        "url": "https://www.moneycontrol.com/rss/MCtopnews.xml",
+        "sourceName": "Moneycontrol Top News"
     },
     {
         "category": "Markets & Mutual Funds",
-        "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCeAdJMxsZ3q174S2d7l1cgg",
-        "sourceName": "CA Rachana Ranade"
+        "url": "https://www.moneycontrol.com/rss/mfnews.xml",
+        "sourceName": "Moneycontrol Mutual Funds"
     },
     {
         "category": "Financial News",
-        "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCqW8jxh4tH301L39912Ufbg",
-        "sourceName": "Labor Law Advisor"
+        "url": "https://www.businesstoday.in/rss/topstories",
+        "sourceName": "Business Today Top Stories"
     },
     {
         "category": "Financial News",
