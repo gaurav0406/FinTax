@@ -91,7 +91,8 @@ interface SupabaseApiService {
     suspend fun getLiveNews(
         @Query("select") select: String = "*",
         @Query("order") order: String = "publishedAt.desc",
-        @Query("limit") limit: Int = 100
+        @Query("limit") limit: Int = 100,
+        @Query("publishedAt") publishedAtFilter: String? = null
     ): List<SupabaseNewsDto>
 }
 

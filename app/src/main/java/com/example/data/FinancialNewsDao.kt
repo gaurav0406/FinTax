@@ -46,6 +46,9 @@ interface FinancialNewsDao {
     @Query("DELETE FROM financial_news WHERE publishedAt < :threshold")
     suspend fun deleteOldNews(threshold: Long)
 
+    @Query("SELECT MAX(publishedAt) FROM financial_news")
+    suspend fun getLatestPublishedAt(): Long?
+
     // --- User Profile ---
     @Query("SELECT * FROM user_profile WHERE id = 1")
     fun getUserProfile(): Flow<UserProfileEntity?>

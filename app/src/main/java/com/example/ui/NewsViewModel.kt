@@ -112,16 +112,15 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 repository.fetchLiveNewsFromSupabase(getApplication())
             } catch (e: Exception) {
-                _aiStatusMessage.value = "Init fetch failed: ${e.message}"
+                _aiStatusMessage.value = "Offline Mode: Active with local Room database cache."
             }
-            // repository.seedInitialDataIfEmpty() // Sample data removed
             try {
                 val apiKey = BuildConfig.YOUTUBE_API_KEY
                 if (apiKey.isNotBlank() && apiKey != "dummy") {
                     // repository.fetchYouTubeVideos(apiKey)
                 }
             } catch (e: Exception) {
-                _aiStatusMessage.value = "Init YouTube fetch failed: ${e.message}"
+                // Ignore optional YouTube errors in offline mode
             }
         }
     }
@@ -180,7 +179,7 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
                 repository.fetchLiveNewsFromSupabase(getApplication())
                 _aiStatusMessage.value = "Feeds updated!"
             } catch (e: Exception) {
-                _aiStatusMessage.value = "Failed to fetch live data: ${e.message}"
+                _aiStatusMessage.value = "Offline Mode: Showing cached news from local database."
             }
             
             // Seed sample data if database is still empty after live fetch

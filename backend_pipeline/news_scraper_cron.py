@@ -368,6 +368,23 @@ def generate_fallback_llm_summary(item: dict) -> dict:
         "category": category,
         "topic_cluster": "Latest Updates"
     }
+def fetch_existing_supabase_urls() -> set:
+    if not SUPABASE_URL or not SUPABASE_KEY or "YOUR_" in SUPABASE_URL:
+        return set()
+    url = f"{SUPABASE_URL.rstrip('/')}/rest/v1/financial_news?select=sourceUrl&limit=500"
+    headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}'
+    }
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            return {item["sourceUrl"] for item in data if isinstance(item, dict) and "sourceUrl" in item and item["sourceUrl"]}
+    except Exception as e:
+        logging.warning(f"Could not fetch existing Supabase URLs for deduplication: {e}")
+        return set()
+
 def push_to_supabase_rest(records: list):
     if not SUPABASE_URL or not SUPABASE_KEY or "YOUR_" in SUPABASE_URL:
         logging.info("Supabase push skipped (credentials not set).")
@@ -440,14 +457,22 @@ def main():
 
     logging.info(f"Collected {len(raw_items)} raw articles in {time.time() - start_time:.2f} seconds.")
 
-    # Call Gemini in batches of 15 to avoid large payload errors
+    # Deduplicate against existing Supabase database to save Gemini API costs
+    existing_urls = fetch_existing_supabase_urls()
+    logging.info(f"Found {len(existing_urls)} existing articles in Supabase database.")
+
+    items_to_process = [item for item in raw_items if item["url"] not in existing_urls]
+    logging.info(f"New articles needing Gemini LLM processing: {len(items_to_process)} (Saved {len(raw_items) - len(items_to_process)} LLM API calls!)")
+
+    # Call Gemini in batches of 15 for new articles only
     llm_map = {}
     batch_size = 15
-    for i in range(0, len(raw_items), batch_size):
-        batch = raw_items[i:i+batch_size]
+    for i in range(0, len(items_to_process), batch_size):
+        batch = items_to_process[i:i+batch_size]
         batch_map = call_gemini_batch_api(batch)
         llm_map.update(batch_map)
-        time.sleep(15) # Strict rate limit to avoid 429s
+        if i + batch_size < len(items_to_process):
+            time.sleep(5)
 
     processed_list = []
     for item in raw_items:
