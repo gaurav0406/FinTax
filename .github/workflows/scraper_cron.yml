@@ -2,7 +2,7 @@ name: Financial News & YouTube Scraper
 
 on:
   schedule:
-    - cron: '0 */12 * * *' # Runs every 12 hours
+    - cron: '0 0 * * *' # Runs every 24 hours (daily at 00:00 UTC)
   workflow_dispatch: # Allows manual trigger
 
 jobs:

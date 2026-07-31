@@ -80,11 +80,22 @@ class NewsRepository(private val dao: FinancialNewsDao) {
         return summaryWhatHappened.contains("placeholder", ignoreCase = true) ||
                 summaryText.contains("Point 1", ignoreCase = true) ||
                 summaryWhatHappened.contains("NLP service", ignoreCase = true) ||
+                summaryWhatHappened.contains("This update brings significant", ignoreCase = true) ||
+                summaryText.contains("Direct regulatory shift", ignoreCase = true) ||
                 financialImpactBullets?.contains("Point 1", ignoreCase = true) == true
     }
 
     private fun normalizeTitle(title: String): String {
         return title.lowercase().filter { it.isLetterOrDigit() }
+    }
+
+    suspend fun clearCacheAndFetchFresh(context: android.content.Context? = null) {
+        try {
+            dao.deleteAllUnbookmarked()
+        } catch (e: Exception) {
+            android.util.Log.e("NewsRepository", "Error clearing local cache: ${e.message}")
+        }
+        fetchLiveNewsFromSupabase(context)
     }
 
     suspend fun fetchLiveNewsFromSupabase(context: android.content.Context? = null) {

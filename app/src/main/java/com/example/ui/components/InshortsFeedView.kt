@@ -1,7 +1,8 @@
 package com.example.ui.components
 
 import com.example.data.stripIntroductoryLabels
-import com.example.data.formatToCrispSummary
+import com.example.data.getMergedOverview
+import com.example.data.getMergedKeyTakeaways
 import com.example.data.formatToCrispBullets
 
 import androidx.compose.foundation.background
@@ -155,6 +156,7 @@ fun InshortsFeedView(
     onPlayAudio: (FinancialNewsEntity) -> Unit,
     onToggleBookmark: (FinancialNewsEntity) -> Unit,
     onOpenComments: ((FinancialNewsEntity) -> Unit)? = null,
+    onOpenReader: ((FinancialNewsEntity) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var webViewUrlToOpen by remember { mutableStateOf<String?>(null) }
@@ -308,7 +310,8 @@ fun InshortsFeedView(
                                 onOpenActionUrl = { url ->
                                     openUrlWithAd(url, news.title)
                                 },
-                                onOpenComments = if (onOpenComments != null) { { onOpenComments(news) } } else null
+                                onOpenComments = if (onOpenComments != null) { { onOpenComments(news) } } else null,
+                                onOpenReader = if (onOpenReader != null) { { onOpenReader(news) } } else null
                             )
                         }
                         is FeedSlide.AdSlide -> {
@@ -409,7 +412,8 @@ fun InshortsNewsCardItem(
     onPlayAudio: () -> Unit,
     onToggleBookmark: () -> Unit,
     onOpenActionUrl: (String) -> Unit,
-    onOpenComments: (() -> Unit)? = null
+    onOpenComments: (() -> Unit)? = null,
+    onOpenReader: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val fallbackImage = when (news.category) {
@@ -502,7 +506,9 @@ fun InshortsNewsCardItem(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))                // 4 Bulleted Impact & Financial Analysis Points
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Bulleted Impact & Financial Analysis Points
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -512,49 +518,21 @@ fun InshortsNewsCardItem(
                     InshortsBulletPoint(
                         icon = Icons.Default.Newspaper,
                         iconColor = MaterialTheme.colorScheme.primary,
-                        label = "Summary",
-                        content = news.summaryWhatHappened.formatToCrispSummary()
+                        label = "Overview",
+                        content = news.getMergedOverview()
                     )
                     
-                    InshortsBulletPoint(
-                        icon = Icons.Default.Info,
-                        iconColor = MaterialTheme.colorScheme.primary,
-                        label = "Why It Matters",
-                        content = news.summaryText.formatToCrispBullets(maxBullets = 4, prefixMetrics = false)
-                    )
-                    val calculatedImpact = news.financialImpactBullets ?: if (news.isFinancialCategory) {
-                        when (news.category) {
-                            "Financial News" -> "• +2.5% Rate Advantage: Regulatory policy shift optimizing sector valuations\n• ₹4,800 Savings: Capital allocation adjustment advised to optimize net return"
-                            "Credit Cards" -> "• +5% Fuel Waiver: Utility fee caps adjusted with enhanced waiver benefits\n• ₹4,800 Cashback: Optimized annual cashback yield for power users"
-                            "Loans & FDs" -> "• +8.25% Interest Yield: Fixed deposit rates adjusted (+₹8,250/yr per ₹1L)\n• -₹320 EMI Impact: Favorable Home Loan rate reset calculation"
-                            "Markets & Mutual Funds" -> "• 48-Hour T+0 Liquidity: Instant payout frees capital significantly faster\n• +1.2% CAGR Boost: Expected return enhancement from reinvestment"
-                            "Cars & EV" -> "• ₹84,000/yr Operational Savings: Electric vehicle efficiency over petrol\n• ₹1.5 Lakhs Tax Deduction: Section 80EEB interest deduction benefit"
-                            else -> "• ₹5,000 - ₹12,000 Net Benefit: Financial yield optimization."
-                        }
-                    } else {
-                        when (news.category) {
-                            "Sports" -> "• #1 Standing: India leads world table with strong performance\n• +15% Record Advantage: Dominant victory in recent international fixtures"
-                            "Education" -> "• 100% Curriculum Alignment: Dual-board exam structure & updated syllabi\n• +20% Skill Integration: Practical framework across vocational streams"
-                            "Entertainment" -> "• +2.5M Viewer Reach: Major platform licensing and high engagement\n• 100% Digital Value: Broader access to premium content bundles"
-                            "Technology Insights" -> "• +25% Supply Chain Boost: Domestic manufacturing expansion and growth\n• -30% Import Reliance: Lower dependency on key hardware components"
-                            "AI & New Happenings" -> "• +40% Productivity Gain: Accelerated developer automation & deployment\n• 100% Skill Demand: Unprecedented hiring for generative AI expertise"
-                            else -> "• +15% Efficiency Gain: Core operational developments improving performance\n• 100% Strategic Alignment: Key findings for long-term planning"
-                        }
+                    val keyTakeaways = news.getMergedKeyTakeaways()
+                    if (keyTakeaways.isNotBlank()) {
+                        InshortsBulletPoint(
+                            icon = Icons.Default.CheckCircle,
+                            iconColor = MaterialTheme.colorScheme.primary,
+                            label = "Key Takeaways",
+                            content = keyTakeaways
+                        )
                     }
-                    InshortsBulletPoint(
-                        icon = if (news.isFinancialCategory) Icons.Default.Calculate else Icons.Default.Info,
-                        iconColor = MaterialTheme.colorScheme.primary,
-                        label = "Financial Impact & Benefits",
-                        content = calculatedImpact.formatToCrispBullets(maxBullets = 4, prefixMetrics = true)
-                    )
-                    InshortsBulletPoint(
-                        icon = Icons.Default.CheckCircle,
-                        iconColor = MaterialTheme.colorScheme.primary,
-                        label = "Actionable Takeaways",
-                        content = news.summaryActionableTakeaway.formatToCrispBullets(maxBullets = 4, prefixMetrics = false)
-                    )
                     
-                    if (news.category.contains("Market", ignoreCase = true) || news.category.contains("Funds", ignoreCase = true)) {
+                    if (news.category.contains("Market", ignoreCase = true) || news.category.contains("Funds", ignoreCase = true) || news.category.contains("Stock", ignoreCase = true)) {
                         BullishBearishWidget(newsId = news.id)
                     }
                 }
@@ -672,29 +650,34 @@ fun InshortsNewsCardItem(
                                 }
                             }
                         }
-                        val actionUrl = news.financialActionUrl ?: news.sourceUrl
-                        Button(
-                            onClick = { onOpenActionUrl(actionUrl) },
-                            modifier = Modifier
-                                .height(40.dp)
-                                .testTag("inshorts_apply_button_${news.id}"),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MinimalPurplePrimary,
-                                contentColor = Color.White
-                            ),
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                            shape = RoundedCornerShape(50)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Launch,
-                                contentDescription = null,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Learn More",
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                            )
+                            val actionUrl = news.financialActionUrl ?: news.sourceUrl
+                            Button(
+                                onClick = { onOpenActionUrl(actionUrl) },
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .testTag("inshorts_apply_button_${news.id}"),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MinimalPurplePrimary,
+                                    contentColor = Color.White
+                                ),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                                shape = RoundedCornerShape(50)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Launch,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Learn More",
+                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
                         }
                     }
                 }
@@ -765,8 +748,9 @@ private fun InshortsBulletPoint(
                 Text(
                     text = content,
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp,
+                        fontSize = 15.sp,
+                        lineHeight = 22.sp,
+                        fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.95f)
                     )
                 )

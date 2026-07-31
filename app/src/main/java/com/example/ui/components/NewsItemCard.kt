@@ -1,7 +1,8 @@
 package com.example.ui.components
 
 import com.example.data.stripIntroductoryLabels
-import com.example.data.formatToCrispSummary
+import com.example.data.getMergedOverview
+import com.example.data.getMergedKeyTakeaways
 import com.example.data.formatToCrispBullets
 
 import androidx.compose.animation.AnimatedVisibility
@@ -41,6 +42,9 @@ import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CheckCircle
 
 import com.example.ui.theme.MinimalPurplePrimary
+import com.example.ui.theme.MinimalPurpleLightContainer
+import com.example.ui.theme.MinimalPurpleDark
+import androidx.compose.material.icons.filled.AutoAwesome
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -366,112 +370,46 @@ fun NewsItemCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Summary Breakdown
+            // Summary Breakdown - OVERVIEW (4-5 lines narrative)
             NewsBulletPoint(
                 icon = Icons.Default.Newspaper,
                 iconColor = MaterialTheme.colorScheme.primary,
-                label = "SUMMARY"
+                label = "OVERVIEW"
             ) {
                 JargonText(
-                    text = news.summaryWhatHappened.formatToCrispSummary(),
+                    text = news.getMergedOverview(),
                     jargonTerms = news.jargonTerms,
                     onJargonClick = { term, def ->
                         currentJargonTerm = term
                         currentJargonDefinition = def
                         showJargonSheet = true
                     },
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize = 15.sp,
+                        lineHeight = 22.sp,
+                        fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
             }
             
-            NewsBulletPoint(
-                icon = Icons.Default.People,
-                iconColor = MaterialTheme.colorScheme.primary,
-                label = "IMPACTED USERS"
-            ) {
-                Text(
-                    text = news.summaryWhoImpacted.stripIntroductoryLabels(),
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+            val keyTakeaways = news.getMergedKeyTakeaways()
+            if (keyTakeaways.isNotBlank()) {
+                NewsBulletPoint(
+                    icon = Icons.Default.CheckCircle,
+                    iconColor = MaterialTheme.colorScheme.primary,
+                    label = "KEY TAKEAWAYS"
+                ) {
+                    Text(
+                        text = keyTakeaways,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontSize = 15.sp,
+                            lineHeight = 22.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
-                )
-            }
-            
-            NewsBulletPoint(
-                icon = Icons.Default.Info,
-                iconColor = MaterialTheme.colorScheme.primary,
-                label = "WHY IT MATTERS"
-            ) {
-                JargonText(
-                    text = news.summaryText.formatToCrispBullets(maxBullets = 4, prefixMetrics = false),
-                    jargonTerms = news.jargonTerms,
-                    onJargonClick = { term, def ->
-                        currentJargonTerm = term
-                        currentJargonDefinition = def
-                        showJargonSheet = true
-                    },
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                )
-            }
-            
-            val cardImpact = news.financialImpactBullets ?: if (news.isFinancialCategory) {
-                when (news.category) {
-                    "Financial News" -> "• +2.5% Rate Advantage: Regulatory policy shift optimizing sector valuations\n• ₹4,800 Savings: Capital allocation adjustment advised to optimize net return"
-                    "Credit Cards" -> "• +5% Fuel Waiver: Utility fee caps adjusted with enhanced waiver benefits\n• ₹4,800 Cashback: Optimized annual cashback yield for power users"
-                    "Loans & FDs" -> "• +8.25% Interest Yield: Fixed deposit rates adjusted (+₹8,250/yr per ₹1L)\n• -₹320 EMI Impact: Favorable Home Loan rate reset calculation"
-                    "Markets & Mutual Funds" -> "• 48-Hour T+0 Liquidity: Instant payout frees capital significantly faster\n• +1.2% CAGR Boost: Expected return enhancement from reinvestment"
-                    "Cars & EV" -> "• ₹84,000/yr Operational Savings: Electric vehicle efficiency over petrol\n• ₹1.5 Lakhs Tax Deduction: Section 80EEB interest deduction benefit"
-                    else -> "• ₹5,000 - ₹12,000 Net Benefit: Financial yield optimization."
                 }
-            } else {
-                when (news.category) {
-                    "Sports" -> "• #1 Standing: India leads world table with strong performance\n• +15% Record Advantage: Dominant victory in recent international fixtures"
-                    "Education" -> "• 100% Curriculum Alignment: Dual-board exam structure & updated syllabi\n• +20% Skill Integration: Practical framework across vocational streams"
-                    "Entertainment" -> "• +2.5M Viewer Reach: Major platform licensing and high engagement\n• 100% Digital Value: Broader access to premium content bundles"
-                    "Technology Insights" -> "• +25% Supply Chain Boost: Domestic manufacturing expansion and growth\n• -30% Import Reliance: Lower dependency on key hardware components"
-                    "AI & New Happenings" -> "• +40% Productivity Gain: Accelerated developer automation & deployment\n• 100% Skill Demand: Unprecedented hiring for generative AI expertise"
-                    else -> "• +15% Efficiency Gain: Core operational developments improving performance\n• 100% Strategic Alignment: Key findings for long-term planning"
-                }
-            }
-            
-            NewsBulletPoint(
-                icon = if (news.isFinancialCategory) Icons.Default.Calculate else Icons.Default.Info,
-                iconColor = MaterialTheme.colorScheme.primary,
-                label = "FINANCIAL IMPACT & BENEFITS"
-            ) {
-                Text(
-                    text = cardImpact.formatToCrispBullets(maxBullets = 4, prefixMetrics = true),
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                )
-            }
-            
-            NewsBulletPoint(
-                icon = Icons.Default.CheckCircle,
-                iconColor = MaterialTheme.colorScheme.primary,
-                label = "ACTIONABLE TAKEAWAYS"
-            ) {
-                Text(
-                    text = news.summaryActionableTakeaway.formatToCrispBullets(maxBullets = 4, prefixMetrics = false),
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                )
             }
             Spacer(modifier = Modifier.height(16.dp))
 

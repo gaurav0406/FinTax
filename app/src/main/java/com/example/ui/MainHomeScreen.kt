@@ -133,15 +133,15 @@ enum class ActiveDrawerDialog {
 
 val CATEGORIES = listOf(
     "All",
-    "Financial News",
-    "Credit Cards",
-    "ITR & Tax",
-    "Loans & FDs",
-    "Markets & Mutual Funds",
-    "RBI & Policy",
+    "Taxation",
+    "Personal Finance",
+    "Stock Market",
+    "AI & Tech",
     "Crypto",
-    "Education",
-    "Entertainment"
+    "Cars & EVs",
+    "New Innovation",
+    "Credit Cards",
+    "Mutual Funds"
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -203,9 +203,24 @@ fun MainHomeScreen(
         }
     }
 
-    val dailyDigestList = remember(allNewsList) {
+    val dailyDigestList = remember(allNewsList, userSelectedCategories) {
         if (allNewsList.isEmpty()) emptyList()
-        else allNewsList.sortedByDescending { it.publishedAt }.take(5)
+        else if (userSelectedCategories.isNotEmpty()) {
+            val preferredArticles = allNewsList.filter { news ->
+                userSelectedCategories.any { userCat -> userCat.equals(news.category, ignoreCase = true) }
+            }.sortedByDescending { it.publishedAt }
+            
+            if (preferredArticles.size >= 5) {
+                preferredArticles.take(5)
+            } else {
+                val remaining = allNewsList.filter { news ->
+                    !userSelectedCategories.any { userCat -> userCat.equals(news.category, ignoreCase = true) }
+                }.sortedByDescending { it.publishedAt }
+                (preferredArticles + remaining).distinctBy { it.id }.take(5)
+            }
+        } else {
+            allNewsList.sortedByDescending { it.publishedAt }.take(5)
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -452,21 +467,21 @@ fun MainHomeScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             val headerTitle = when (activeTab) {
-                                0 -> "FinTax Inshorts"
+                                0 -> "FinTax&Tech News"
                                 1 -> "Community Forum"
                                 2 -> "Saved Reads"
                                 3 -> "Tax Calculator"
                                 4 -> "Deals & Offers"
                                 5 -> "Video Reels"
                                 6 -> "User Profile"
-                                else -> "FinTax Inshorts"
+                                else -> "FinTax&Tech News"
                             }
                             val headerSubtitle = when (activeTab) {
-                                0 -> if (useInshortsViewMode) "60-Sec Personal Finance Digest" else "All Financial Stories"
-                                1 -> "Discuss Tax, Stocks & Investing"
+                                0 -> if (useInshortsViewMode) "60-Sec Finance, AI & Tech Digest" else "All Stories"
+                                1 -> "Discuss Tax, Tech, Stocks & Crypto"
                                 2 -> "Your Bookmarked Reads"
                                 3 -> "Compare Old vs New Tax Regime"
-                                4 -> "Exclusive Financial Offers"
+                                4 -> "Exclusive Cards & Financial Offers"
                                 5 -> "60-Sec Financial Video Shorts"
                                 6 -> "Manage Personal Information"
                                 else -> ""
@@ -476,7 +491,7 @@ fun MainHomeScreen(
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 19.sp,
-                                    color = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else MaterialTheme.colorScheme.onSurface
+                                    color = if ((useInshortsViewMode && activeTab == 0) || activeTab == 6) Color.White else MaterialTheme.colorScheme.onSurface
                                 )
                             )
                             if (headerSubtitle.isNotEmpty()) {
@@ -486,7 +501,7 @@ fun MainHomeScreen(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 10.sp,
                                         letterSpacing = 1.sp,
-                                        color = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) MinimalPurpleLightContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = if ((useInshortsViewMode && activeTab == 0) || activeTab == 6) MinimalPurpleLightContainer else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 )
                             }
@@ -495,6 +510,7 @@ fun MainHomeScreen(
                 },
                 actions = {
                     val systemTheme = androidx.compose.foundation.isSystemInDarkTheme()
+
                     IconButton(
                         onClick = { viewModel.toggleTheme(systemTheme) },
                         modifier = Modifier.testTag("toggle_theme_button")
@@ -503,7 +519,7 @@ fun MainHomeScreen(
                         Icon(
                             imageVector = if (isDark) Icons.Default.WbSunny else Icons.Default.NightsStay,
                             contentDescription = "Toggle Theme",
-                            tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color.White else MaterialTheme.colorScheme.onSurface
+                            tint = if ((useInshortsViewMode && activeTab == 0) || activeTab == 6) Color.White else MaterialTheme.colorScheme.onSurface
                         )
                     }
                     if (activeTab == 0) {
@@ -690,7 +706,8 @@ fun MainHomeScreen(
                             onSelectCategory = { viewModel.setCategory(it) },
                             onPlayAudio = { viewModel.playAudio(it) },
                             onToggleBookmark = { viewModel.toggleBookmark(it) },
-                            onOpenComments = { news -> selectedNewsForComments = news }
+                            onOpenComments = { news -> selectedNewsForComments = news },
+                            onOpenReader = { news -> viewModel.openArticleReader(news) }
                         )
                     } else {
                         StandardCardListView(
@@ -735,6 +752,19 @@ fun MainHomeScreen(
                 5 -> com.example.ui.components.VideoEngagementTab(viewModel = viewModel)
 
                 6 -> ProfileSetupScreen(viewModel = viewModel)
+            }
+
+            val activeReaderNews = viewModel.activeReaderNews.collectAsState().value
+            activeReaderNews?.let { news ->
+                val fontSizeScale = viewModel.fontSizeScale.collectAsState().value
+                com.example.ui.components.AdaptiveArticleReaderScreen(
+                    news = news,
+                    fontSizeScale = fontSizeScale,
+                    isPlayingAudio = playbackState.isPlaying && playbackState.activeNewsId == news.id,
+                    onToggleAudio = { viewModel.playAudio(news) },
+                    onToggleBookmark = { viewModel.toggleBookmark(news) },
+                    onBack = { viewModel.closeArticleReader() }
+                )
             }
 
             selectedNewsForComments?.let { news ->
@@ -919,12 +949,15 @@ private fun NotificationsDialog(
 
                 Surface(
                     onClick = {
-                        RetentionNotificationScheduler.scheduleDailyNotifications(context)
-                        Toast.makeText(context, "Test notification scheduled for 9:00 AM!", Toast.LENGTH_SHORT).show()
+                        RetentionNotificationScheduler.sendInstantTestNotification(
+                            context,
+                            RetentionNotificationScheduler.TYPE_CRITICAL_NEWS
+                        )
+                        Toast.makeText(context, "🔔 Breaking News notification triggered!", Toast.LENGTH_SHORT).show()
                     },
                     shape = RoundedCornerShape(12.dp),
                     color = MinimalPurplePrimary,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().testTag("trigger_test_notification_button")
                 ) {
                     Row(
                         modifier = Modifier.padding(12.dp),
@@ -1191,6 +1224,14 @@ private fun StandardCardListView(
                                 newsList = dailyDigestList,
                                 allNewsList = if (allNewsList.isNotEmpty()) allNewsList else newsList,
                                 onCategoryClick = onSelectCategory
+                            )
+                        }
+                    }
+
+                    if (selectedCategory == "Credit Cards" || selectedCategory == "All") {
+                        item {
+                            com.example.ui.components.DailyCreditCardSpotlightCard(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
                         }
                     }

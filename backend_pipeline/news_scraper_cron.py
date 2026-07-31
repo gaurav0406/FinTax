@@ -2,9 +2,11 @@
 """
 FinTax Audio News - High-Performance Zero-Dependency Financial News Scraper & NLP Pipeline
 
+Scheduled Execution: Runs automatically every 24 hours via GitHub Actions ('0 0 * * *').
+
 Features:
 1. Hybrid scraping: Combines RSS feeds with Free Financial APIs (e.g., Finnhub)
-2. Gemini 2.0 Flash batch structured summarization via REST API.
+2. Gemini 3.5 / 2.0 Flash batch structured summarization via REST API.
 3. Google News Architecture: Fixed top-level Categories + Dynamic Topic Clusters.
 4. Generates local JSON artifacts: processed_scraped_data.json & raw_scraped_data.json.
 5. Direct Supabase REST API insert/upsert integration with exact table schema.
@@ -277,11 +279,11 @@ def call_gemini_batch_api(items: list) -> dict:
 
     simplified = [{"id": item["id"], "title": item["title"], "content": item["text"]} for item in items]
     
-    prompt = f"""You are an expert Financial Journalist and Market Analyst.
-Analyze these news items and produce structured, actionable JSON summaries.
+    prompt = f"""You are an expert Financial Journalist and UX Content Architect.
+Analyze these news items and produce structured, highly engaging JSON summaries.
 
 Output MUST be strictly valid JSON without markdown code blocks.
-DO NOT use introductory labels like "Key Update:", "Why it matters:", "Source Report:", "Investor Takeaway:", "Monetary Outlook:", "Market Context:", "Verify Details:", or "Portfolio Review:" in your bullet points. The output must be crisp, concise, and direct.
+DO NOT use generic introductory labels like "Key Update:", "Why it matters:", "Source Report:", "Investor Takeaway:", or "Monetary Outlook:".
 
 Input Items:
 {json.dumps(simplified, indent=2)}
@@ -291,28 +293,29 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
   {{
     "id": <number matching input id>,
     "title": "Catchy headline (Max 10 words)",
-    "summary": "Provide a detailed 4 to 5 line summary of the article covering all key points.",
+    "summary": "Provide a cohesive, high-readability 4 to 5 line narrative overview covering what happened and the core market context.",
     "who_impacted": "Who does this impact? (e.g. Salaried Employees, Retail Investors, Credit Card Users)",
-    "reason": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line (max 12 words). Explain why this news matters and core drivers. Do NOT use introductory labels.",
-    "financial_impact": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line and MUST start with a clear numerical metric, percentage, KPI, or monetary advantage (e.g. '• +2.5% Rate Cut: ...', '• ₹4,800 Savings: ...', '• 15% Cashback: ...'). Do NOT use introductory labels.",
-    "action": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line (max 12 words) detailing actionable steps or recommendations. Do NOT use introductory labels.",
+    "reason": "Provide 2 crisp bullet points (using '• ') explaining core drivers behind this news.",
+    "financial_impact": "Tangible Value Add: Provide 2 crisp bullet points starting with '• Tangible Value: ' highlighting direct metrics, cost savings, rate changes, yield gains, fee waivers, or cashbacks.",
+    "action": "Intangible Value Add: Provide 2 crisp bullet points starting with '• Intangible Benefit: ' highlighting peace of mind, strategic risk protection, time savings, or long-term financial security.",
     "category": "Must be EXACTLY ONE of ['Financial News', 'Credit Cards', 'Mutual Funds', 'Sports', 'Cars & EVs', 'Education', 'Crypto', 'Technology', 'Entertainment', 'ITR & Tax', 'Loans & FDs', 'Markets & Mutual Funds', 'RBI & Policy']",
     "topic_cluster": "Dynamic 2-3 word topic tag (e.g. 'Tech Earnings', 'RBI Policy', 'EV Market')"
   }}
 ]
 """
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    url_primary = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={GEMINI_API_KEY}"
+    url_fallback = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"response_mime_type": "application/json"}
     }
 
-    max_retries = 2
-    for attempt in range(max_retries):
+    for target_url in [url_primary, url_fallback]:
         try:
             req = urllib.request.Request(
-                url,
+                target_url,
                 data=json.dumps(payload).encode('utf-8'),
                 headers={'Content-Type': 'application/json'},
                 method='POST'
@@ -329,14 +332,14 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
                 return {int(obj["id"]): obj for obj in parsed_list if "id" in obj}
         except urllib.error.HTTPError as e:
             if e.code == 429:
-                logging.warning("Rate limited (429). Falling back immediately.")
-                break
+                logging.warning("Rate limited (429). Trying fallback URL or NLP.")
+                continue
             else:
-                logging.error(f"Gemini API HTTP Error: {e}")
-                break
+                logging.error(f"Gemini API HTTP Error ({target_url}): {e}")
+                continue
         except Exception as e:
             logging.error(f"Gemini API call failed: {e}")
-            break
+            continue
             
     return {}
 
@@ -345,49 +348,49 @@ def generate_fallback_llm_summary(item: dict) -> dict:
     category = item["category"]
     raw_text = item.get("text", title)
     
-    sentences = [
-        s.strip() for s in re.split(r'[.!?]+', raw_text)
-        if len(s.strip()) > 15 and not re.search(r'(?i)\b(published\s+by|home\b|copyright|all\s+rights\s+reserved)\b', s)
+    # Extract clean actual sentences from article text
+    clean_text = clean_html_text(raw_text)
+    raw_sentences = [
+        s.strip() for s in re.split(r'[.!?]+', clean_text)
+        if len(s.strip()) > 15 and not re.search(r'(?i)\b(published\s+by|home\b|copyright|all\s+rights\s+reserved|click\s+here|read\s+more)\b', s)
     ]
-    s1 = sentences[0] if sentences else title
-    s2 = sentences[1] if len(sentences) > 1 else "This update brings significant regulatory, financial, and operational changes."
-    s3 = sentences[2] if len(sentences) > 2 else "Stakeholders are actively evaluating operational frameworks and capital strategies."
-    s4 = sentences[3] if len(sentences) > 3 else "Consumers and market participants should closely monitor official compliance guidelines."
-    s5 = sentences[4] if len(sentences) > 4 else "Further details and detailed market notices will be released in upcoming announcements."
+    
+    # Avoid duplicate sentences matching title
+    sentences = [s for s in raw_sentences if s.lower() not in title.lower()]
+    if not sentences:
+        sentences = [title]
+        
+    summary = " ".join(sentences[:5])
+    if not summary.endswith("."):
+        summary += "."
 
-    summary = f"{s1}.\n{s2}.\n{s3}.\n{s4}.\n{s5}."
+    # Crisp contextual bullet points from actual article text
+    reason_items = sentences[1:4] if len(sentences) >= 2 else sentences[:1]
+    reason_bullets = "\n".join([f"• {s}" for s in reason_items if len(s) > 10])
 
-    reason_bullets = (
-        f"• Direct regulatory shift impacting consumer rates and market liquidity\n"
-        f"• Strategic policy adjustment designed to optimize capital allocation\n"
-        f"• Promotes long-term market transparency and institutional stability\n"
-        f"• Direct impact on retail investment yields and compliance deadlines"
-    )
+    # Extract numbers or currency metrics if present in text
+    metrics = re.findall(r'(?:₹|\$|\b\d+(?:\.\d+)?%|\b\d+\s*(?:lakh|crore|billion|million)\b)', clean_text, re.IGNORECASE)
+    if metrics:
+        metric_sentences = [s for s in sentences if any(m in s for m in metrics)]
+        if metric_sentences:
+            financial_impact = "\n".join([f"• {s}" for s in metric_sentences[:2]])
+        else:
+            financial_impact = f"• Metric Highlighted: {', '.join(list(set(metrics[:3])))}"
+    else:
+        financial_impact = ""
 
-    financial_impact = (
-        f"• +2.5% Rate Advantage: Evaluated yield/cost variance across {category}\n"
-        f"• ₹3,500 - ₹8,200 Savings: Estimated net annual return per user\n"
-        f"• 15% Liquidity Boost: Unlocks capital and reduces transaction fees\n"
-        f"• 100% Risk Mitigation: Safeguards portfolio against short-term volatility"
-    )
-
-    action_bullets = (
-        f"• Review official compliance guidelines before upcoming deadline\n"
-        f"• Rebalance portfolio asset allocation based on updated framework\n"
-        f"• Consult financial advisor to lock in higher guaranteed yields\n"
-        f"• Track primary news channels for official policy updates"
-    )
+    action_bullets = ""
 
     return {
         "id": item["id"],
         "title": title[:250],
         "summary": summary[:1200],
-        "who_impacted": f"Retail Investors, Salaried Professionals & {category} Consumers",
+        "who_impacted": f"Investors & Readers following {category}",
         "reason": reason_bullets,
         "financial_impact": financial_impact,
         "action": action_bullets,
         "category": category,
-        "topic_cluster": "Latest Updates"
+        "topic_cluster": f"{category} Update"
     }
 def fetch_existing_supabase_urls() -> set:
     if not SUPABASE_URL or not SUPABASE_KEY or "YOUR_" in SUPABASE_URL:

@@ -34,7 +34,7 @@ interface FinancialNewsDao {
     @Query("UPDATE financial_news SET isBookmarked = :isBookmarked WHERE id = :id")
     suspend fun updateBookmark(id: Int, isBookmarked: Boolean)
 
-    @Query("DELETE FROM financial_news WHERE summaryWhatHappened LIKE '%placeholder%' OR summaryText LIKE '%Point 1%' OR summaryWhatHappened LIKE '%NLP service%'")
+    @Query("DELETE FROM financial_news WHERE summaryWhatHappened LIKE '%placeholder%' OR summaryText LIKE '%Point 1%' OR summaryWhatHappened LIKE '%NLP service%' OR summaryWhatHappened LIKE '%This update brings significant%' OR summaryText LIKE '%Direct regulatory shift%' OR title LIKE '%Uncle Sam is wrong%'")
     suspend fun deletePlaceholders()
 
     @Query("DELETE FROM financial_news WHERE isBookmarked = 0")

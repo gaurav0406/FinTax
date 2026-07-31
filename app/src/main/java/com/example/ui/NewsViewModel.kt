@@ -40,6 +40,12 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _isDarkTheme = MutableStateFlow<Boolean?>(null)
     val isDarkTheme: StateFlow<Boolean?> = _isDarkTheme.asStateFlow()
+
+    private val _fontSizeScale = MutableStateFlow(1.0f)
+    val fontSizeScale: StateFlow<Float> = _fontSizeScale.asStateFlow()
+
+    private val _activeReaderNews = MutableStateFlow<FinancialNewsEntity?>(null)
+    val activeReaderNews: StateFlow<FinancialNewsEntity?> = _activeReaderNews.asStateFlow()
     
     fun toggleTheme(systemTheme: Boolean) {
         val current = _isDarkTheme.value
@@ -48,6 +54,26 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             _isDarkTheme.value = !current
         }
+    }
+
+    fun increaseFontSize() {
+        if (_fontSizeScale.value < 1.35f) {
+            _fontSizeScale.value += 0.1f
+        }
+    }
+
+    fun decreaseFontSize() {
+        if (_fontSizeScale.value > 0.85f) {
+            _fontSizeScale.value -= 0.1f
+        }
+    }
+
+    fun openArticleReader(news: FinancialNewsEntity) {
+        _activeReaderNews.value = news
+    }
+
+    fun closeArticleReader() {
+        _activeReaderNews.value = null
     }
 
     private val _aiStatusMessage = MutableStateFlow("")
@@ -171,15 +197,16 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     fun refreshFeeds() {
         viewModelScope.launch {
             _isRefreshing.value = true
-            _aiStatusMessage.value = "Refreshing live Indian financial feeds..."
-            kotlinx.coroutines.delay(800)
+            _aiStatusMessage.value = "Clearing cache & fetching latest Indian financial feeds..."
             
             try {
-                // Fetch live news from the backend
-                repository.fetchLiveNewsFromSupabase(getApplication())
-                _aiStatusMessage.value = "Feeds updated!"
+                // Clear old unbookmarked content & fetch latest live news from Supabase REST API
+                repository.clearCacheAndFetchFresh(getApplication())
+                _aiStatusMessage.value = "Feeds refreshed with latest news on top!"
             } catch (e: Exception) {
                 _aiStatusMessage.value = "Offline Mode: Showing cached news from local database."
+            } finally {
+                _isRefreshing.value = false
             }
             
             // Seed sample data if database is still empty after live fetch
