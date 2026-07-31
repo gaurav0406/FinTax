@@ -52,17 +52,15 @@ fun DailyDigestCard(
         allNewsList.maxOfOrNull { it.publishedAt } ?: System.currentTimeMillis()
     }
     
-    val lastUpdatedFormatted = remember(latestPublishedAt) {
-        if (latestPublishedAt <= 0) "Just now"
+    val lastUpdatedFormatted = if (latestPublishedAt <= 0) "Just now"
+    else {
+        val diffMs = System.currentTimeMillis() - latestPublishedAt
+        val mins = diffMs / (1000 * 60)
+        if (mins < 1) "Just now"
+        else if (mins < 60) "$mins mins ago"
         else {
-            val diffMs = System.currentTimeMillis() - latestPublishedAt
-            val mins = diffMs / (1000 * 60)
-            if (mins < 1) "Just now"
-            else if (mins < 60) "$mins mins ago"
-            else {
-                val sdf = SimpleDateFormat("MMM dd, h:mm a", Locale.getDefault())
-                sdf.format(Date(latestPublishedAt))
-            }
+            val sdf = SimpleDateFormat("MMM dd, h:mm a", Locale.getDefault())
+            sdf.format(Date(latestPublishedAt))
         }
     }
 

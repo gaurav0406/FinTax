@@ -57,12 +57,7 @@ fun String.stripIntroductoryLabels(): String {
 }
 
 fun FinancialNewsEntity.getMergedOverview(): String {
-    val part1 = summaryWhatHappened.stripIntroductoryLabels()
-        .replace("•", " ").replace("- ", " ").replace("* ", " ")
-    val part2 = summaryText.stripIntroductoryLabels()
-        .replace("•", " ").replace("- ", " ").replace("* ", " ")
-    
-    val fullText = "$part1 $part2".replace(Regex("\\s+"), " ").trim()
+    val fullText = summaryWhatHappened.replace("•", " ").replace("- ", " ").replace("* ", " ").trim()
     if (fullText.isBlank()) return "Detailed report covering key financial updates, market developments, and strategic policy shifts."
     
     val rawSentences = fullText.split(Regex("(?<=[.!?])\\s+"))
@@ -70,8 +65,8 @@ fun FinancialNewsEntity.getMergedOverview(): String {
         .filter { it.isNotBlank() && it.length > 8 && !it.startsWith("•") }
         .distinct()
     
-    // Target 4 to 5 lines of overview text
-    val overviewSentences = rawSentences.take(5)
+    // Target 5 to 6 lines of overview text
+    val overviewSentences = rawSentences.take(6)
     return if (overviewSentences.isNotEmpty()) {
         overviewSentences.joinToString(" ")
     } else {
@@ -80,26 +75,15 @@ fun FinancialNewsEntity.getMergedOverview(): String {
 }
 
 fun FinancialNewsEntity.getMergedKeyTakeaways(): String {
-    val who = summaryWhoImpacted.stripIntroductoryLabels()
-        .replace("•", "").replace("-", "").trim()
-        .ifBlank { "Salaried taxpayers, retail investors & cardholders" }
+    val who = summaryWhoImpacted.trim().ifBlank { "• User Impacted: Salaried taxpayers, retail investors & cardholders" }
+    val why = summaryText.trim().ifBlank { "• Why It matters: Key regulatory shift influencing yields and credit savings." }
+    val benefit = financialImpactBullets?.trim()?.ifBlank { null } ?: "• Financial benefits: +₹12,500/yr savings via optimized tax deduction & cashbacks"
 
-    val rawWhat = summaryWhatHappened.stripIntroductoryLabels()
-        .replace("•", "").replace("-", "").trim()
-        .ifBlank { "Key regulatory shift influencing yields and credit savings." }
-    val why = if (rawWhat.length > 130) rawWhat.take(127) + "..." else rawWhat
+    val finalWho = if (who.contains("User Impacted", ignoreCase = true)) who else "• User Impacted: $who"
+    val finalWhy = if (why.contains("Why It matters", ignoreCase = true) || why.contains("Why It Matters", ignoreCase = true)) why else "• Why It matters: $why"
+    val finalBenefit = if (benefit.contains("Financial benefits", ignoreCase = true) || benefit.contains("Tangible Value", ignoreCase = true)) benefit else "• Financial benefits: $benefit"
 
-    val rawMetric = (keyMetrics ?: "").stripIntroductoryLabels().replace("•", "").replace("-", "").trim()
-    val rawAction = summaryActionableTakeaway.stripIntroductoryLabels().replace("•", "").replace("-", "").trim()
-    
-    val finBenefit = when {
-        rawMetric.isNotBlank() && rawAction.isNotBlank() -> "$rawMetric — $rawAction"
-        rawMetric.isNotBlank() -> "$rawMetric net annual yield impact"
-        rawAction.isNotBlank() -> "+15.0% Net Savings — $rawAction"
-        else -> "+₹12,500/yr savings via optimized tax deduction & cashbacks"
-    }
-
-    return "• User Impacted: $who\n• Why It Matters: $why\n• Financial Benefits: $finBenefit"
+    return "$finalWho\n$finalWhy\n$finalBenefit"
 }
 
 

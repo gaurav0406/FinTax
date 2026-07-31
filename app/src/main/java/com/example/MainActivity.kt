@@ -14,7 +14,6 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.ExistingPeriodicWorkPolicy
 import com.example.data.DatabaseCleanupWorker
-import com.example.data.NewsSyncWorker
 import com.example.notifications.RetentionNotificationScheduler
 import com.example.ui.MainHomeScreen
 import com.example.ui.NewsViewModel
@@ -46,13 +45,6 @@ class MainActivity : ComponentActivity() {
         // Initialize and Schedule Retention Notifications
         RetentionNotificationScheduler.scheduleDailyNotifications(this)
         
-        // Schedule 45-Minute Live News Fetch / Scraper Sync
-        val syncRequest = PeriodicWorkRequestBuilder<NewsSyncWorker>(45, TimeUnit.MINUTES).build()
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "NewsSync45Min",
-            ExistingPeriodicWorkPolicy.KEEP,
-            syncRequest
-        )
 
         // Schedule DB Cleanup
         val workRequest = PeriodicWorkRequestBuilder<DatabaseCleanupWorker>(1, TimeUnit.DAYS).build()

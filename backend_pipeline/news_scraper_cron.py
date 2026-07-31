@@ -293,11 +293,11 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
   {{
     "id": <number matching input id>,
     "title": "Catchy headline (Max 10 words)",
-    "summary": "Provide a cohesive, high-readability 4 to 5 line narrative overview covering what happened and the core market context.",
-    "who_impacted": "Who does this impact? (e.g. Salaried Employees, Retail Investors, Credit Card Users)",
-    "reason": "Provide 2 crisp bullet points (using '• ') explaining core drivers behind this news.",
-    "financial_impact": "Tangible Value Add: Provide 2 crisp bullet points starting with '• Tangible Value: ' highlighting direct metrics, cost savings, rate changes, yield gains, fee waivers, or cashbacks.",
-    "action": "Intangible Value Add: Provide 2 crisp bullet points starting with '• Intangible Benefit: ' highlighting peace of mind, strategic risk protection, time savings, or long-term financial security.",
+    "summary": "Provide a cohesive, high-readability 5 to 6 line narrative overview covering what happened and the core market context.",
+    "who_impacted": "Provide 1 to 2 lines starting exactly with '• User Impacted: ' detailing who this affects.",
+    "reason": "Provide 1 to 2 lines starting exactly with '• Why It matters: ' explaining core drivers.",
+    "financial_impact": "Provide 1 to 2 lines starting exactly with '• Financial benefits: ' highlighting tangible value.",
+    "action": "Provide 1 crisp bullet point starting exactly with '• Actionable Takeaway: '",
     "category": "Must be EXACTLY ONE of ['Financial News', 'Credit Cards', 'Mutual Funds', 'Sports', 'Cars & EVs', 'Education', 'Crypto', 'Technology', 'Entertainment', 'ITR & Tax', 'Loans & FDs', 'Markets & Mutual Funds', 'RBI & Policy']",
     "topic_cluster": "Dynamic 2-3 word topic tag (e.g. 'Tech Earnings', 'RBI Policy', 'EV Market')"
   }}
@@ -434,7 +434,7 @@ def push_to_supabase_rest(records: list):
             "summaryActionableTakeaway": llm.get("action", "")[:1000],
             "summaryText": llm.get("reason", "")[:1500],
             "category": r["category"][:50],
-            "financialActionUrl": "https://example.com",
+            "financialActionUrl": r["url"],
             "sourceUrl": r["url"],
             "sourceName": r["sourceName"][:90],
             "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=60",
