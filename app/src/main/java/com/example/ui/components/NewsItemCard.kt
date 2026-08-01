@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.TrendingUp
 
 import com.example.ui.theme.MinimalPurplePrimary
@@ -326,6 +327,83 @@ fun NewsItemCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
+
+            // Topic Hashtag Chips Row
+            val tagsList = listOfNotNull(
+                if (news.category.isNotBlank()) "#${news.category.replace(" ", "").replace("&", "")}" else null,
+                if (news.topicCluster.isNotBlank() && news.topicCluster != "Latest Updates") "#${news.topicCluster.replace(" ", "")}" else null,
+                if (!news.badge.isNullOrBlank()) "#${news.badge}" else null,
+                if (!news.targetAudience.isNullOrBlank()) "#${news.targetAudience}" else null
+            ).distinct().take(4)
+
+            if (tagsList.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    tagsList.forEach { tag ->
+                        Surface(
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = tag,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                ),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Prominent "Why Read This" Tag Badge
+            val whyReadText = news.summaryActionableTakeaway.ifBlank { news.summaryWhoImpacted }.ifBlank { news.summaryWhatHappened }.take(180)
+            if (whyReadText.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lightbulb,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = "WHY READ THIS",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 9.sp,
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    letterSpacing = 0.8.sp
+                                )
+                            )
+                            Text(
+                                text = whyReadText,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                ),
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(14.dp))
 

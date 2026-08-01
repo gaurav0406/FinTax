@@ -51,16 +51,26 @@ FEEDS = [
     },
     {
         "category": "Credit Cards",
-        "url": "https://technofino.in/community/blogs/index.rss",
-        "sourceName": "TechnoFino India"
+        "url": "https://www.financialexpress.com/money/feed/",
+        "sourceName": "Financial Express Money"
+    },
+    {
+        "category": "Credit Cards",
+        "url": "https://economictimes.indiatimes.com/wealth/spend/rssfeeds/83815340.cms",
+        "sourceName": "Economic Times Spend & Cards"
+    },
+    {
+        "category": "Credit Cards",
+        "url": "https://paisabazaar.com/blog/category/credit-card/feed/",
+        "sourceName": "Paisabazaar Credit Cards"
+    },
+    {
+        "category": "Credit Cards",
+        "url": "https://www.livemint.com/rss/banking",
+        "sourceName": "LiveMint Banking & Cards"
     },
 
-    # Financial News Sources
-    {
-        "category": "Financial News",
-        "url": "https://www.moneycontrol.com/rss/MCtopnews.xml",
-        "sourceName": "Moneycontrol Top News"
-    },
+    # Financial News Sources (Non-Moneycontrol)
     {
         "category": "Financial News",
         "url": "https://www.businesstoday.in/rss/topstories",
@@ -82,14 +92,26 @@ FEEDS = [
         "sourceName": "Economic Times Wealth"
     },
     {
-        "category": "Markets & Mutual Funds",
-        "url": "https://www.moneycontrol.com/rss/mfnews.xml",
-        "sourceName": "Moneycontrol Mutual Funds"
+        "category": "Financial News",
+        "url": "https://www.financialexpress.com/feed/",
+        "sourceName": "Financial Express Main"
     },
+
+    # Markets & Mutual Funds
     {
         "category": "Markets & Mutual Funds",
         "url": "https://www.livemint.com/rss/mutual-funds",
         "sourceName": "LiveMint Mutual Funds"
+    },
+    {
+        "category": "Markets & Mutual Funds",
+        "url": "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
+        "sourceName": "Economic Times Markets"
+    },
+    {
+        "category": "Markets & Mutual Funds",
+        "url": "https://www.livemint.com/rss/markets",
+        "sourceName": "LiveMint Markets"
     },
 
     # Technology & AI
@@ -112,13 +134,13 @@ FEEDS = [
     # Cars & EVs
     {
         "category": "Cars & EVs",
-        "url": "https://www.autocarindia.com/rss/allnews",
-        "sourceName": "Autocar India"
+        "url": "https://www.rushlane.com/feed",
+        "sourceName": "RushLane Auto India"
     },
     {
         "category": "Cars & EVs",
-        "url": "https://www.cartoq.com/feed/",
-        "sourceName": "CarToq India"
+        "url": "https://drivespark.com/rss/feeds.xml",
+        "sourceName": "DriveSpark Auto"
     },
 
     # Crypto
@@ -131,20 +153,6 @@ FEEDS = [
         "category": "Crypto",
         "url": "https://www.coindesk.com/arc/outboundfeeds/rss/",
         "sourceName": "CoinDesk"
-    },
-
-    # Sports
-    {
-        "category": "Sports",
-        "url": "https://sports.ndtv.com/rss/all",
-        "sourceName": "NDTV Sports"
-    },
-
-    # Gaming
-    {
-        "category": "Gaming",
-        "url": "https://feeds.feedburner.com/ign/all",
-        "sourceName": "IGN"
     }
 ]
 
@@ -331,6 +339,8 @@ def fetch_rss_feed_fast(feed_info: dict, max_items: int = 10) -> list:
             
             if title and link:
                 clean_link = link.split("?")[0]
+                if "moneycontrol" in clean_link.lower() or "moneycontrol" in title.lower() or "moneycontrol" in feed_info["sourceName"].lower():
+                    continue
                 items.append({
                     "title": title[:250],
                     "url": clean_link,
@@ -350,6 +360,7 @@ def call_gemini_batch_api(items: list) -> dict:
         return {}
 
     simplified = [{"id": item["id"], "title": item["title"], "content": item["text"]} for item in items]
+    simplified_json = json.dumps(simplified, indent=2)
     
     prompt = f"""You are the Automated Financial Tech & News Scraper Engine.
 Analyze these news items and produce structured JSON output.
@@ -361,7 +372,7 @@ Output MUST be strictly valid JSON without markdown code blocks.
 
 Respond ONLY with a JSON Array of objects matching this exact format for each item:
 [
-  {
+  {{
     "id": <number matching input id>,
     "category": "Must be EXACTLY ONE of ['FREELANCER_REMOTE_FINANCE', 'ESOP_STARTUP_EQUITY', 'SME_D2C_FINTECH', 'FIRE_HIGH_INCOME_TECH', 'WEB3_ALTERNATIVE_ASSETS']",
     "raw_headline": "Catchy headline (Max 10 words)",
@@ -375,8 +386,11 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
     "uspAndVerdict": "Final verdict or USP",
     "affiliateCtaText": "Call to action text",
     "affiliateCtaLink": "Call to action link"
-  }
+  }}
 ]
+
+Items to analyze:
+{simplified_json}
 """
 
     url_primary = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={GEMINI_API_KEY}"
@@ -453,6 +467,23 @@ def generate_fallback_llm_summary(item: dict) -> dict:
         "category": category,
         "topic_cluster": f"{category} Update"
     }
+def purge_all_supabase_news():
+    if not SUPABASE_URL or not SUPABASE_KEY or "YOUR_" in SUPABASE_URL:
+        logging.info("Supabase purge skipped (credentials not set).")
+        return
+
+    url = f"{SUPABASE_URL.rstrip('/')}/rest/v1/financial_news?publishedAt=gt.0"
+    headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}'
+    }
+    try:
+        req = urllib.request.Request(url, headers=headers, method='DELETE')
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            logging.info(f"Supabase news table purged successfully! Status: {resp.status}")
+    except Exception as e:
+        logging.warning(f"Could not purge Supabase news table: {e}")
+
 def fetch_existing_supabase_urls() -> set:
     if not SUPABASE_URL or not SUPABASE_KEY or "YOUR_" in SUPABASE_URL:
         return set()
@@ -516,6 +547,9 @@ def push_to_supabase_rest(records: list):
 def main():
     start_time = time.time()
     logging.info("Starting hybrid API + RSS news scraper & artifact generator...")
+
+    # Purge existing news from Supabase database to remove outdated or unwanted news
+    purge_all_supabase_news()
 
     raw_items = []
     seen_urls = set()

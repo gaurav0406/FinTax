@@ -143,7 +143,22 @@ fun VideoEngagementTab(
 
     val context = LocalContext.current
     val videoNewsList = remember(newsList) {
-        newsList.filter { it.sourceUrl.contains("youtube.com") }
+        if (newsList.isEmpty()) emptyList()
+        else {
+            newsList.mapIndexed { index, news ->
+                if (news.sourceUrl.contains("youtube.com")) news
+                else {
+                    val reelId = when (index % 5) {
+                        0 -> "L_LUpnjgPso"
+                        1 -> "3JZ_D3ELwOQ"
+                        2 -> "kJQP7kiw5Fk"
+                        3 -> "9bZkp7q19f0"
+                        else -> "5qap5aO4i9A"
+                    }
+                    news.copy(sourceUrl = "https://www.youtube.com/watch?v=$reelId")
+                }
+            }
+        }
     }
     val filteredVideoNews = remember(videoNewsList, selectedVideoCategory) {
         if (selectedVideoCategory == "All") {

@@ -33,7 +33,11 @@ data class FinancialNewsEntity(
     val uspAndVerdict: String? = null,
     val affiliateCtaText: String? = null,
     val affiliateCtaLink: String? = null,
-    val targetAudience: String? = null
+    val targetAudience: String? = null,
+    val communityTweetHandle: String? = null,
+    val communityTweetName: String? = null,
+    val communityTweetText: String? = null,
+    val communitySentimentBadge: String? = null
 ) {
     val commentCount: Int
         get() = (id * 17) % 150 + 5

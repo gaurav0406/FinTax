@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -25,6 +26,7 @@ import com.example.ui.theme.MinimalPurplePrimary
 
 data class QuizQuestion(
     val id: Int,
+    val category: String,
     val question: String,
     val options: List<String>,
     val correctIndex: Int,
@@ -34,58 +36,97 @@ data class QuizQuestion(
 val financialQuizQuestions = listOf(
     QuizQuestion(
         id = 1,
-        question = "Under the New Tax Regime in India (FY 2024-25), up to what income limit is tax effectively zero due to Section 87A rebate?",
+        category = "Wealth 101",
+        question = "Under the New Tax Regime in India (FY 2024-25), up to what net taxable income limit is tax effectively zero due to Section 87A rebate?",
         options = listOf("₹5 Lakhs", "₹7 Lakhs", "₹10 Lakhs", "₹12 Lakhs"),
         correctIndex = 1,
         explanation = "Under the New Tax Regime, tax rebate under Section 87A ensures individuals with net taxable income up to ₹7 Lakhs pay zero tax."
     ),
     QuizQuestion(
         id = 2,
-        question = "What is 'Rupee Cost Averaging' in Mutual Fund SIPs?",
+        category = "Market Signals",
+        question = "What is the primary objective of the Reserve Bank of India (RBI) maintaining repo rate stability at 6.5%?",
         options = listOf(
-            "Buying more units when markets are high and fewer when low",
-            "Buying fewer units when markets are high and more units when prices drop",
-            "Paying a fixed management fee every month",
-            "Averaging out bank interest rates"
+            "Anchoring retail inflation around the 4% target while sustaining economic growth",
+            "Eliminating all commercial bank lending activities",
+            "Fixing foreign exchange rates against the US Dollar",
+            "Providing free loans to corporate conglomerates"
         ),
-        correctIndex = 1,
-        explanation = "SIPs automatically buy more units when market prices are low and fewer units when prices are high, averaging your purchase cost."
+        correctIndex = 0,
+        explanation = "The Monetary Policy Committee (MPC) holds repo rates steady to anchor inflation near 4% while supporting robust 7%+ GDP growth."
     ),
     QuizQuestion(
         id = 3,
-        question = "Which credit card reward strategy yields the highest return for frequent travelers?",
+        category = "Card Hacks & Perks",
+        question = "Which credit card reward strategy yields the highest return value for frequent travelers?",
         options = listOf(
-            "Redeeming points for direct statement cash back",
+            "Redeeming reward points directly for statement cash back",
             "Transferring reward points to airline and hotel loyalty partner programs",
-            "Using points for Amazon or Flipkart shopping vouchers",
-            "Keeping points accumulated without redeeming"
+            "Using reward points for Amazon or Flipkart shopping vouchers",
+            "Accumulating points without ever redeeming them"
         ),
         correctIndex = 1,
-        explanation = "Transferring reward points to airline/hotel partners (e.g. Marriott, KrisFlyer) often yields 2x to 5x higher value per point."
+        explanation = "Transferring reward points to airline and hotel partners (e.g. Marriott, KrisFlyer) often yields 2x to 5x higher value per point."
     ),
     QuizQuestion(
         id = 4,
-        question = "What does 'Compounding' mean in long-term investing?",
+        category = "Wealth 101",
+        question = "What is the key advantage of Rupee Cost Averaging in Mutual Fund SIPs?",
         options = listOf(
-            "Earning returns only on your initial principal amount",
-            "Earning returns on both your initial principal and accumulated interest over time",
-            "Combining multiple bank accounts into one",
-            "Reducing investment tax liability"
+            "Buying fewer units when markets are high and more units when prices drop",
+            "Guaranteeing fixed 20% annual returns regardless of market volatility",
+            "Waiving all exit loads and asset management fees permanently",
+            "Eliminating all equity market risks completely"
         ),
-        correctIndex = 1,
-        explanation = "Einstein famously called compound interest the eighth wonder of the world because your earnings generate their own earnings."
+        correctIndex = 0,
+        explanation = "SIPs automatically purchase more units during market dips and fewer during market peaks, lowering your average cost per unit."
     ),
     QuizQuestion(
         id = 5,
-        question = "What is the primary benefit of ELSS (Equity Linked Savings Scheme) mutual funds?",
+        category = "Tech & AI",
+        question = "How is Generative AI transforming digital lending and underwriting in Indian fintech?",
         options = listOf(
-            "Guaranteed 15% fixed return backed by the government",
-            "Tax deduction under Section 80C up to ₹1.5 Lakhs with the shortest lock-in among 80C options",
-            "Zero market risk and daily liquidity",
-            "Tax-free dividend payouts only"
+            "By replacing human borrowers entirely with robotic avatars",
+            "By automating instant loan underwriting, KYC, and risk scoring in under 5 minutes",
+            "By increasing interest rates on all personal loans by 50%",
+            "By manual paper verification of physical bank passbooks"
         ),
         correctIndex = 1,
-        explanation = "ELSS offers Section 80C tax deductions with a 3-year lock-in period, which is the shortest among all 80C tax-saving instruments."
+        explanation = "GenAI and automated decisioning workflows reduce loan disbursal times from days to under 5 minutes while maintaining strict compliance."
+    ),
+    QuizQuestion(
+        id = 6,
+        category = "Startup & Capital",
+        question = "What key metric are venture capital investors prioritizing most when evaluating D2C startup funding rounds?",
+        options = listOf(
+            "High burn rate and vanity social media follower counts",
+            "Sustainable unit economics, gross margins, and operating profitability",
+            "Number of physical billboards placed in metropolitan cities",
+            "Offering free products indefinitely to all consumers"
+        ),
+        correctIndex = 1,
+        explanation = "VC sentiment has shifted toward sustainable unit economics, customer lifetime value (LTV), and profitability over high-burn growth."
+    ),
+    QuizQuestion(
+        id = 7,
+        category = "Wealth 101",
+        question = "What is the lock-in period for Equity Linked Savings Scheme (ELSS) mutual funds under Section 80C?",
+        options = listOf("1 Year", "3 Years", "5 Years", "10 Years"),
+        correctIndex = 1,
+        explanation = "ELSS offers tax deductions under Section 80C up to ₹1.5 Lakhs with a 3-year lock-in, the shortest among all 80C tax-saving options."
+    ),
+    QuizQuestion(
+        id = 8,
+        category = "Card Hacks & Perks",
+        question = "What is required by major credit card issuers to unlock complimentary quarterly airport lounge access?",
+        options = listOf(
+            "Calling customer support 48 hours prior to departure",
+            "Meeting minimum spend-based milestone thresholds in the previous quarter",
+            "Paying an additional annual fee per lounge visit",
+            "Flying exclusively in first class cabins"
+        ),
+        correctIndex = 1,
+        explanation = "Card issuers now require spend prerequisites (e.g. ₹50,000 per quarter) to unlock complimentary domestic and international lounge access."
     )
 )
 
@@ -109,7 +150,7 @@ fun FinancialQuizTab() {
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp),
+                .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 100.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Header card
@@ -203,16 +244,33 @@ fun FinancialQuizTab() {
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = MinimalPurpleLightContainer
+                        ) {
+                            Text(
+                                text = question.category.uppercase(),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MinimalPurplePrimary
+                                )
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
                         Text(
                             text = question.question,
-                            style = MaterialTheme.typography.titleLarge.copy(
+                            style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                lineHeight = 28.sp
+                                fontSize = 16.sp,
+                                lineHeight = 22.sp
                             ),
                             color = MaterialTheme.colorScheme.onSurface
                         )
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         question.options.forEachIndexed { index, option ->
                             val isSelected = selectedOption == index
@@ -244,7 +302,7 @@ fun FinancialQuizTab() {
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 6.dp)
+                                    .padding(vertical = 3.dp)
                                     .border(1.5.dp, borderColor, RoundedCornerShape(14.dp)),
                                 shape = RoundedCornerShape(14.dp),
                                 colors = CardDefaults.cardColors(containerColor = containerColor)
@@ -252,7 +310,7 @@ fun FinancialQuizTab() {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(16.dp),
+                                        .padding(horizontal = 16.dp, vertical = 10.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     RadioButton(
@@ -285,7 +343,7 @@ fun FinancialQuizTab() {
                         }
 
                         if (selectedOption != null) {
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(14.dp))
                             Surface(
                                 shape = RoundedCornerShape(12.dp),
                                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
@@ -305,30 +363,83 @@ fun FinancialQuizTab() {
                                     )
                                 }
                             }
+                        }
+                    }
+                }
 
-                            Spacer(modifier = Modifier.height(20.dp))
+                if (selectedOption != null) {
+                    Spacer(modifier = Modifier.height(14.dp))
 
-                            Button(
-                                onClick = {
-                                    selectedOption = null
-                                    if (currentIndex < financialQuizQuestions.size - 1) {
-                                        currentIndex++
-                                    } else {
-                                        quizCompleted = true
-                                    }
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(50.dp),
-                                shape = RoundedCornerShape(14.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = MinimalPurplePrimary)
+                    // Sponsored Ad Banner right above the Next Question button
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = MinimalPurplePrimary,
+                                modifier = Modifier.size(32.dp)
                             ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.Campaign,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = if (currentIndex < financialQuizQuestions.size - 1) "Next Question" else "View Results",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                    text = "SPONSORED AD • Grow Your Wealth",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 9.sp,
+                                        color = MinimalPurplePrimary
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "Zero Brokerage & Free Mutual Fund SIPs on Groww & Zerodha. Invest Now!",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    maxLines = 1
                                 )
                             }
                         }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Button(
+                        onClick = {
+                            selectedOption = null
+                            if (currentIndex < financialQuizQuestions.size - 1) {
+                                currentIndex++
+                            } else {
+                                quizCompleted = true
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MinimalPurplePrimary)
+                    ) {
+                        Text(
+                            text = if (currentIndex < financialQuizQuestions.size - 1) "Next Question" else "View Results",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
                     }
                 }
             } else {

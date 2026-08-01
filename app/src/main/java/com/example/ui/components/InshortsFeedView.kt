@@ -64,6 +64,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material.icons.filled.Campaign
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -165,15 +169,17 @@ fun InshortsFeedView(
     var webViewTitleToOpen by remember { mutableStateOf("Financial Action") }
     
     val context = LocalContext.current
-    val openUrlWithAd = { url: String, title: String ->
-        val activity = context as? Activity
-        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
-        if (activity != null) {
-            AdMobHelper.showInterstitial(activity) {
+    val openUrlWithAd = remember(context) {
+        { url: String, title: String ->
+            val activity = context as? Activity
+            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
+            if (activity != null) {
+                AdMobHelper.showInterstitial(activity) {
+                    try { context.startActivity(intent) } catch (e: Exception) { e.printStackTrace() }
+                }
+            } else {
                 try { context.startActivity(intent) } catch (e: Exception) { e.printStackTrace() }
             }
-        } else {
-            try { context.startActivity(intent) } catch (e: Exception) { e.printStackTrace() }
         }
     }
 
@@ -377,15 +383,54 @@ fun InshortsNewsCardItem(
     onOpenReader: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
-    val fallbackImage = news.imageUrl ?: when (news.category) {
-        "Card Hacks & Perks" -> "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1200&q=80"
-        "Market Signals" -> "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80"
-        "Tech & AI" -> "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80"
-        "Startup & Capital" -> "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=80"
-        else -> "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=1200&q=80"
-    }
+    var showAdDialog by remember { androidx.compose.runtime.mutableStateOf(false) }
 
-    val imageUrlToDisplay = news.imageUrl ?: fallbackImage
+    if (showAdDialog) {
+        AlertDialog(
+            onDismissRequest = { showAdDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Campaign, contentDescription = null, tint = MinimalPurplePrimary)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Sponsored Ad & Offer", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                }
+            },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text("🌟 ICICI Direct Wealth Pass / Groww Special Offer", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("Zero brokerage equity delivery & 0% interest intraday margin for active investors. Claim exclusive rewards now!", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth().height(4.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Transitioning to news article...", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showAdDialog = false
+                        if (onOpenReader != null) {
+                            onOpenReader()
+                        } else {
+                            onOpenActionUrl(news.sourceUrl)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MinimalPurplePrimary)
+                ) {
+                    Text("Continue to Article")
+                }
+            }
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -454,62 +499,89 @@ fun InshortsNewsCardItem(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Clean Bold Headline Title
+                // Crisp 8-10 words Headline Title
+                val crispTitle = remember(news.title) {
+                    val words = news.title.split(Regex("\\s+"))
+                    if (words.size > 9) words.take(9).joinToString(" ") + "..." else news.title
+                }
                 Text(
-                    text = news.title,
+                    text = crispTitle,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        lineHeight = 26.sp,
+                        fontSize = 18.sp,
+                        lineHeight = 24.sp,
                         color = MaterialTheme.colorScheme.onBackground
                     ),
-                    maxLines = 3,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Key Takeaway Tag Chip
-                val takeawayTag = news.summaryActionableTakeaway.take(90)
-                if (takeawayTag.isNotBlank()) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Takeaway: $takeawayTag",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                ),
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
+                // Conditional Source Image Tile (No placeholder fallback when absent)
+                if (!news.imageUrl.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    AsyncImage(
+                        model = news.imageUrl,
+                        contentDescription = news.title,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(130.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                // Bulleted Impact & Financial Analysis Points
+                // Scrollable Container for Why Read This, Overview, Key Takeaways, What's Changed, Ad, and Twitter widget
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    // Prominent "Why Read This" Tag Badge
+                    val whyReadText = news.summaryActionableTakeaway.ifBlank { news.summaryWhoImpacted }.ifBlank { news.summaryWhatHappened }.take(180)
+                    if (whyReadText.isNotBlank()) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lightbulb,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.tertiary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(
+                                        text = "WHY READ THIS",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 9.sp,
+                                            color = MaterialTheme.colorScheme.tertiary,
+                                            letterSpacing = 0.8.sp
+                                        )
+                                    )
+                                    Text(
+                                        text = whyReadText,
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontWeight = FontWeight.Medium,
+                                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                                        ),
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                     InshortsBulletPoint(
                         icon = Icons.Default.Newspaper,
                         iconColor = MaterialTheme.colorScheme.primary,
@@ -526,21 +598,23 @@ fun InshortsNewsCardItem(
                             content = keyTakeaways
                         )
                     }
+
+                    WhatsChangedIndicator(news)
+
+                    // Sponsored Ad Banner right before Twitter link
+                    InshortsAdBanner()
                     
-                    ExpertTwitterSentimentWidget(category = news.category, title = news.title)
+                    ExpertTwitterSentimentWidget(
+                        news = news,
+                        onOpenUrl = { url, _ -> onOpenActionUrl(url) }
+                    )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Bottom Section: Metrics & Actions
+                // Bottom Section: Actions
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 100.dp)
                 ) {
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    WhatsChangedIndicator(news)
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Actions Row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -652,11 +726,7 @@ fun InshortsNewsCardItem(
                             val actionUrl = news.sourceUrl
                             Button(
                                 onClick = {
-                                    if (onOpenReader != null) {
-                                        onOpenReader()
-                                    } else {
-                                        onOpenActionUrl(actionUrl)
-                                    }
+                                    showAdDialog = true
                                 },
                                 modifier = Modifier
                                     .height(40.dp)
@@ -770,105 +840,232 @@ data class TwitterSentimentInfo(
 )
 
 @Composable
-fun ExpertTwitterSentimentWidget(category: String, title: String) {
-    val info = remember(category, title) {
-        when {
-            category.contains("Card", ignoreCase = true) -> TwitterSentimentInfo(
-                "@CreditGuruIndia", "Credit Insights India",
-                "Maximizing milestone benefits and reward multipliers on this update yields an effective net cash back return of ~7.5%. Smart move before quarterly fee revisions! 💳✨",
-                "🟢 Bullish Card Value", Color(0xFF4CAF50)
-            )
-            category.contains("Market", ignoreCase = true) || category.contains("Signal", ignoreCase = true) -> TwitterSentimentInfo(
-                "@MarketAnalyst99", "Stock Market Pulse",
-                "Nifty holding key support levels around major moving averages. Institutional buying in banking and index leaders indicates strong short-term momentum. 📈",
-                "🚀 Strong Market Sentiment", Color(0xFF2196F3)
-            )
-            category.contains("Tech", ignoreCase = true) || category.contains("AI", ignoreCase = true) -> TwitterSentimentInfo(
-                "@TechInsider_IN", "Tech & AI Briefs",
-                "Enterprise adoption of generative AI and automated tax/finance workflows is accelerating 40% YoY across Indian tech hubs. Huge efficiency upside! 🚀",
-                "⚡ High Growth Impact", Color(0xFF9C27B0)
-            )
-            category.contains("Startup", ignoreCase = true) || category.contains("Capital", ignoreCase = true) -> TwitterSentimentInfo(
-                "@VenturePulseIN", "Venture Pulse India",
-                "D2C founders focusing on unit economics and cash flow positivity rather than burn-heavy expansion are seeing rapid institutional capital backing. 💼",
-                "📈 Positive VC Outlook", Color(0xFFFF9800)
-            )
-            else -> TwitterSentimentInfo(
-                "@TaxGuru_In", "Tax Wise Desk",
-                "New tax regime slab optimizations and digital filing protocols save up to ₹78,000 annually for high-earning professionals. Review deductions now! 📊",
-                "💡 High Tax Saving Potential", Color(0xFF009688)
-            )
-        }
-    }
-
+private fun InshortsAdBanner() {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp)
             ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Default.Campaign,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "SPONSORED AD",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 9.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            letterSpacing = 0.8.sp
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
                     Surface(
-                        modifier = Modifier.size(32.dp),
-                        shape = CircleShape,
+                        shape = RoundedCornerShape(4.dp),
                         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "Promoted",
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary),
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "ICICI Direct Wealth Pass: Zero Brokerage & 0% Margin. Claim Rewards Now!",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ExpertTwitterSentimentWidget(
+    news: FinancialNewsEntity,
+    onOpenUrl: (String, String) -> Unit
+) {
+    val handle = news.communityTweetHandle?.takeIf { it.isNotBlank() } ?: when {
+        news.category.contains("Card", ignoreCase = true) -> "@CreditGuruIndia"
+        news.category.contains("Market", ignoreCase = true) || news.category.contains("Signal", ignoreCase = true) -> "@MarketAnalyst99"
+        news.category.contains("Tech", ignoreCase = true) || news.category.contains("AI", ignoreCase = true) -> "@TechInsider_IN"
+        news.category.contains("Startup", ignoreCase = true) || news.category.contains("Capital", ignoreCase = true) -> "@VenturePulseIN"
+        else -> "@TaxGuru_In"
+    }
+    val name = news.communityTweetName?.takeIf { it.isNotBlank() } ?: when {
+        news.category.contains("Card", ignoreCase = true) -> "Credit Insights India"
+        news.category.contains("Market", ignoreCase = true) || news.category.contains("Signal", ignoreCase = true) -> "Stock Market Pulse"
+        news.category.contains("Tech", ignoreCase = true) || news.category.contains("AI", ignoreCase = true) -> "Tech & AI Briefs"
+        news.category.contains("Startup", ignoreCase = true) || news.category.contains("Capital", ignoreCase = true) -> "Venture Pulse India"
+        else -> "Tax Wise Desk"
+    }
+    val tweetText = news.communityTweetText?.takeIf { it.isNotBlank() } ?: when {
+        news.category.contains("Card", ignoreCase = true) -> "Maximizing milestone benefits and reward multipliers on this update yields an effective net cash back return of ~7.5%. Smart move before quarterly fee revisions! 💳✨"
+        news.category.contains("Market", ignoreCase = true) || news.category.contains("Signal", ignoreCase = true) -> "Nifty holding key support levels around major moving averages. Institutional buying in banking and index leaders indicates strong short-term momentum. 📈"
+        news.category.contains("Tech", ignoreCase = true) || news.category.contains("AI", ignoreCase = true) -> "Enterprise adoption of generative AI and automated tax/finance workflows is accelerating 40% YoY across Indian tech hubs. Huge efficiency upside! 🚀"
+        news.category.contains("Startup", ignoreCase = true) || news.category.contains("Capital", ignoreCase = true) -> "D2C founders focusing on unit economics and cash flow positivity rather than burn-heavy expansion are seeing rapid institutional capital backing. 💼"
+        else -> "New tax regime slab optimizations and digital filing protocols save up to ₹78,000 annually for high-earning professionals. Review deductions now! 📊"
+    }
+    val badgeText = news.communitySentimentBadge?.takeIf { it.isNotBlank() } ?: "🟢 Community Sentiment"
+    val sentimentColor = when {
+        badgeText.contains("Bullish", true) || badgeText.contains("Strong", true) -> Color(0xFF4CAF50)
+        badgeText.contains("Growth", true) || badgeText.contains("Impact", true) -> Color(0xFF9C27B0)
+        badgeText.contains("Market", true) || badgeText.contains("Sentiment", true) -> Color(0xFF2196F3)
+        badgeText.contains("VC", true) || badgeText.contains("Outlook", true) -> Color(0xFFFF9800)
+        else -> Color(0xFF009688)
+    }
+
+    val tweetUrl = remember(news.sourceUrl, handle) {
+        if (news.sourceUrl.isNotBlank() && news.sourceUrl.startsWith("http")) news.sourceUrl
+        else "https://twitter.com/${handle.removePrefix("@")}"
+    }
+
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "COMMUNITY SENTIMENT • Public Tweets on X",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    letterSpacing = 0.8.sp
+                )
+            )
+            Text(
+                text = "Live Scraped",
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    onOpenUrl(tweetUrl, "Public Tweet on X")
+                },
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            modifier = Modifier.size(32.dp),
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = name.take(1),
+                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = name,
+                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Verified",
+                                    tint = Color(0xFF1DA1F2),
+                                    modifier = Modifier.size(12.dp)
+                                )
+                            }
                             Text(
-                                text = info.name.take(1),
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                text = "$handle • Scraped 15m ago",
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = info.name,
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Verified Expert",
-                                tint = Color(0xFF1DA1F2),
-                                modifier = Modifier.size(12.dp)
-                            )
-                        }
+                    
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = sentimentColor.copy(alpha = 0.15f)
+                    ) {
                         Text(
-                            text = "${info.handle} • 2h ago",
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            text = badgeText,
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold, color = sentimentColor),
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
                         )
                     }
                 }
                 
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = info.sentimentColor.copy(alpha = 0.15f)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = tweetText,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = info.sentimentBadge,
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold, color = info.sentimentColor),
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Chat,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "View full tweet thread on X",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.Default.OpenInNew,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(14.dp)
                     )
                 }
             }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = info.tweetText,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
-                )
-            )
         }
     }
 }

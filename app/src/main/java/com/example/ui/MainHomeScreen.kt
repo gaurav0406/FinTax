@@ -1,10 +1,20 @@
 package com.example.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -160,6 +170,20 @@ fun MainHomeScreen(
     var selectedNewsForComments by remember { mutableStateOf<FinancialNewsEntity?>(null) }
     var activeWebViewUrl by remember { mutableStateOf<String?>(null) }
     var activeWebViewTitle by remember { mutableStateOf("News Reader") }
+    var isBottomBarVisible by remember { mutableStateOf(true) }
+
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (available.y < -5f) {
+                    isBottomBarVisible = false
+                } else if (available.y > 5f) {
+                    isBottomBarVisible = true
+                }
+                return Offset.Zero
+            }
+        }
+    }
 
     val userSelectedCategories = remember(userProfileState) {
         userProfileState?.selectedCategories?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
@@ -427,7 +451,9 @@ fun MainHomeScreen(
         },
     ) {
         Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .nestedScroll(nestedScrollConnection),
         containerColor = if ((useInshortsViewMode && activeTab == 0) || activeTab == 5) Color(0xFF0D0E12) else MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
@@ -561,135 +587,161 @@ fun MainHomeScreen(
             )
         },
         bottomBar = {
-            Column(
-                modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
-            ) {
-                // Floating audio bar if audio is active and not on Inshorts tab (where FAB handles it)
-                if (!useInshortsViewMode || activeTab != 0) {
-                    FloatingAudioPlayer(
-                        playbackState = playbackState,
-                        onPlayPauseToggle = {
-                            if (playbackState.isPlaying) {
-                                viewModel.audioSpeechManager.pauseAudio()
-                            } else {
-                                val activeId = playbackState.activeNewsId
-                                val newsItem = filteredNewsList.find { it.id == activeId } ?: bookmarkedList.find { it.id == activeId }
-                                if (newsItem != null) {
-                                    viewModel.playAudio(newsItem)
-                                }
-                            }
-                        },
-                        onCycleRate = { viewModel.audioSpeechManager.cycleSpeechRate() },
-                        onStop = { viewModel.audioSpeechManager.stopAudio() }
-                    )
-                }
-
-                // Persistent Bottom Sticky Banner Ad on non-feed screens
-                if (activeTab != 0) {
-                    StickyBottomBannerAd()
-                }
-
-                val isDarkTab = (useInshortsViewMode && activeTab == 0) || activeTab == 5
-
-                // Bottom Navigation Bar
-                NavigationBar(
-                    containerColor = Color.Transparent,
-                    tonalElevation = 0.dp,
-                    modifier = Modifier
-                        .padding(horizontal = 24.dp, vertical = 12.dp)
-                        .background(
-                            color = if (isDarkTab) Color(0xFF16171E).copy(alpha = 0.6f) else MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
-                            shape = RoundedCornerShape(32.dp)
-                        )
-                        .border(
-                            width = 1.dp,
-                            color = if (isDarkTab) Color.White.copy(alpha = 0.1f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(32.dp)
-                        )
+            Box(modifier = Modifier.fillMaxWidth()) {
+                AnimatedVisibility(
+                    visible = isBottomBarVisible,
+                    enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+                    exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+                    modifier = Modifier.align(Alignment.BottomCenter)
                 ) {
-                    NavigationBarItem(
-                        selected = activeTab == 0,
-                        onClick = { viewModel.setActiveTab(0) },
-                        icon = { Icon(imageVector = Icons.Default.Newspaper, contentDescription = "Feed") },
-                        label = { Text("Feed", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
-                            indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        modifier = Modifier.testTag("nav_tab_feed")
-                    )
+                    Column(
+                        modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
+                    ) {
+                        // Floating audio bar if audio is active and not on Inshorts tab (where FAB handles it)
+                        if (!useInshortsViewMode || activeTab != 0) {
+                            FloatingAudioPlayer(
+                                playbackState = playbackState,
+                                onPlayPauseToggle = {
+                                    if (playbackState.isPlaying) {
+                                        viewModel.audioSpeechManager.pauseAudio()
+                                    } else {
+                                        val activeId = playbackState.activeNewsId
+                                        val newsItem = filteredNewsList.find { it.id == activeId } ?: bookmarkedList.find { it.id == activeId }
+                                        if (newsItem != null) {
+                                            viewModel.playAudio(newsItem)
+                                        }
+                                    }
+                                },
+                                onCycleRate = { viewModel.audioSpeechManager.cycleSpeechRate() },
+                                onStop = { viewModel.audioSpeechManager.stopAudio() }
+                            )
+                        }
 
-                    NavigationBarItem(
-                        selected = activeTab == 1,
-                        onClick = { viewModel.setActiveTab(1) },
-                        icon = { Icon(imageVector = Icons.Default.Bookmark, contentDescription = "Saved") },
-                        label = { Text("Saved", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
-                            indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        modifier = Modifier.testTag("nav_tab_saved")
-                    )
+                        // Persistent Bottom Sticky Banner Ad on non-feed screens
+                        if (activeTab != 0) {
+                            StickyBottomBannerAd()
+                        }
 
-                    NavigationBarItem(
-                        selected = activeTab == 2,
-                        onClick = { viewModel.setActiveTab(2) },
-                        icon = { Icon(imageVector = Icons.Default.Calculate, contentDescription = "Tax Calc") },
-                        label = { Text("Taxes", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
-                            indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        modifier = Modifier.testTag("nav_tab_tax_calc")
-                    )
+                        val isDarkTab = (useInshortsViewMode && activeTab == 0) || activeTab == 5
 
-                    NavigationBarItem(
-                        selected = activeTab == 3,
-                        onClick = { viewModel.setActiveTab(3) },
-                        icon = { Icon(imageVector = Icons.Default.LocalOffer, contentDescription = "Deals") },
-                        label = { Text("Deals", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
-                            indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        modifier = Modifier.testTag("nav_tab_deals")
-                    )
+                        // Bottom Navigation Bar
+                        NavigationBar(
+                            containerColor = Color.Transparent,
+                            tonalElevation = 0.dp,
+                            modifier = Modifier
+                                .padding(horizontal = 24.dp, vertical = 12.dp)
+                                .background(
+                                    color = if (isDarkTab) Color(0xFF16171E).copy(alpha = 0.6f) else MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                                    shape = RoundedCornerShape(32.dp)
+                                )
+                                .border(
+                                    width = 1.dp,
+                                    color = if (isDarkTab) Color.White.copy(alpha = 0.1f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                                    shape = RoundedCornerShape(32.dp)
+                                )
+                        ) {
+                            NavigationBarItem(
+                                selected = activeTab == 0,
+                                onClick = { viewModel.setActiveTab(0) },
+                                icon = { Icon(imageVector = Icons.Default.Newspaper, contentDescription = "Feed") },
+                                label = { Text("Feed", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
+                                    indicatorColor = MinimalPurplePrimary,
+                                    unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                modifier = Modifier.testTag("nav_tab_feed")
+                            )
 
-                    NavigationBarItem(
-                        selected = activeTab == 4,
-                        onClick = { viewModel.setActiveTab(4) },
-                        icon = { Icon(imageVector = Icons.Default.PlayCircle, contentDescription = "Videos") },
-                        label = { Text("Videos", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
-                            indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        modifier = Modifier.testTag("nav_tab_videos")
-                    )
+                            NavigationBarItem(
+                                selected = activeTab == 1,
+                                onClick = { viewModel.setActiveTab(1) },
+                                icon = { Icon(imageVector = Icons.Default.Bookmark, contentDescription = "Saved") },
+                                label = { Text("Saved", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
+                                    indicatorColor = MinimalPurplePrimary,
+                                    unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                modifier = Modifier.testTag("nav_tab_saved")
+                            )
 
-                    NavigationBarItem(
-                        selected = activeTab == 5,
-                        onClick = { viewModel.setActiveTab(5) },
-                        icon = { Icon(imageVector = Icons.Default.Info, contentDescription = "Quiz") },
-                        label = { Text("Quiz", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
-                            indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        modifier = Modifier.testTag("nav_tab_quiz")
-                    )
+                            NavigationBarItem(
+                                selected = activeTab == 2,
+                                onClick = { viewModel.setActiveTab(2) },
+                                icon = { Icon(imageVector = Icons.Default.Calculate, contentDescription = "Tax Calc") },
+                                label = { Text("Taxes", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
+                                    indicatorColor = MinimalPurplePrimary,
+                                    unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                modifier = Modifier.testTag("nav_tab_tax_calc")
+                            )
+
+                            NavigationBarItem(
+                                selected = activeTab == 3,
+                                onClick = { viewModel.setActiveTab(3) },
+                                icon = { Icon(imageVector = Icons.Default.LocalOffer, contentDescription = "Deals") },
+                                label = { Text("Deals", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
+                                    indicatorColor = MinimalPurplePrimary,
+                                    unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                modifier = Modifier.testTag("nav_tab_deals")
+                            )
+
+                            NavigationBarItem(
+                                selected = activeTab == 4,
+                                onClick = { viewModel.setActiveTab(4) },
+                                icon = { Icon(imageVector = Icons.Default.PlayCircle, contentDescription = "Videos") },
+                                label = { Text("Videos", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
+                                    indicatorColor = MinimalPurplePrimary,
+                                    unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                modifier = Modifier.testTag("nav_tab_videos")
+                            )
+
+                            NavigationBarItem(
+                                selected = activeTab == 5,
+                                onClick = { viewModel.setActiveTab(5) },
+                                icon = { Icon(imageVector = Icons.Default.Info, contentDescription = "Quiz") },
+                                label = { Text("Quiz", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
+                                    indicatorColor = MinimalPurplePrimary,
+                                    unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                modifier = Modifier.testTag("nav_tab_quiz")
+                            )
+                        }
+                    }
+                }
+
+                if (!isBottomBarVisible) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(28.dp)
+                            .align(Alignment.BottomCenter)
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f))
+                            .clickable { isBottomBarVisible = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "▲ Tap to show navigation menu",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        )
+                    }
                 }
             }
         }
@@ -716,9 +768,9 @@ fun MainHomeScreen(
                             onToggleBookmark = { viewModel.toggleBookmark(it) },
                             onOpenComments = { news -> selectedNewsForComments = news },
                             onOpenReader = { news ->
-                                if (!news.sourceUrl.isNullOrBlank()) {
-                                    activeWebViewUrl = news.sourceUrl
-                                    activeWebViewTitle = news.title
+                                useInshortsViewMode = true
+                                if (!news.category.isBlank()) {
+                                    viewModel.setCategory(news.category)
                                 }
                             }
                         )
@@ -740,9 +792,9 @@ fun MainHomeScreen(
                             onToggleBookmark = { viewModel.toggleBookmark(it) },
                             onOpenComments = { news -> selectedNewsForComments = news },
                             onOpenReader = { news ->
-                                if (!news.sourceUrl.isNullOrBlank()) {
-                                    activeWebViewUrl = news.sourceUrl
-                                    activeWebViewTitle = news.title
+                                useInshortsViewMode = true
+                                if (!news.category.isBlank()) {
+                                    viewModel.setCategory(news.category)
                                 }
                             },
                             autoPlayAudio = userProfileState?.autoPlayAudio == true

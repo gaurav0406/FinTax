@@ -11,7 +11,7 @@ object NewsProcessorService {
         val apiKey = com.example.BuildConfig.GEMINI_API_KEY
         if (apiKey.isNotBlank()) {
             try {
-                val systemInstruction = """You are the Automated Financial Tech & News Scraper Engine.
+                val systemInstruction = """You are the Automated Financial Tech & News Scraper Engine acting as a micro-copy engine for mobile news cards.
 Analyze this news item and produce structured JSON output.
 
 Classify into EXACTLY ONE of 5 target categories with their expanded scopes:
@@ -21,13 +21,20 @@ Classify into EXACTLY ONE of 5 target categories with their expanded scopes:
 4. WEALTH_101: Merges Mutual Funds, Crypto, Financial Literacy & Tax Education, and Taxation. Smart taxation, SIP insights, mutual fund NAVs, crypto trends, real estate insights.
 5. CARD_HACKS_AND_PERKS: Credit cards, reward points, lounge access, milestone spending bonuses, utility bill savings.
 
+Rules for why_read and whats_changed:
+- why_read: Must start with a metric/number. STRICTLY 8 to 10 words total.
+- whats_changed: Must start with a metric/number. STRICTLY 8 to 10 words total.
+- raw_headline: Crisp messaging headline (8 to 10 words total).
+
 Output MUST be strictly valid JSON without markdown code blocks.
 
 Respond ONLY with a JSON object matching this exact format:
 {
     "id": <number matching input id>,
     "category": "Must be EXACTLY ONE of ['TECH_AND_AI', 'MARKET_SIGNALS', 'STARTUP_AND_CAPITAL', 'WEALTH_101', 'CARD_HACKS_AND_PERKS']",
-    "raw_headline": "Catchy headline (Max 10 words)",
+    "raw_headline": "Crisp headline (8 to 10 words)",
+    "why_read": "Must start with a metric/number. STRICTLY 8 to 10 words total.",
+    "whats_changed": "Must start with a metric/number. STRICTLY 8 to 10 words total.",
     "summary_bullets": "3-4 bullet points summarizing the news",
     "target_audience": "Who this impacts",
     "monetization_angle": "How this relates to making or saving money",
@@ -37,7 +44,11 @@ Respond ONLY with a JSON object matching this exact format:
     "paragraphNextSteps": "Actionable next steps",
     "uspAndVerdict": "Final verdict or USP",
     "affiliateCtaText": "Call to action text",
-    "affiliateCtaLink": "Call to action link"
+    "affiliateCtaLink": "Call to action link",
+    "tweet_handle": "Public Twitter/X handle (e.g. @TaxGuru_In)",
+    "tweet_name": "Author display name",
+    "tweet_text": "Relevant public tweet text regarding this news (2 sentences)",
+    "tweet_badge": "Sentiment badge (e.g. 🟢 Bullish Sentiment)"
 }""".trimIndent()
 
                 val prompt = "News: $rawText"
@@ -55,14 +66,18 @@ Respond ONLY with a JSON object matching this exact format:
                 
                 val llmResult = JSONObject(cleanedJson)
                 
+                val catParsed = mapCategory(llmResult.optString("category", "Wealth 101"))
+                val rawTitle = llmResult.optString("raw_headline", "").trim()
+                val finalTitle = if (rawTitle.isNotBlank()) rawTitle else "Key $catParsed Update"
+
                 Result.success(
                     FinancialNewsEntity(
-                        title = "Key ${llmResult.optString("category", "Finance")} Update",
-                        summaryWhatHappened = llmResult.optString("summary", ""),
-                        summaryWhoImpacted = llmResult.optString("impacted_users", ""),
-                        summaryActionableTakeaway = llmResult.optString("action", ""),
+                        title = finalTitle,
+                        summaryWhatHappened = llmResult.optString("summary_bullets", llmResult.optString("summary", "")),
+                        summaryWhoImpacted = llmResult.optString("whats_changed", llmResult.optString("impacted_users", "")),
+                        summaryActionableTakeaway = llmResult.optString("why_read", llmResult.optString("action", "")),
                         summaryText = llmResult.optString("reason", ""),
-                                                category = mapCategory(llmResult.optString("category", "Wealth 101")),
+                        category = catParsed,
                         financialActionUrl = sourceUrl,
                         sourceUrl = sourceUrl,
                         sourceName = "AI Summarized News",
@@ -75,6 +90,10 @@ Respond ONLY with a JSON object matching this exact format:
                         affiliateCtaText = llmResult.optString("affiliateCtaText", null),
                         affiliateCtaLink = llmResult.optString("affiliateCtaLink", null),
                         targetAudience = llmResult.optString("target_audience", null),
+                        communityTweetHandle = llmResult.optString("tweet_handle", null),
+                        communityTweetName = llmResult.optString("tweet_name", null),
+                        communityTweetText = llmResult.optString("tweet_text", null),
+                        communitySentimentBadge = llmResult.optString("tweet_badge", null),
                         publishedAt = System.currentTimeMillis()
                     )
                 )
@@ -94,7 +113,7 @@ Respond ONLY with a JSON object matching this exact format:
         }
 
         try {
-            val systemInstruction = """You are the Automated Financial Tech & News Scraper Engine.
+            val systemInstruction = """You are the Automated Financial Tech & News Scraper Engine acting as a micro-copy engine for mobile news cards.
 Analyze these news items in a single batch and produce structured JSON output. Do NOT run separate scrapers.
 
 Classify each scraped RSS article into EXACTLY ONE of the following 5 target categories with their expanded scopes:
@@ -104,6 +123,11 @@ Classify each scraped RSS article into EXACTLY ONE of the following 5 target cat
 4. WEALTH_101: Merges Mutual Funds, Crypto, Financial Literacy & Tax Education, and Taxation. Scope: Smart taxation, SIP insights, mutual fund NAVs, crypto trends, and real estate insights for high-earning professionals. High-conversion BFSI driver.
 5. CARD_HACKS_AND_PERKS: Credit cards, reward points, lounge access, milestone spending bonuses, and utility bill savings.
 
+Rules for why_read and whats_changed:
+- why_read: Must start with a metric/number. STRICTLY 8 to 10 words total.
+- whats_changed: Must start with a metric/number. STRICTLY 8 to 10 words total.
+- raw_headline: Crisp messaging headline (8 to 10 words total).
+
 Output MUST be strictly valid JSON without markdown code blocks.
 
 Respond ONLY with a JSON Array of objects matching this exact format for each item:
@@ -111,7 +135,9 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
   {
     "id": <number matching input id>,
     "category": "Must be EXACTLY ONE of ['TECH_AND_AI', 'MARKET_SIGNALS', 'STARTUP_AND_CAPITAL', 'WEALTH_101', 'CARD_HACKS_AND_PERKS']",
-    "raw_headline": "Catchy headline (Max 10 words)",
+    "raw_headline": "Crisp headline (8 to 10 words)",
+    "why_read": "Must start with a metric/number. STRICTLY 8 to 10 words total.",
+    "whats_changed": "Must start with a metric/number. STRICTLY 8 to 10 words total.",
     "summary_bullets": "3-4 bullet points summarizing the news",
     "target_audience": "Who this impacts",
     "monetization_angle": "How this relates to making or saving money",
@@ -121,7 +147,11 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
     "paragraphNextSteps": "Actionable next steps",
     "uspAndVerdict": "Final verdict or USP",
     "affiliateCtaText": "Call to action text",
-    "affiliateCtaLink": "Call to action link"
+    "affiliateCtaLink": "Call to action link",
+    "tweet_handle": "Public Twitter/X handle (e.g. @TaxGuru_In)",
+    "tweet_name": "Author display name",
+    "tweet_text": "Relevant public tweet text regarding this news (2 sentences)",
+    "tweet_badge": "Sentiment badge (e.g. 🟢 Bullish Sentiment)"
   }
 ]""".trimIndent()
 
@@ -154,13 +184,17 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
             val entities = newsItems.mapIndexed { index, pair ->
                 val llmResult = resultMap[index]
                 if (llmResult != null) {
+                    val catParsed = mapCategory(llmResult.optString("category", "Wealth 101"))
+                    val rawTitle = llmResult.optString("raw_headline", "").trim()
+                    val finalTitle = if (rawTitle.isNotBlank()) rawTitle else "Key $catParsed Update"
+
                     FinancialNewsEntity(
-                        title = "Key ${llmResult.optString("category", "Finance")} Update",
-                        summaryWhatHappened = llmResult.optString("summary", ""),
-                        summaryWhoImpacted = llmResult.optString("impacted_users", ""),
-                        summaryActionableTakeaway = llmResult.optString("action", ""),
+                        title = finalTitle,
+                        summaryWhatHappened = llmResult.optString("summary_bullets", llmResult.optString("summary", "")),
+                        summaryWhoImpacted = llmResult.optString("whats_changed", llmResult.optString("impacted_users", "")),
+                        summaryActionableTakeaway = llmResult.optString("why_read", llmResult.optString("action", "")),
                         summaryText = llmResult.optString("reason", ""),
-                                                category = mapCategory(llmResult.optString("category", "Wealth 101")),
+                        category = catParsed,
                         financialActionUrl = pair.second,
                         sourceUrl = pair.second,
                         sourceName = "AI Summarized News",
@@ -173,6 +207,10 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
                         affiliateCtaText = llmResult.optString("affiliateCtaText", null),
                         affiliateCtaLink = llmResult.optString("affiliateCtaLink", null),
                         targetAudience = llmResult.optString("target_audience", null),
+                        communityTweetHandle = llmResult.optString("tweet_handle", null),
+                        communityTweetName = llmResult.optString("tweet_name", null),
+                        communityTweetText = llmResult.optString("tweet_text", null),
+                        communitySentimentBadge = llmResult.optString("tweet_badge", null),
                         publishedAt = System.currentTimeMillis()
                     )
                 } else {
