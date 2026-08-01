@@ -331,16 +331,18 @@ fun AdaptiveArticleReaderScreen(
                         Column(modifier = Modifier.padding(top = 10.dp)) {
                             val eventText = news.summaryWhatHappened?.stripIntroductoryLabels()?.take(120) ?: overview.take(120)
                             Text(
-                                text = "• Key Event: $eventText...",
+                                text = eventText,
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Medium
                             )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = "• Strategic Value: ${takeaways.replace("\n", " | ").take(140)}...",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            if (takeaways.isNotBlank()) {
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    text = takeaways.stripIntroductoryLabels(),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
@@ -475,69 +477,7 @@ fun AdaptiveArticleReaderScreen(
             Spacer(Modifier.height(24.dp))
 
             // Side-by-Side Perspectives Drawer ("Compare Media Coverage")
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, MinimalBorder),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { isPerspectivesExpanded = !isPerspectivesExpanded }
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.SwapVert, contentDescription = null, tint = MinimalPurplePrimary)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Compare Media Perspectives", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
-                        }
-                        Icon(
-                            imageVector = if (isPerspectivesExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = "Toggle Perspectives"
-                        )
-                    }
-
-                    AnimatedVisibility(visible = isPerspectivesExpanded) {
-                        Column(modifier = Modifier.padding(top = 12.dp)) {
-                            // Perspective Selector Chips
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                FilterChip(
-                                    selected = activePerspective == "Balanced",
-                                    onClick = { activePerspective = "Balanced" },
-                                    label = { Text("Balanced View") }
-                                )
-                                FilterChip(
-                                    selected = activePerspective == "Source A",
-                                    onClick = { activePerspective = "Source A" },
-                                    label = { Text("Reuters") }
-                                )
-                                FilterChip(
-                                    selected = activePerspective == "Source B",
-                                    onClick = { activePerspective = "Source B" },
-                                    label = { Text("Bloomberg") }
-                                )
-                            }
-
-                            Spacer(Modifier.height(10.dp))
-
-                            val coverageText = when (activePerspective) {
-                                "Source A" -> "Reuters Framing: Focuses on institutional capital flows, regulatory compliance metrics, and Central Bank policy alignment."
-                                "Source B" -> "Bloomberg Framing: Emphasizes consumer interest rate impact, retail credit card fee hikes, and individual portfolio risk exposure."
-                                else -> "Synthesized Balanced Coverage: Merges both macro institutional stability updates with immediate consumer personal finance implications."
-                            }
-
-                            Text(
-                                text = coverageText,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
+            
 
             Spacer(Modifier.height(40.dp))
         }

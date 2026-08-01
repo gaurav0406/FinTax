@@ -47,7 +47,7 @@ fun AiGeneratorTab(
     modifier: Modifier = Modifier
 ) {
     var rawText by remember { mutableStateOf("") }
-    var sourceUrl by remember { mutableStateOf("https://eportal.incometax.gov.in") }
+    var sourceUrl by remember { mutableStateOf("") }
 
     Column(
         modifier = modifier

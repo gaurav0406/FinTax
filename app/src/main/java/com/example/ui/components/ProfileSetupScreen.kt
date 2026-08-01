@@ -72,14 +72,11 @@ import com.example.ui.theme.MinimalPurpleLightContainer
 import com.example.ui.theme.MinimalPurplePrimary
 
 val ALL_INTEREST_CATEGORIES = listOf(
-    "Financial News",
-    "Credit Cards",
-    "Mutual Funds",
-    "Sports",
-    "Cars & EVs",
-    "Education",
-    "Crypto",
-    "Technology"
+    "Card Hacks & Perks",
+    "Market Signals",
+    "Tech & AI",
+    "Startup & Capital",
+    "Wealth 101"
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -505,7 +502,7 @@ fun ProfileSetupScreen(
 
         androidx.compose.material3.OutlinedButton(
             onClick = {
-                viewModel.saveUserProfile(profile.copy(isLoggedIn = false, hasLoggedOut = true))
+                viewModel.saveUserProfile(profile.copy(isLoggedIn = false, hasLoggedOut = true, hasSeenTourGuide = false))
             },
             modifier = Modifier.fillMaxWidth().height(48.dp),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),

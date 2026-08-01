@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.ui.theme.*
+import com.example.data.FinancialNewsEntity
 
 data class DealItem(
     val id: String,
@@ -40,76 +41,34 @@ data class DealItem(
     val category: String
 )
 
-val curatedDeals = listOf(
-    DealItem(
-        id = "deal_sbi_cb",
-        brandName = "SBI Card",
-        title = "SBI Cashback Credit Card - 5% Cashback",
-        description = "Get flat 5% cashback on all online shopping transactions. Auto-credited to statement every month with no merchant restriction.",
-        offerCode = "SBICB500",
-        linkUrl = "https://www.sbicard.com/",
-        imageUrl = "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80",
-        category = "Credit Cards"
-    ),
-    DealItem(
-        id = "deal_hdfc_mil",
-        brandName = "HDFC Bank",
-        title = "HDFC Millennia - 5% Cashback on Swiggy & Zomato",
-        description = "Flat 5% cashback on Amazon, Flipkart, Swiggy, Zomato & BookMyShow + 1,000 bonus cash points on card activation.",
-        offerCode = "HDFC1000",
-        linkUrl = "https://www.hdfcbank.com/",
-        imageUrl = "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=800&q=80",
-        category = "Credit Cards"
-    ),
-    DealItem(
-        id = "deal_icici_amazon",
-        brandName = "ICICI Bank & Amazon",
-        title = "Amazon Pay ICICI Card - Lifetime Free",
-        description = "Enjoy 5% unlimited cashback for Amazon Prime members, 3% for non-prime members. Zero joining fee and zero annual fee forever.",
-        offerCode = "LIFETIME5",
-        linkUrl = "https://www.icicibank.com/",
-        imageUrl = "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=800&q=80",
-        category = "Credit Cards"
-    ),
-    DealItem(
-        id = "deal_zerodha",
-        brandName = "Zerodha",
-        title = "Zero Brokerage Equity Delivery & Direct MFs",
-        description = "Invest in stocks, ETFs and direct mutual funds with ₹0 brokerage charges. Free onboarding for new demat accounts.",
-        offerCode = "FREEBROKER",
-        linkUrl = "https://zerodha.com/",
-        imageUrl = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=800&q=80",
-        category = "Investments"
-    ),
-    DealItem(
-        id = "deal_bajaj_fd",
-        brandName = "Bajaj Finance",
-        title = "High Interest Fixed Deposit - Up to 8.60% p.a.",
-        description = "Secure your savings with AAA rated Bajaj Finance FDs. Earn special interest rates up to 8.60% p.a. for senior citizens & 8.35% for regular depositors.",
-        offerCode = "SPECIAL86",
-        linkUrl = "https://www.bajajfinserv.in/",
-        imageUrl = "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&w=800&q=80",
-        category = "Bank & FDs"
-    ),
-    DealItem(
-        id = "deal_idfc_first",
-        brandName = "IDFC FIRST Bank",
-        title = "7.25% Savings Interest + Monthly Payouts",
-        description = "Earn higher returns on your savings balance with monthly interest credits, zero fee banking services, and free airport lounge access debit card.",
-        offerCode = "IDFC725",
-        linkUrl = "https://www.idfcfirstbank.com/",
-        imageUrl = "https://images.unsplash.com/photo-1601597111158-2fceff292cdc?auto=format&fit=crop&w=800&q=80",
-        category = "Bank & FDs"
-    )
-)
-
 @Composable
-fun DealsAndOffersTab() {
+fun DealsAndOffersTab(newsList: List<FinancialNewsEntity> = emptyList()) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var webViewUrlToOpen by remember { mutableStateOf<String?>(null) }
     var webViewTitleToOpen by remember { mutableStateOf("Offer Details") }
     var selectedCategory by remember { mutableStateOf("All Deals") }
+    
+    val curatedDeals = remember(newsList) {
+        val deals = newsList.filter { 
+            it.category.contains("Credit", ignoreCase = true) ||
+            it.category.contains("Deal", ignoreCase = true) ||
+            it.category.contains("Offer", ignoreCase = true)
+        }.map { news ->
+            DealItem(
+                id = news.id.toString(),
+                brandName = news.sourceName ?: "Offer",
+                title = news.title,
+                description = news.summaryWhatHappened.ifBlank { news.summaryText },
+                offerCode = null,
+                linkUrl = news.sourceUrl,
+                imageUrl = news.imageUrl ?: "",
+                category = news.category
+            )
+        }
+        deals
+    }
 
-    val categories = listOf("All Deals", "Credit Cards", "Investments", "Bank & FDs")
+    val categories = listOf("All Deals", "Card Hacks & Perks", "Wealth 101", "Financial Markets")
 
     val filteredDeals = remember(selectedCategory) {
         if (selectedCategory == "All Deals") curatedDeals
@@ -170,55 +129,31 @@ fun DealsAndOffersTab() {
             modifier = Modifier.fillMaxSize()
         ) {
             // Google AdMob Sponsored Card Placement at top of deals
-            item {
-                AdMobNativeExpressCard(
-                    slideIndex = 0,
-                    onOpenAd = { url ->
-                        webViewUrlToOpen = url
-                        webViewTitleToOpen = "Sponsored AdMob Offer"
-                    }
-                )
-            }
+            
 
             items(filteredDeals.take(2)) { deal ->
                 DealCard(
                     deal = deal,
                     onOpenDeal = { url, title ->
-                        webViewUrlToOpen = url
+                        try { (context as? android.app.Activity)?.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))) } catch (e: Exception) { e.printStackTrace() }
                         webViewTitleToOpen = title
                     }
                 )
             }
 
             // Second AdMob Sponsored placement in feed
-            item {
-                AdMobNativeExpressCard(
-                    slideIndex = 1,
-                    onOpenAd = { url ->
-                        webViewUrlToOpen = url
-                        webViewTitleToOpen = "Sponsored Financial Deal"
-                    }
-                )
-            }
+            
 
             items(filteredDeals.drop(2)) { deal ->
                 DealCard(
                     deal = deal,
                     onOpenDeal = { url, title ->
-                        webViewUrlToOpen = url
+                        try { (context as? android.app.Activity)?.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))) } catch (e: Exception) { e.printStackTrace() }
                         webViewTitleToOpen = title
                     }
                 )
             }
         }
-    }
-
-    webViewUrlToOpen?.let { url ->
-        InAppWebViewDialog(
-            url = url,
-            title = webViewTitleToOpen,
-            onDismiss = { webViewUrlToOpen = null }
-        )
     }
 }
 

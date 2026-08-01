@@ -133,15 +133,11 @@ enum class ActiveDrawerDialog {
 
 val CATEGORIES = listOf(
     "All",
-    "Taxation",
-    "Personal Finance",
-    "Stock Market",
-    "AI & Tech",
-    "Crypto",
-    "Cars & EVs",
-    "New Innovation",
-    "Credit Cards",
-    "Mutual Funds"
+    "Card Hacks & Perks",
+    "Market Signals",
+    "Tech & AI",
+    "Startup & Capital",
+    "Wealth 101"
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -160,8 +156,10 @@ fun MainHomeScreen(
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val userProfileState by viewModel.userProfile.collectAsState()
 
-    var useInshortsViewMode by remember { mutableStateOf(true) }
+    var useInshortsViewMode by remember { mutableStateOf(false) }
     var selectedNewsForComments by remember { mutableStateOf<FinancialNewsEntity?>(null) }
+    var activeWebViewUrl by remember { mutableStateOf<String?>(null) }
+    var activeWebViewTitle by remember { mutableStateOf("News Reader") }
 
     val userSelectedCategories = remember(userProfileState) {
         userProfileState?.selectedCategories?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
@@ -188,14 +186,24 @@ fun MainHomeScreen(
     // Filter and order feed list according to user profile interests if "All" is selected
     val filteredNewsList = remember(allNewsList, selectedCategory, userSelectedCategories) {
         if (selectedCategory != "All") {
-            allNewsList.filter { it.category.equals(selectedCategory, ignoreCase = true) }
+            allNewsList.filter { news ->
+                news.category.equals(selectedCategory, ignoreCase = true) ||
+                news.category.contains(selectedCategory, ignoreCase = true) ||
+                (selectedCategory == "Card Hacks & Perks" && (news.category.contains("Card", ignoreCase = true) || news.title.contains("Card", ignoreCase = true))) ||
+                (selectedCategory == "Market Signals" && (news.category.contains("Market", ignoreCase = true) || news.category.contains("Signal", ignoreCase = true) || news.category.contains("Mutual", ignoreCase = true) || news.category.contains("Stock", ignoreCase = true))) ||
+                (selectedCategory == "Tech & AI" && (news.category.contains("Tech", ignoreCase = true) || news.category.contains("AI", ignoreCase = true) || news.category.contains("Gaming", ignoreCase = true) || news.category.contains("Car", ignoreCase = true))) ||
+                (selectedCategory == "Startup & Capital" && (news.category.contains("Startup", ignoreCase = true) || news.category.contains("Capital", ignoreCase = true) || news.category.contains("D2C", ignoreCase = true) || news.category.contains("Funding", ignoreCase = true))) ||
+                (selectedCategory == "Wealth 101" && (news.category.contains("Wealth", ignoreCase = true) || news.category.contains("Finance", ignoreCase = true) || news.category.contains("Tax", ignoreCase = true) || news.category.contains("Education", ignoreCase = true) || news.category.contains("Crypto", ignoreCase = true)))
+            }
         } else if (userSelectedCategories.isNotEmpty()) {
             val selectedArticles = userSelectedCategories.flatMap { userCat ->
-                allNewsList.filter { it.category.equals(userCat, ignoreCase = true) }
+                allNewsList.filter { news ->
+                    news.category.equals(userCat, ignoreCase = true) || news.category.contains(userCat, ignoreCase = true)
+                }
             }.distinctBy { it.id }
             
             val remainingArticles = allNewsList.filter { news ->
-                !userSelectedCategories.any { it.equals(news.category, ignoreCase = true) }
+                !userSelectedCategories.any { userCat -> news.category.contains(userCat, ignoreCase = true) }
             }
             selectedArticles + remainingArticles
         } else {
@@ -409,7 +417,7 @@ fun MainHomeScreen(
                     selected = false,
                     onClick = { 
                         if (userProfileState != null) {
-                            viewModel.saveUserProfile(userProfileState!!.copy(isLoggedIn = false, hasLoggedOut = true))
+                            viewModel.saveUserProfile(userProfileState!!.copy(isLoggedIn = false, hasLoggedOut = true, hasSeenTourGuide = false))
                         }
                         scope.launch { drawerState.close() }
                     },
@@ -478,7 +486,7 @@ fun MainHomeScreen(
                             }
                             val headerSubtitle = when (activeTab) {
                                 0 -> if (useInshortsViewMode) "60-Sec Finance, AI & Tech Digest" else "All Stories"
-                                1 -> "Discuss Tax, Tech, Stocks & Crypto"
+                                1 -> "Discuss Wealth, Tech, Startups & Perks"
                                 2 -> "Your Bookmarked Reads"
                                 3 -> "Compare Old vs New Tax Regime"
                                 4 -> "Exclusive Cards & Financial Offers"
@@ -616,20 +624,6 @@ fun MainHomeScreen(
                     NavigationBarItem(
                         selected = activeTab == 1,
                         onClick = { viewModel.setActiveTab(1) },
-                        icon = { Icon(imageVector = Icons.Default.Forum, contentDescription = "Community") },
-                        label = { Text("Forum", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
-                            indicatorColor = MinimalPurplePrimary,
-                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        modifier = Modifier.testTag("nav_tab_community")
-                    )
-
-                    NavigationBarItem(
-                        selected = activeTab == 2,
-                        onClick = { viewModel.setActiveTab(2) },
                         icon = { Icon(imageVector = Icons.Default.Bookmark, contentDescription = "Saved") },
                         label = { Text("Saved", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
@@ -642,8 +636,8 @@ fun MainHomeScreen(
                     )
 
                     NavigationBarItem(
-                        selected = activeTab == 3,
-                        onClick = { viewModel.setActiveTab(3) },
+                        selected = activeTab == 2,
+                        onClick = { viewModel.setActiveTab(2) },
                         icon = { Icon(imageVector = Icons.Default.Calculate, contentDescription = "Tax Calc") },
                         label = { Text("Taxes", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
@@ -656,8 +650,8 @@ fun MainHomeScreen(
                     )
 
                     NavigationBarItem(
-                        selected = activeTab == 4,
-                        onClick = { viewModel.setActiveTab(4) },
+                        selected = activeTab == 3,
+                        onClick = { viewModel.setActiveTab(3) },
                         icon = { Icon(imageVector = Icons.Default.LocalOffer, contentDescription = "Deals") },
                         label = { Text("Deals", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
@@ -670,8 +664,8 @@ fun MainHomeScreen(
                     )
 
                     NavigationBarItem(
-                        selected = activeTab == 5,
-                        onClick = { viewModel.setActiveTab(5) },
+                        selected = activeTab == 4,
+                        onClick = { viewModel.setActiveTab(4) },
                         icon = { Icon(imageVector = Icons.Default.PlayCircle, contentDescription = "Videos") },
                         label = { Text("Videos", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
                         colors = NavigationBarItemDefaults.colors(
@@ -681,6 +675,20 @@ fun MainHomeScreen(
                             unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         modifier = Modifier.testTag("nav_tab_videos")
+                    )
+
+                    NavigationBarItem(
+                        selected = activeTab == 5,
+                        onClick = { viewModel.setActiveTab(5) },
+                        icon = { Icon(imageVector = Icons.Default.Info, contentDescription = "Quiz") },
+                        label = { Text("Quiz", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), maxLines = 1, softWrap = false) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MinimalPurpleLightContainer, selectedTextColor = if (isDarkTab) Color.White else MinimalPurplePrimary,
+                            indicatorColor = MinimalPurplePrimary,
+                            unselectedIconColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = if (isDarkTab) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        modifier = Modifier.testTag("nav_tab_quiz")
                     )
                 }
             }
@@ -707,7 +715,12 @@ fun MainHomeScreen(
                             onPlayAudio = { viewModel.playAudio(it) },
                             onToggleBookmark = { viewModel.toggleBookmark(it) },
                             onOpenComments = { news -> selectedNewsForComments = news },
-                            onOpenReader = { news -> viewModel.openArticleReader(news) }
+                            onOpenReader = { news ->
+                                if (!news.sourceUrl.isNullOrBlank()) {
+                                    activeWebViewUrl = news.sourceUrl
+                                    activeWebViewTitle = news.title
+                                }
+                            }
                         )
                     } else {
                         StandardCardListView(
@@ -726,14 +739,18 @@ fun MainHomeScreen(
                             onPlayAudio = { viewModel.playAudio(it) },
                             onToggleBookmark = { viewModel.toggleBookmark(it) },
                             onOpenComments = { news -> selectedNewsForComments = news },
+                            onOpenReader = { news ->
+                                if (!news.sourceUrl.isNullOrBlank()) {
+                                    activeWebViewUrl = news.sourceUrl
+                                    activeWebViewTitle = news.title
+                                }
+                            },
                             autoPlayAudio = userProfileState?.autoPlayAudio == true
                         )
                     }
                 }
 
-                1 -> CommunityDiscussionsTab(viewModel = viewModel)
-
-                2 -> InshortsFeedView(
+                1 -> InshortsFeedView(
                     allNewsList = bookmarkedList,
                     categories = emptyList(),
                     selectedCategory = "All",
@@ -742,30 +759,36 @@ fun MainHomeScreen(
                     onSelectCategory = {},
                     onPlayAudio = { viewModel.playAudio(it) },
                     onToggleBookmark = { viewModel.toggleBookmark(it) },
-                    onOpenComments = { news -> selectedNewsForComments = news }
+                    onOpenComments = { news -> selectedNewsForComments = news },
+                    onOpenReader = { news ->
+                        if (!news.sourceUrl.isNullOrBlank()) {
+                            activeWebViewUrl = news.sourceUrl
+                            activeWebViewTitle = news.title
+                        }
+                    }
                 )
 
-                3 -> TaxCalculatorTab()
+                2 -> TaxCalculatorTab()
 
-                4 -> DealsAndOffersTab()
+                3 -> DealsAndOffersTab(allNewsList)
 
-                5 -> com.example.ui.components.VideoEngagementTab(viewModel = viewModel)
+                4 -> com.example.ui.components.VideoEngagementTab(viewModel = viewModel)
+
+                5 -> com.example.ui.components.FinancialQuizTab()
 
                 6 -> ProfileSetupScreen(viewModel = viewModel)
             }
 
-            val activeReaderNews = viewModel.activeReaderNews.collectAsState().value
-            activeReaderNews?.let { news ->
-                val fontSizeScale = viewModel.fontSizeScale.collectAsState().value
-                com.example.ui.components.AdaptiveArticleReaderScreen(
-                    news = news,
-                    fontSizeScale = fontSizeScale,
-                    isPlayingAudio = playbackState.isPlaying && playbackState.activeNewsId == news.id,
-                    onToggleAudio = { viewModel.playAudio(news) },
-                    onToggleBookmark = { viewModel.toggleBookmark(news) },
-                    onBack = { viewModel.closeArticleReader() }
+            activeWebViewUrl?.let { url ->
+                InAppWebViewDialog(
+                    url = url,
+                    title = activeWebViewTitle,
+                    onDismiss = { activeWebViewUrl = null }
                 )
             }
+
+            // val activeReaderNews = viewModel.activeReaderNews.collectAsState().value
+            /* removed activeReaderNews let block */
 
             selectedNewsForComments?.let { news ->
                 CommentSheetDialog(
@@ -792,6 +815,15 @@ fun MainHomeScreen(
                     onDismiss = { activeDialog = ActiveDrawerDialog.NONE }
                 )
                 ActiveDrawerDialog.NONE -> {}
+            }
+
+            if (userProfileState != null && userProfileState!!.isLoggedIn && !userProfileState!!.hasSeenTourGuide) {
+                com.example.ui.components.AppTourGuideDialog(
+                    userName = userProfileState!!.userName,
+                    onDismiss = {
+                        viewModel.saveUserProfile(userProfileState!!.copy(hasSeenTourGuide = true))
+                    }
+                )
             }
         }
     }
@@ -1125,6 +1157,7 @@ private fun StandardCardListView(
     onPlayAudio: (FinancialNewsEntity) -> Unit,
     onToggleBookmark: (FinancialNewsEntity) -> Unit,
     onOpenComments: ((FinancialNewsEntity) -> Unit)? = null,
+    onOpenReader: (FinancialNewsEntity) -> Unit,
     autoPlayAudio: Boolean = false,
     emptyMessage: String = "No articles found in this category."
 ) {
@@ -1218,36 +1251,71 @@ private fun StandardCardListView(
                     contentPadding = PaddingValues(bottom = 120.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    if (dailyDigestList.isNotEmpty()) {
+                    if (dailyDigestList.isNotEmpty() && selectedCategory == "All") {
                         item {
-                            com.example.ui.components.DailyDigestCard(
-                                newsList = dailyDigestList,
-                                allNewsList = if (allNewsList.isNotEmpty()) allNewsList else newsList,
+                            com.example.ui.components.SectionHeader("Daily Digest")
+                        }
+                        items(dailyDigestList, key = { "digest_" + it.id }) { item ->
+                            com.example.ui.components.GoogleNewsSecondaryCard(
+                                news = item,
+                                isPlaying = isPlaying && playingNewsId == item.id,
+                                onPlayAudio = { onPlayAudio(item) },
+                                onToggleBookmark = { onToggleBookmark(item) },
+                                onOpenComments = if (onOpenComments != null) { { onOpenComments(item) } } else null,
+                                onOpenReader = { onOpenReader(item) },
+                                autoPlayAudio = autoPlayAudio
+                            )
+                        }
+                    }
+
+
+                    
+                    if (allNewsList.isNotEmpty() && selectedCategory == "All") {
+                        item {
+                            com.example.ui.components.GoogleNewsStyleCategoryFeed(
+                                allNewsList = allNewsList,
+                                onArticleClick = { onOpenReader(it) },
                                 onCategoryClick = onSelectCategory
                             )
                         }
                     }
 
-                    if (selectedCategory == "Credit Cards" || selectedCategory == "All") {
+                    if (newsList.isNotEmpty()) {
                         item {
-                            com.example.ui.components.DailyCreditCardSpotlightCard(
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            com.example.ui.components.SectionHeader("Top Stories")
+                        }
+                        
+                        item {
+                            com.example.ui.components.GoogleNewsHeroCard(
+                                news = newsList.first(),
+                                isPlaying = isPlaying && playingNewsId == newsList.first().id,
+                                onPlayAudio = { onPlayAudio(newsList.first()) },
+                                onToggleBookmark = { onToggleBookmark(newsList.first()) },
+                                onOpenComments = if (onOpenComments != null) { { onOpenComments(newsList.first()) } } else null,
+                                onOpenReader = { onOpenReader(newsList.first()) },
+                                autoPlayAudio = autoPlayAudio
                             )
                         }
+                        
+                        if (newsList.size > 1) {
+                            item {
+                                com.example.ui.components.SectionHeader(if (selectedCategory == "All") "Market Trends" else "More in $selectedCategory")
+                            }
+                            
+                            items(newsList.drop(1), key = { it.id }) { item ->
+                                com.example.ui.components.GoogleNewsSecondaryCard(
+                                    news = item,
+                                    isPlaying = isPlaying && playingNewsId == item.id,
+                                    onPlayAudio = { onPlayAudio(item) },
+                                    onToggleBookmark = { onToggleBookmark(item) },
+                                    onOpenComments = if (onOpenComments != null) { { onOpenComments(item) } } else null,
+                                    onOpenReader = { onOpenReader(item) },
+                                    autoPlayAudio = autoPlayAudio
+                                )
+                            }
+                        }
                     }
-                    items(newsList, key = { it.id }) { item ->
-                        NewsItemCard(
-                            news = item,
-                            isPlaying = isPlaying && playingNewsId == item.id,
-                            onPlayAudio = { onPlayAudio(item) },
-                            onToggleBookmark = { onToggleBookmark(item) },
-                            onOpenComments = if (onOpenComments != null) { { onOpenComments(item) } } else null,
-                            autoPlayAudio = autoPlayAudio
-                        )
-                    }
-                    item {
-                    com.example.ui.components.TrendingTweetsRow()
-                }
+
             }
         }
     }

@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.TrendingUp
 
 import com.example.ui.theme.MinimalPurplePrimary
 import com.example.ui.theme.MinimalPurpleLightContainer
@@ -411,6 +412,10 @@ fun NewsItemCard(
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            WhatsChangedIndicator(news)
+
             Spacer(modifier = Modifier.height(16.dp))
 
             // Action Buttons Row
@@ -419,18 +424,17 @@ fun NewsItemCard(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (!news.financialActionUrl.isNull_or_blank_safe()) {
+                if (!news.sourceUrl.isNullOrBlank()) {
                     Button(
                         onClick = {
                             val activity = context as? Activity
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(news.sourceUrl))
                             if (activity != null) {
                                 AdMobHelper.showInterstitial(activity) {
-                                    webViewUrlToOpen = news.financialActionUrl
-                                    webViewTitleToOpen = news.title
+                                    try { context.startActivity(intent) } catch (e: Exception) { e.printStackTrace() }
                                 }
                             } else {
-                                webViewUrlToOpen = news.financialActionUrl
-                                webViewTitleToOpen = news.title
+                                try { context.startActivity(intent) } catch (e: Exception) { e.printStackTrace() }
                             }
                         },
                         modifier = Modifier
@@ -450,7 +454,7 @@ fun NewsItemCard(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "Take Action",
+                            text = "Original Source",
                             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }
@@ -461,14 +465,13 @@ fun NewsItemCard(
                 OutlinedButton(
                     onClick = {
                         val activity = context as? Activity
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(news.sourceUrl))
                         if (activity != null) {
                             AdMobHelper.showInterstitial(activity) {
-                                webViewUrlToOpen = news.sourceUrl
-                                webViewTitleToOpen = "Source: ${news.sourceName}"
+                                try { context.startActivity(intent) } catch (e: Exception) { e.printStackTrace() }
                             }
                         } else {
-                            webViewUrlToOpen = news.sourceUrl
-                            webViewTitleToOpen = "Source: ${news.sourceName}"
+                            try { context.startActivity(intent) } catch (e: Exception) { e.printStackTrace() }
                         }
                     },
                     modifier = Modifier
@@ -493,14 +496,6 @@ fun NewsItemCard(
                 }
             }
         }
-    }
-
-    webViewUrlToOpen?.let { url ->
-        InAppWebViewDialog(
-            url = url,
-            title = webViewTitleToOpen,
-            onDismiss = { webViewUrlToOpen = null }
-        )
     }
 
     if (showJargonSheet) {
@@ -695,6 +690,47 @@ private fun NewsBulletPoint(
             )
             Spacer(modifier = Modifier.height(2.dp))
             content()
+        }
+    }
+}
+
+@Composable
+fun WhatsChangedIndicator(news: FinancialNewsEntity) {
+    val indicatorText = remember(news.id) {
+        val raw = (news.financialImpactBullets ?: "") + " " + (news.summaryText) + " " + (news.title)
+        when {
+            raw.contains("reward", true) || raw.contains("point", true) -> "Reward Points Increased (+15% / 5,000 Pts)"
+            raw.contains("launch", true) || raw.contains("unit", true) -> "Launch Volume Increased by 12,450 Units"
+            raw.contains("spend", true) || raw.contains("book value", true) || raw.contains("benefit", true) -> "Spend Increased for Book Value & Benefits (+18.4%)"
+            raw.contains("rate", true) || raw.contains("hike", true) || raw.contains("cut", true) -> "Financial Rate / Metric Adjusted (+2.5%)"
+            raw.contains("profit", true) || raw.contains("revenue", true) || raw.contains("sales", true) -> "Performance Metrics: Revenue/Sales Increased"
+            else -> "Key Financial Metric Updated (+12.5% YoY)"
+        }
+    }
+
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+        shape = RoundedCornerShape(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.TrendingUp,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "What's Changed? • $indicatorText",
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

@@ -48,7 +48,7 @@ fun OnboardingScreen(
     var selectedJobProfile by remember { mutableStateOf("") }
     val jobProfiles = listOf("Salaried Professional", "Business Owner", "Student", "Freelancer", "Investor", "Other")
     
-    val allCategories = listOf("Financial News", "Credit Cards", "Mutual Funds", "Sports", "Cars & EVs", "Education", "Crypto", "Technology")
+    val allCategories = listOf("Card Hacks & Perks", "Market Signals", "Tech & AI", "Startup & Capital", "Wealth 101")
     val selectedCategories = remember { mutableStateListOf(*allCategories.take(3).toTypedArray()) }
     
     var name by remember { mutableStateOf(initialName) }

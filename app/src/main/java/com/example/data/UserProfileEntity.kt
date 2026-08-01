@@ -15,7 +15,8 @@ data class UserProfileEntity(
     val age: Int = 28,
     val city: String = "Mumbai",
     val mobileNumber: String = "+91 98765 43210",
-    val selectedCategories: String = "Financial News,Credit Cards,Mutual Funds,Sports,Cars & EVs,Education,Crypto,Technology",
+    val selectedCategories: String = "Card Hacks & Perks,Market Signals,Tech & AI,Startup & Capital,Wealth 101",
     val autoPlayAudio: Boolean = false,
-    val jobProfile: String = ""
+    val jobProfile: String = "",
+    val hasSeenTourGuide: Boolean = false
 )

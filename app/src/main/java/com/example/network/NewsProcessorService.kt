@@ -11,19 +11,34 @@ object NewsProcessorService {
         val apiKey = com.example.BuildConfig.GEMINI_API_KEY
         if (apiKey.isNotBlank()) {
             try {
-                val systemInstruction = """
-                    You are an expert financial news summarizer. Extract and structure the news into this exact JSON format. Keep it concise, insightful, and actionable. All output MUST be in English.
-                    DO NOT use introductory labels like "Why it matters:" or "Key Takeaway:".
-                    
-                    Respond ONLY with JSON:
-                    {
-                      "summary": "Provide a detailed 4 to 5-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
-                      "reason": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line (max 12 words). Explain why this news matters and core drivers. Do NOT use introductory labels.",
-                      "financial_impact": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line and MUST start with a clear numerical metric, percentage, KPI, or monetary advantage (e.g. '• +2.5% Rate Cut: ...', '• ₹4,800 Savings: ...', '• 15% Cashback: ...'). Do NOT use introductory labels.",
-                      "action": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line (max 12 words) detailing actionable steps. Do NOT use introductory labels.",
-                      "category": "One of: Financial News, Credit Cards, Mutual Funds, Sports, Cars & EVs, Education, Crypto, Technology"
-                    }
-                """.trimIndent()
+                val systemInstruction = """You are the Automated Financial Tech & News Scraper Engine.
+Analyze this news item and produce structured JSON output.
+
+Classify into EXACTLY ONE of 5 target categories with their expanded scopes:
+1. TECH_AND_AI: Merges Technology, Gaming, and Cars & EVs. AI tools, global tech shifts, Indian IT industry moves, consumer tech, electric vehicles.
+2. MARKET_SIGNALS: Macro and sector news, simplified market trends, sector analysis, stock/nifty/sensex updates, macro-economics without jargon.
+3. STARTUP_AND_CAPITAL: Business, funding, entrepreneurship, Indian D2C brands, VC funding rounds, founder stories.
+4. WEALTH_101: Merges Mutual Funds, Crypto, Financial Literacy & Tax Education, and Taxation. Smart taxation, SIP insights, mutual fund NAVs, crypto trends, real estate insights.
+5. CARD_HACKS_AND_PERKS: Credit cards, reward points, lounge access, milestone spending bonuses, utility bill savings.
+
+Output MUST be strictly valid JSON without markdown code blocks.
+
+Respond ONLY with a JSON object matching this exact format:
+{
+    "id": <number matching input id>,
+    "category": "Must be EXACTLY ONE of ['TECH_AND_AI', 'MARKET_SIGNALS', 'STARTUP_AND_CAPITAL', 'WEALTH_101', 'CARD_HACKS_AND_PERKS']",
+    "raw_headline": "Catchy headline (Max 10 words)",
+    "summary_bullets": "3-4 bullet points summarizing the news",
+    "target_audience": "Who this impacts",
+    "monetization_angle": "How this relates to making or saving money",
+    "badge": "Short badge text",
+    "paragraphWhatHappened": "What happened narrative",
+    "paragraphTheMath": "Financial impact math narrative",
+    "paragraphNextSteps": "Actionable next steps",
+    "uspAndVerdict": "Final verdict or USP",
+    "affiliateCtaText": "Call to action text",
+    "affiliateCtaLink": "Call to action link"
+}""".trimIndent()
 
                 val prompt = "News: $rawText"
                 
@@ -47,11 +62,19 @@ object NewsProcessorService {
                         summaryWhoImpacted = llmResult.optString("impacted_users", ""),
                         summaryActionableTakeaway = llmResult.optString("action", ""),
                         summaryText = llmResult.optString("reason", ""),
-                        category = llmResult.optString("category", "Financial News"),
+                                                category = mapCategory(llmResult.optString("category", "Wealth 101")),
                         financialActionUrl = sourceUrl,
                         sourceUrl = sourceUrl,
                         sourceName = "AI Summarized News",
                         financialImpactBullets = llmResult.optString("financial_impact", ""),
+                        badge = llmResult.optString("badge", null),
+                        paragraphWhatHappened = llmResult.optString("paragraphWhatHappened", null),
+                        paragraphTheMath = llmResult.optString("paragraphTheMath", null),
+                        paragraphNextSteps = llmResult.optString("paragraphNextSteps", null),
+                        uspAndVerdict = llmResult.optString("uspAndVerdict", null),
+                        affiliateCtaText = llmResult.optString("affiliateCtaText", null),
+                        affiliateCtaLink = llmResult.optString("affiliateCtaLink", null),
+                        targetAudience = llmResult.optString("target_audience", null),
                         publishedAt = System.currentTimeMillis()
                     )
                 )
@@ -71,21 +94,36 @@ object NewsProcessorService {
         }
 
         try {
-            val systemInstruction = """
-                You are an expert financial news summarizer. You will be provided with a JSON array of news items, each containing an id and rawText.
-                Extract and structure the news into a JSON array of objects.
-                All output MUST be in English. DO NOT use introductory labels like "Why it matters:" or "Key Takeaway:".
-                
-                Respond ONLY with a JSON array of objects, each following this exact schema:
-                {
-                  "id": "The integer id of the news item provided in the input",
-                  "summary": "Provide a detailed 4 to 5-line summary of the news in English. Do NOT include prefixes like 'What happened:'.",
-                  "reason": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line (max 12 words). Explain why this news matters and core drivers. Do NOT use introductory labels.",
-                  "financial_impact": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line and MUST start with a clear numerical metric, percentage, KPI, or monetary advantage (e.g. '• +2.5% Rate Cut: ...', '• ₹4,800 Savings: ...', '• 15% Cashback: ...'). Do NOT use introductory labels.",
-                  "action": "Provide EXACTLY 3 to 4 crisp bullet points (using '• '). Each bullet point MUST NOT exceed 1 single line (max 12 words) detailing actionable steps. Do NOT use introductory labels.",
-                  "category": "One of: Financial News, Credit Cards, Mutual Funds, Sports, Cars & EVs, Education, Crypto, Technology"
-                }
-            """.trimIndent()
+            val systemInstruction = """You are the Automated Financial Tech & News Scraper Engine.
+Analyze these news items in a single batch and produce structured JSON output. Do NOT run separate scrapers.
+
+Classify each scraped RSS article into EXACTLY ONE of the following 5 target categories with their expanded scopes:
+1. TECH_AND_AI: Merges Technology, Gaming, and Cars & EVs. Scope: AI tools, global tech shifts, Indian IT industry moves, consumer tech, electric vehicles. High volume traffic driver.
+2. MARKET_SIGNALS: Dedicated macro and sector news. Scope: Simplified breakdowns of market trends, sector analysis, stock/nifty/sensex updates, and macro-economics without jargon. Ad revenue driver.
+3. STARTUP_AND_CAPITAL: Business, funding, and entrepreneurship news. Scope: Coverage of Indian D2C brands, VC funding rounds, founder stories, and startup ecosystem growth. High value for B2B brands.
+4. WEALTH_101: Merges Mutual Funds, Crypto, Financial Literacy & Tax Education, and Taxation. Scope: Smart taxation, SIP insights, mutual fund NAVs, crypto trends, and real estate insights for high-earning professionals. High-conversion BFSI driver.
+5. CARD_HACKS_AND_PERKS: Credit cards, reward points, lounge access, milestone spending bonuses, and utility bill savings.
+
+Output MUST be strictly valid JSON without markdown code blocks.
+
+Respond ONLY with a JSON Array of objects matching this exact format for each item:
+[
+  {
+    "id": <number matching input id>,
+    "category": "Must be EXACTLY ONE of ['TECH_AND_AI', 'MARKET_SIGNALS', 'STARTUP_AND_CAPITAL', 'WEALTH_101', 'CARD_HACKS_AND_PERKS']",
+    "raw_headline": "Catchy headline (Max 10 words)",
+    "summary_bullets": "3-4 bullet points summarizing the news",
+    "target_audience": "Who this impacts",
+    "monetization_angle": "How this relates to making or saving money",
+    "badge": "Short badge text",
+    "paragraphWhatHappened": "What happened narrative",
+    "paragraphTheMath": "Financial impact math narrative",
+    "paragraphNextSteps": "Actionable next steps",
+    "uspAndVerdict": "Final verdict or USP",
+    "affiliateCtaText": "Call to action text",
+    "affiliateCtaLink": "Call to action link"
+  }
+]""".trimIndent()
 
             val inputJsonArray = org.json.JSONArray()
             newsItems.forEachIndexed { index, pair ->
@@ -122,11 +160,19 @@ object NewsProcessorService {
                         summaryWhoImpacted = llmResult.optString("impacted_users", ""),
                         summaryActionableTakeaway = llmResult.optString("action", ""),
                         summaryText = llmResult.optString("reason", ""),
-                        category = llmResult.optString("category", "Financial News"),
+                                                category = mapCategory(llmResult.optString("category", "Wealth 101")),
                         financialActionUrl = pair.second,
                         sourceUrl = pair.second,
                         sourceName = "AI Summarized News",
                         financialImpactBullets = llmResult.optString("financial_impact", ""),
+                        badge = llmResult.optString("badge", null),
+                        paragraphWhatHappened = llmResult.optString("paragraphWhatHappened", null),
+                        paragraphTheMath = llmResult.optString("paragraphTheMath", null),
+                        paragraphNextSteps = llmResult.optString("paragraphNextSteps", null),
+                        uspAndVerdict = llmResult.optString("uspAndVerdict", null),
+                        affiliateCtaText = llmResult.optString("affiliateCtaText", null),
+                        affiliateCtaLink = llmResult.optString("affiliateCtaLink", null),
+                        targetAudience = llmResult.optString("target_audience", null),
                         publishedAt = System.currentTimeMillis()
                     )
                 } else {
@@ -140,45 +186,33 @@ object NewsProcessorService {
         }
     }
 
-    fun generateFallbackImpact(category: String): String {
-        return when (category) {
-            "Financial News" -> "• Sector policy shift impacting market indices by ~2.5%\n• Portfolio reallocation recommended based on updated guidance"
-            "Credit Cards" -> "• Direct Cash Impact: -₹350/mo on utility fees or +5% (₹400/mo) fuel waiver\n• Net Annual Return: ~₹4,800/yr optimized card savings"
-            "Loans & FDs" -> "• Interest Yield / Outlay: 8.25% return (+₹8,250/yr on ₹1L deposit) or +₹320/mo on ₹50L Home Loan EMI"
-            "Markets & Mutual Funds" -> "• Liquidity Boost: T+0 payout frees up cash 48 hours earlier for reinvestment\n• Portfolio Yield: +1.2% CAGR impact from reduced holding lag"
-            "Cars & EV" -> "• Operational Savings: ~₹7,000/mo (₹84,000/yr) vs Petrol vehicle\n• Tax Incentive: Sec 80EEB tax deduction up to ₹1.5 Lakhs"
-            "FinTech & Crypto" -> "• Transaction Velocity: Instant cross-border settlement with 0% fee\n• Digital Rupee CBDC: 1% cashback on offline wallet UPI payments"
-            "Smart Investing" -> "• Algo Trading Yield: +3.8% alpha over benchmark index\n• Expense Ratio Savings: 0.15% direct plan low-cost SIP advantage"
-            "Personal Finance" -> "• Emergency Fund Security: 6-month liquidity buffer preserved\n• Health Insurance Benefit: ₹50,000 tax deduction under Sec 80D"
-            "Sports" -> "• Championship Standing: India leads WTC table with strong performance\n• Key Highlight: Record-breaking individual and team statistics"
-            "Education" -> "• Curriculum Shift: Dual-board exam structure & updated entrance syllabi\n• Practical Takeaway: Skill integration across vocational streams"
-            "Entertainment" -> "• Distribution Milestone: Record multi-platform streaming rights agreement\n• Viewership Impact: Broader audience reach and digital catalog expansion"
-            "Technology Insights" -> "• Infrastructure Boost: Domestic semiconductor manufacturing expansion\n• Efficiency Gain: Modern hardware architecture and reduced component imports"
-            "AI & New Happenings" -> "• Workflow Automation: Accelerated developer productivity & AI deployment\n• Skill Demand: High career opportunities for generative AI specialists"
-            "Startup Ecosystem" -> "• Ecosystem Growth: Expanded funding rounds for tech ventures\n• Job Creation: High demand for skilled software engineering talent"
-            else -> "• Key Highlight: Major developments and strategic updates in this domain\n• Practical Takeaway: Essential insights and core knowledge for readers"
+    
+    private fun mapCategory(engineCat: String): String {
+        return when (engineCat.uppercase()) {
+            "TECH_AND_AI" -> "Tech & AI"
+            "MARKET_SIGNALS" -> "Market Signals"
+            "STARTUP_AND_CAPITAL" -> "Startup & Capital"
+            "WEALTH_101" -> "Wealth 101"
+            "CARD_HACKS_AND_PERKS" -> "Card Hacks & Perks"
+            else -> "Wealth 101"
         }
     }
 
     private fun createFallbackEntity(rawText: String, sourceUrl: String): FinancialNewsEntity {
         val snippet = rawText.take(150).replace("\n", " ")
-                val category = when {
-            rawText.contains("credit card", true) || rawText.contains("reward", true) -> "Credit Cards"
-            rawText.contains("fd", true) || rawText.contains("loan", true) || rawText.contains("interest", true) -> "Loans & FDs"
-            rawText.contains("mutual fund", true) || rawText.contains("market", true) || rawText.contains("sip", true) -> "Markets & Mutual Funds"
-            rawText.contains("rbi", true) || rawText.contains("repo rate", true) || rawText.contains("policy", true) -> "RBI & Policy"
-            rawText.contains("movie", true) || rawText.contains("entertainment", true) || rawText.contains("box office", true) -> "Entertainment"
-            rawText.contains("sport", true) || rawText.contains("cricket", true) || rawText.contains("match", true) -> "Sports"
-            rawText.contains("startup", true) || rawText.contains("funding", true) || rawText.contains("founder", true) -> "Startup Ecosystem"
-            rawText.contains("crypto", true) || rawText.contains("bitcoin", true) || rawText.contains("fintech", true) -> "FinTech & Crypto"
-            else -> "Financial News"
+        val category = when {
+            rawText.contains("card", true) || rawText.contains("reward", true) || rawText.contains("perk", true) -> "Card Hacks & Perks"
+            rawText.contains("market", true) || rawText.contains("stock", true) || rawText.contains("nifty", true) || rawText.contains("sensex", true) || rawText.contains("signal", true) -> "Market Signals"
+            rawText.contains("startup", true) || rawText.contains("funding", true) || rawText.contains("founder", true) || rawText.contains("capital", true) || rawText.contains("d2c", true) -> "Startup & Capital"
+            rawText.contains("tech", true) || rawText.contains("ai", true) || rawText.contains("gaming", true) || rawText.contains("car", true) || rawText.contains("ev", true) -> "Tech & AI"
+            else -> "Wealth 101"
         }
 
         val actionUrl = when (category) {
-            "Financial News" -> "https://www.nseindia.com"
-            "Credit Cards" -> "https://www.sbicard.com"
-            "RBI & Policy" -> "https://www.rbi.org.in"
-            else -> "https://www.moneycontrol.com"
+            "Market Signals" -> "https://www.nseindia.com"
+            "Card Hacks & Perks" -> "https://www.sbicard.com"
+            "Tech & AI" -> "https://techcrunch.com"
+            else -> "https://economictimes.indiatimes.com"
         }
 
         val p1 = "• New guidelines announced for $category regarding $snippet.\n• Operational framework revised to enhance transparency and efficiency.\n• Stakeholders are evaluating capital allocation and tax filing rules.\n• Intended to streamline user workflows and reduce compliance burden.\n• Updates take effect in the upcoming financial quarter across all regions."

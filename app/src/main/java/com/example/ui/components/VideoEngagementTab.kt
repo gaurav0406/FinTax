@@ -64,57 +64,57 @@ private fun getVideoMetaData(category: String, newsId: Int, sourceName: String? 
         return VideoNewsMetaData(
             creatorName = sourceName ?: "YouTube Creator",
             creatorHandle = "@${sourceName?.replace(" ", "") ?: "creator"}",
-            creatorAvatarUrl = imageUrl ?: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3",
+            creatorAvatarUrl = imageUrl ?: "",
             videoDuration = "0:60",
             initialLikes = 1500,
             tags = listOf("#Finance", "#Shorts")
         )
     }
     return when (category) {
-        "Credit Cards" -> VideoNewsMetaData(
+        "Card Hacks & Perks" -> VideoNewsMetaData(
             creatorName = "Credit Hacks 60s",
             creatorHandle = "@credithacks_in",
-            creatorAvatarUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+            creatorAvatarUrl = imageUrl ?: "",
             videoDuration = "0:45",
             initialLikes = 1240 + (newsId * 37) % 800,
             tags = listOf("#CreditCards", "#Cashback", "#CardDeals")
         )
-        "Financial News" -> VideoNewsMetaData(
+        "Wealth 101" -> VideoNewsMetaData(
             creatorName = "Tax Wise Desk",
             creatorHandle = "@taxwise_official",
-            creatorAvatarUrl = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+            creatorAvatarUrl = imageUrl ?: "",
             videoDuration = "0:52",
             initialLikes = 2150 + (newsId * 41) % 1200,
-            tags = listOf("#TaxHacks", "#ITR2026", "#TaxExemption")
+            tags = listOf("#TaxHacks", "#SIPInsights", "#Wealth101")
         )
-        "Loans & FDs" -> VideoNewsMetaData(
-            creatorName = "High Yield 60s",
-            creatorHandle = "@smartbanking_in",
-            creatorAvatarUrl = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
-            videoDuration = "0:40",
-            initialLikes = 980 + (newsId * 29) % 600,
-            tags = listOf("#FDInterest", "#HomeLoan", "#EMIOptimizer")
-        )
-        "Markets & Mutual Funds" -> VideoNewsMetaData(
+        "Market Signals" -> VideoNewsMetaData(
             creatorName = "Stock Market Pulse",
             creatorHandle = "@marketreels_in",
-            creatorAvatarUrl = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80",
+            creatorAvatarUrl = imageUrl ?: "",
             videoDuration = "1:00",
             initialLikes = 3400 + (newsId * 53) % 2000,
-            tags = listOf("#Nifty50", "#SIPInvesting", "#MarketReel")
+            tags = listOf("#Nifty50", "#MarketSignals", "#MacroTrends")
         )
-        "RBI & Policy" -> VideoNewsMetaData(
-            creatorName = "Monetary Desk",
-            creatorHandle = "@rbi_bulletin",
-            creatorAvatarUrl = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80",
-            videoDuration = "0:35",
+        "Startup & Capital" -> VideoNewsMetaData(
+            creatorName = "Venture Pulse",
+            creatorHandle = "@startupcapital_in",
+            creatorAvatarUrl = imageUrl ?: "",
+            videoDuration = "0:48",
             initialLikes = 1890 + (newsId * 19) % 900,
-            tags = listOf("#RBIPolicy", "#RepoRate", "#DigitalRupee")
+            tags = listOf("#VCFunding", "#D2CBrands", "#StartupStories")
+        )
+        "Tech & AI" -> VideoNewsMetaData(
+            creatorName = "Tech & AI Briefs",
+            creatorHandle = "@techai_news",
+            creatorAvatarUrl = imageUrl ?: "",
+            videoDuration = "0:42",
+            initialLikes = 2450 + (newsId * 23) % 1000,
+            tags = listOf("#AITools", "#ConsumerTech", "#EVs")
         )
         else -> VideoNewsMetaData(
             creatorName = "FinTax Video Desk",
             creatorHandle = "@fintax_reels",
-            creatorAvatarUrl = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+            creatorAvatarUrl = imageUrl ?: "",
             videoDuration = "1:00",
             initialLikes = 1200,
             tags = listOf("#FinanceReels", "#Updates")
@@ -143,12 +143,7 @@ fun VideoEngagementTab(
 
     val context = LocalContext.current
     val videoNewsList = remember(newsList) {
-        val dbVideos = newsList.filter { it.sourceUrl.contains("youtube.com") }
-        if (dbVideos.isNotEmpty()) {
-            dbVideos
-        } else {
-            loadYouTubeVideosFromAssets(context)
-        }
+        newsList.filter { it.sourceUrl.contains("youtube.com") }
     }
     val filteredVideoNews = remember(videoNewsList, selectedVideoCategory) {
         if (selectedVideoCategory == "All") {
@@ -448,7 +443,7 @@ fun VideoReelItem(
         // Video Cover / Thumbnail Image
         AsyncImage(
             model = ImageRequest.Builder(context)
-                .data(news.imageUrl ?: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80")
+                .data(news.imageUrl)
                 .crossfade(true)
                 .build(),
             contentDescription = news.title,
@@ -1003,48 +998,3 @@ fun VideoStoryDetailDialog(
 }
 
 
-fun loadYouTubeVideosFromAssets(context: android.content.Context): List<FinancialNewsEntity> {
-    return try {
-        val jsonString = context.assets.open("videos.json").bufferedReader().use { it.readText() }
-        val jsonArray = org.json.JSONArray(jsonString)
-        val list = mutableListOf<FinancialNewsEntity>()
-        for (i in 0 until jsonArray.length()) {
-            val obj = jsonArray.getJSONObject(i)
-            val idStr = obj.optString("id", "")
-            val title = obj.optString("title", "Financial Short")
-            val channelName = obj.optString("channelName", "Finance Shorts")
-            val videoUrl = obj.optString("videoUrl", "https://www.youtube.com/watch?v=$idStr")
-            val thumbnailUrl = obj.optString("thumbnailUrl", "https://i.ytimg.com/vi/$idStr/hqdefault.jpg")
-            
-            val cat = when {
-                title.contains("Job", true) || title.contains("AI", true) -> "AI & Tech"
-                title.contains("VC", true) || title.contains("Startup", true) -> "Startups"
-                title.contains("Tax", true) -> "Tax Hacks"
-                else -> "Market Reels"
-            }
-            
-            list.add(
-                FinancialNewsEntity(
-                    id = 9500 + i,
-                    title = title,
-                    summaryWhatHappened = title,
-                    summaryWhoImpacted = "Retail Investors & Salaried Professionals",
-                    summaryActionableTakeaway = "Watch this 60s financial reel for practical market tips and tax optimization strategies.",
-                    summaryText = "Key breakdown on market dynamics and personal financial growth.",
-                    category = cat,
-                    financialActionUrl = videoUrl,
-                    sourceUrl = videoUrl,
-                    sourceName = channelName,
-                    imageUrl = thumbnailUrl,
-                    audioUrl = null,
-                    financialImpactBullets = "• Instant actionable insights for financial growth\n• Simplified 60s breakdown of market regulations",
-                    readCount = 1200 + i * 340,
-                    shareCount = 450 + i * 82
-                )
-            )
-        }
-        list
-    } catch (e: Exception) {
-        emptyList()
-    }
-}

@@ -33,15 +33,33 @@ RAW_DATA_FILE = os.path.join(BASE_DIR, "raw_scraped_data.json")
 PROCESSED_DATA_FILE = os.path.join(BASE_DIR, "processed_scraped_data.json")
 
 FEEDS = [
+    # Credit Card Sources (Strictly India Region)
     {
         "category": "Credit Cards",
-        "url": "https://www.moneycontrol.com/rss/MCtopnews.xml",
-        "sourceName": "Moneycontrol Top News"
+        "url": "https://cardinsider.com/feed/",
+        "sourceName": "Card Insider India"
     },
     {
-        "category": "Markets & Mutual Funds",
-        "url": "https://www.moneycontrol.com/rss/mfnews.xml",
-        "sourceName": "Moneycontrol Mutual Funds"
+        "category": "Credit Cards",
+        "url": "https://cardexpert.in/feed/",
+        "sourceName": "CardExpert India"
+    },
+    {
+        "category": "Credit Cards",
+        "url": "https://blog.bankbazaar.com/category/credit-cards/feed/",
+        "sourceName": "BankBazaar Credit Cards"
+    },
+    {
+        "category": "Credit Cards",
+        "url": "https://technofino.in/community/blogs/index.rss",
+        "sourceName": "TechnoFino India"
+    },
+
+    # Financial News Sources
+    {
+        "category": "Financial News",
+        "url": "https://www.moneycontrol.com/rss/MCtopnews.xml",
+        "sourceName": "Moneycontrol Top News"
     },
     {
         "category": "Financial News",
@@ -64,34 +82,21 @@ FEEDS = [
         "sourceName": "Economic Times Wealth"
     },
     {
-        "category": "Credit Cards",
-        "url": "https://cardinsider.com/feed/",
-        "sourceName": "Card Insider"
+        "category": "Markets & Mutual Funds",
+        "url": "https://www.moneycontrol.com/rss/mfnews.xml",
+        "sourceName": "Moneycontrol Mutual Funds"
     },
     {
-        "category": "Mutual Funds",
+        "category": "Markets & Mutual Funds",
         "url": "https://www.livemint.com/rss/mutual-funds",
         "sourceName": "LiveMint Mutual Funds"
     },
+
+    # Technology & AI
     {
-        "category": "Sports",
-        "url": "https://www.espn.com/espn/rss/news",
-        "sourceName": "ESPN Top News"
-    },
-    {
-        "category": "Cars & EVs",
-        "url": "https://electrek.co/feed/",
-        "sourceName": "Electrek"
-    },
-    {
-        "category": "Education",
-        "url": "https://www.edweek.org/feed",
-        "sourceName": "Education Week"
-    },
-    {
-        "category": "Crypto",
-        "url": "https://cointelegraph.com/rss",
-        "sourceName": "CoinTelegraph"
+        "category": "Technology",
+        "url": "https://feeds.feedburner.com/gadgets360-latest",
+        "sourceName": "Gadgets 360 India"
     },
     {
         "category": "Technology",
@@ -99,36 +104,62 @@ FEEDS = [
         "sourceName": "TechCrunch"
     },
     {
-        "category": "Entertainment",
-        "url": "https://www.bollywoodhungama.com/rss/news.xml",
-        "sourceName": "Bollywood Hungama"
+        "category": "Technology",
+        "url": "https://economictimes.indiatimes.com/tech/rssfeeds/13357270.cms",
+        "sourceName": "Economic Times Tech"
+    },
+
+    # Cars & EVs
+    {
+        "category": "Cars & EVs",
+        "url": "https://www.autocarindia.com/rss/allnews",
+        "sourceName": "Autocar India"
     },
     {
-        "category": "ITR & Tax",
-        "url": "https://economictimes.indiatimes.com/wealth/tax/rssfeeds/897228639.cms",
-        "sourceName": "ET Tax"
+        "category": "Cars & EVs",
+        "url": "https://www.cartoq.com/feed/",
+        "sourceName": "CarToq India"
+    },
+
+    # Crypto
+    {
+        "category": "Crypto",
+        "url": "https://cointelegraph.com/rss",
+        "sourceName": "CoinTelegraph"
     },
     {
-        "category": "Loans & FDs",
-        "url": "https://economictimes.indiatimes.com/wealth/borrow/rssfeeds/897228726.cms",
-        "sourceName": "ET Borrow"
+        "category": "Crypto",
+        "url": "https://www.coindesk.com/arc/outboundfeeds/rss/",
+        "sourceName": "CoinDesk"
     },
+
+    # Sports
     {
-        "category": "Markets & Mutual Funds",
-        "url": "https://www.livemint.com/rss/markets",
-        "sourceName": "LiveMint Markets"
+        "category": "Sports",
+        "url": "https://sports.ndtv.com/rss/all",
+        "sourceName": "NDTV Sports"
     },
+
+    # Gaming
     {
-        "category": "RBI & Policy",
-        "url": "https://economictimes.indiatimes.com/news/economy/policy/rssfeeds/104276.cms",
-        "sourceName": "ET Economy"
+        "category": "Gaming",
+        "url": "https://feeds.feedburner.com/ign/all",
+        "sourceName": "IGN"
     }
 ]
 
 def detect_category(title: str, text: str, feed_category: str) -> str:
     content = (title + " " + text).lower()
     
-    # 1. Credit Cards
+    # Filter out foreign / US credit card news without India context
+    non_india_keywords = [
+        "chase sapphire", "delta sky", "united miles", "southwest rapid", 
+        "capital one us", "american express us", "tsa precheck", "global entry us"
+    ]
+    if any(k in content for k in non_india_keywords) and not any(ik in content for ik in ["india", "hdfc", "sbi", "rbi", "rupay", "icici", "axis"]):
+        return "Financial News"
+
+    # 1. Credit Cards (Strictly India & General Cards)
     if any(k in content for k in [
         "credit card", "credit cards", "card reward", "lounge access", "cashback card", 
         "card annual fee", "cardholders", "debit card", "sbi card", "hdfc card", 
@@ -140,7 +171,7 @@ def detect_category(title: str, text: str, feed_category: str) -> str:
     if any(k in content for k in [
         "income tax", "itr", "tax return", "tax filing", "tax slab", "section 80c", 
         "tax refund", "tax deduction", "tds", "capital gains tax", "tax exemption", 
-        "tat", "direct tax", "advance tax", "form 16", "taxpayer", "itat"
+        "direct tax", "advance tax", "form 16", "taxpayer", "itat"
     ]):
         return "ITR & Tax"
         
@@ -166,7 +197,7 @@ def detect_category(title: str, text: str, feed_category: str) -> str:
         "q3 results", "q4 results", "net profit", "quarterly profit", "bse", "nse", 
         "ipo", "drhp", "dividend", "market wrap", "gainers", "losers", "bull market", "bear market", "d-street", "dalal street"
     ]):
-        return "Stock Market India"
+        return "Markets & Mutual Funds"
         
     # 6. RBI & Policy / Banking
     if any(k in content for k in [
@@ -184,15 +215,44 @@ def detect_category(title: str, text: str, feed_category: str) -> str:
         
     # 8. Cars & EVs
     if any(k in content for k in [
-        "electric vehicle", "ev ", "evs", "tesla", "e-bike", "robotaxi", "battery cell", "automobile", "charging station"
+        "electric vehicle", "ev ", "evs", "tesla", "e-bike", "robotaxi", "battery cell", "automobile", "charging station", "car launch", "suv", "hybrid car"
     ]):
         return "Cars & EVs"
 
+    # 9. Gaming
+    if any(k in content for k in [
+        "xbox", "playstation", "nintendo", "pc gaming", "steam", "esports", "twitch", "gameplay", "ps5", "gta", "fortnite"
+    ]):
+        return "Gaming"
+
+    # 10. Technology & AI
+    if any(k in content for k in [
+        "artificial intelligence", "ai", "chatgpt", "openai", "google gemini", "apple", "iphone", "android", "smartphone", "semiconductor", "cybersecurity", "software"
+    ]):
+        return "Technology"
+
+    # 11. Sports
+    if any(k in content for k in [
+        "cricket", "ipl", "bcci", "football", "premier league", "champions league", "tennis", "olympics", "world cup"
+    ]):
+        return "Sports"
+        
     # Default to feed category if specific, otherwise "Financial News"
-    if feed_category in ["Credit Cards", "Mutual Funds", "Crypto", "Cars & EVs", "Technology", "Sports", "Education", "Entertainment", "ITR & Tax", "Loans & FDs", "Markets & Mutual Funds", "RBI & Policy"]:
+    if feed_category in ["Credit Cards", "Mutual Funds", "Crypto", "Cars & EVs", "Technology", "Sports", "Education", "Entertainment", "Gaming", "ITR & Tax", "Loans & FDs", "Markets & Mutual Funds", "RBI & Policy"]:
         return feed_category
         
     return "Financial News"
+
+
+def map_category(engine_cat: str) -> str:
+    mapping = {
+        "FREELANCER_REMOTE_FINANCE": "Card Hacks & Perks",
+        "ESOP_STARTUP_EQUITY": "Startup & Capital",
+        "SME_D2C_FINTECH": "Financial Markets",
+        "FIRE_HIGH_INCOME_TECH": "Wealth 101",
+        "WEB3_ALTERNATIVE_ASSETS": "Tech & AI"
+    }
+    return mapping.get(engine_cat, "Wealth 101")
 
 def clean_html_text(text: str) -> str:
     text = unescape(text)
@@ -219,7 +279,8 @@ def fetch_api_news_finnhub(max_items: int = 10) -> list:
                     "url": article.get("url", ""),
                     "text": article.get("summary", "")[:1000],
                     "category": "Financial News",
-                    "sourceName": article.get("source", "Finnhub API")
+                    "sourceName": article.get("source", "Finnhub API"),
+                    "imageUrl": article.get("image", "")
                 })
     except Exception as e:
         logging.warning(f"Error fetching from Finnhub API: {e}")
@@ -258,6 +319,16 @@ def fetch_rss_feed_fast(feed_info: dict, max_items: int = 10) -> list:
                 except:
                     pass
             
+            # Extract image
+            img_m = re.search(r"<(?:media:content|media:thumbnail|enclosure)[^>]*url=[\'\"]([^\'\"]+)[\'\"]", cb, re.IGNORECASE)
+            image_url = img_m.group(1) if img_m else None
+            
+            # Try parsing from description if not found
+            if not image_url and desc_m:
+                img_desc = re.search(r"<img[^>]*src=[\'\"]([^\'\"]+)[\'\"]", desc_m.group(1), re.IGNORECASE)
+                if img_desc:
+                    image_url = img_desc.group(1)
+            
             if title and link:
                 clean_link = link.split("?")[0]
                 items.append({
@@ -266,6 +337,7 @@ def fetch_rss_feed_fast(feed_info: dict, max_items: int = 10) -> list:
                     "text": desc[:1000] if len(desc) > 10 else title,
                     "category": feed_info["category"],
                     "sourceName": feed_info["sourceName"],
+                    "imageUrl": image_url,
                     "publishedAt": int(pub_time * 1000) if pub_time else None
                 })
     except Exception as e:
@@ -279,28 +351,31 @@ def call_gemini_batch_api(items: list) -> dict:
 
     simplified = [{"id": item["id"], "title": item["title"], "content": item["text"]} for item in items]
     
-    prompt = f"""You are an expert Financial Journalist and UX Content Architect.
-Analyze these news items and produce structured, highly engaging JSON summaries.
+    prompt = f"""You are the Automated Financial Tech & News Scraper Engine.
+Analyze these news items and produce structured JSON output.
+
+Classify the scraped RSS articles into EXACTLY ONE of the following 5 niche target topics:
+FREELANCER_REMOTE_FINANCE, ESOP_STARTUP_EQUITY, SME_D2C_FINTECH, FIRE_HIGH_INCOME_TECH, WEB3_ALTERNATIVE_ASSETS
 
 Output MUST be strictly valid JSON without markdown code blocks.
-DO NOT use generic introductory labels like "Key Update:", "Why it matters:", "Source Report:", "Investor Takeaway:", or "Monetary Outlook:".
-
-Input Items:
-{json.dumps(simplified, indent=2)}
 
 Respond ONLY with a JSON Array of objects matching this exact format for each item:
 [
-  {{
+  {
     "id": <number matching input id>,
-    "title": "Catchy headline (Max 10 words)",
-    "summary": "Provide a cohesive, high-readability 5 to 6 line narrative overview covering what happened and the core market context.",
-    "who_impacted": "Provide 1 to 2 lines starting exactly with '• User Impacted: ' detailing who this affects.",
-    "reason": "Provide 1 to 2 lines starting exactly with '• Why It matters: ' explaining core drivers.",
-    "financial_impact": "Provide 1 to 2 lines starting exactly with '• Financial benefits: ' highlighting tangible value.",
-    "action": "Provide 1 crisp bullet point starting exactly with '• Actionable Takeaway: '",
-    "category": "Must be EXACTLY ONE of ['Financial News', 'Credit Cards', 'Mutual Funds', 'Sports', 'Cars & EVs', 'Education', 'Crypto', 'Technology', 'Entertainment', 'ITR & Tax', 'Loans & FDs', 'Markets & Mutual Funds', 'RBI & Policy']",
-    "topic_cluster": "Dynamic 2-3 word topic tag (e.g. 'Tech Earnings', 'RBI Policy', 'EV Market')"
-  }}
+    "category": "Must be EXACTLY ONE of ['FREELANCER_REMOTE_FINANCE', 'ESOP_STARTUP_EQUITY', 'SME_D2C_FINTECH', 'FIRE_HIGH_INCOME_TECH', 'WEB3_ALTERNATIVE_ASSETS']",
+    "raw_headline": "Catchy headline (Max 10 words)",
+    "summary_bullets": "3-4 bullet points summarizing the news",
+    "target_audience": "Who this impacts",
+    "monetization_angle": "How this relates to making or saving money",
+    "badge": "Short badge text",
+    "paragraphWhatHappened": "What happened narrative",
+    "paragraphTheMath": "Financial impact math narrative",
+    "paragraphNextSteps": "Actionable next steps",
+    "uspAndVerdict": "Final verdict or USP",
+    "affiliateCtaText": "Call to action text",
+    "affiliateCtaLink": "Call to action link"
+  }
 ]
 """
 
@@ -360,35 +435,21 @@ def generate_fallback_llm_summary(item: dict) -> dict:
     if not sentences:
         sentences = [title]
         
-    summary = " ".join(sentences[:5])
+    # Build 6 to 7 line narrative paragraph (~6-7 sentences)
+    summary_sentences = sentences[:7]
+    summary = ". ".join(summary_sentences)
+    summary = re.sub(r'\.\s*\.', '.', summary)
     if not summary.endswith("."):
         summary += "."
-
-    # Crisp contextual bullet points from actual article text
-    reason_items = sentences[1:4] if len(sentences) >= 2 else sentences[:1]
-    reason_bullets = "\n".join([f"• {s}" for s in reason_items if len(s) > 10])
-
-    # Extract numbers or currency metrics if present in text
-    metrics = re.findall(r'(?:₹|\$|\b\d+(?:\.\d+)?%|\b\d+\s*(?:lakh|crore|billion|million)\b)', clean_text, re.IGNORECASE)
-    if metrics:
-        metric_sentences = [s for s in sentences if any(m in s for m in metrics)]
-        if metric_sentences:
-            financial_impact = "\n".join([f"• {s}" for s in metric_sentences[:2]])
-        else:
-            financial_impact = f"• Metric Highlighted: {', '.join(list(set(metrics[:3])))}"
-    else:
-        financial_impact = ""
-
-    action_bullets = ""
 
     return {
         "id": item["id"],
         "title": title[:250],
-        "summary": summary[:1200],
-        "who_impacted": f"Investors & Readers following {category}",
-        "reason": reason_bullets,
-        "financial_impact": financial_impact,
-        "action": action_bullets,
+        "summary": summary[:1500],
+        "who_impacted": sentences[1] if len(sentences) > 1 else f"Readers and consumers following {category}",
+        "reason": sentences[2] if len(sentences) > 2 else title,
+        "financial_impact": sentences[3] if len(sentences) > 3 else "",
+        "action": sentences[4] if len(sentences) > 4 else "",
         "category": category,
         "topic_cluster": f"{category} Update"
     }
@@ -429,15 +490,15 @@ def push_to_supabase_rest(records: list):
         llm = r["llm_summary"]
         payload.append({
             "title": r["title"][:250],
-            "summaryWhatHappened": llm.get("summary", "")[:1000],
+            "summaryWhatHappened": llm.get("summary", "")[:1500],
             "summaryWhoImpacted": llm.get("who_impacted", "")[:500],
-            "summaryActionableTakeaway": llm.get("action", "")[:1000],
+            "summaryActionableTakeaway": llm.get("action", "")[:500],
             "summaryText": llm.get("reason", "")[:1500],
             "category": r["category"][:50],
             "financialActionUrl": r["url"],
             "sourceUrl": r["url"],
             "sourceName": r["sourceName"][:90],
-            "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=60",
+            "imageUrl": r.get("imageUrl"),
             "financialImpactBullets": llm.get("financial_impact", "")[:1500],
             "publishedAt": r.get("publishedAt") or now_ms
         })
@@ -511,7 +572,7 @@ def main():
             "text": item["text"],
             "category": cat,
             "sourceName": item["sourceName"],
-            "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=60",
+            "imageUrl": item.get("imageUrl"),
             "llm_summary": {
                 "summary": summary_obj.get("summary", ""),
                 "who_impacted": summary_obj.get("who_impacted", ""),
@@ -519,7 +580,7 @@ def main():
                 "financial_impact": summary_obj.get("financial_impact", ""),
                 "action": summary_obj.get("action", ""),
                 "category": cat,
-                "topic_cluster": summary_obj.get("topic_cluster", "Latest Updates")
+                "topic_cluster": summary_obj.get("monetization_angle", "")
             }
         }
         processed_list.append(processed_item)

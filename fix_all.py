@@ -1,18 +1,14 @@
-with open("app/src/main/java/com/example/ui/MainHomeScreen.kt", "r") as f:
-    content = f.read()
+import re
 
-content = content.replace("newsList = filteredNewsList,", "allNewsList = filteredNewsList,")
-content = content.replace("newsList = bookmarkedList,", "allNewsList = bookmarkedList,")
+def fix_deals():
+    with open("app/src/main/java/com/example/ui/components/DealsAndOffersTab.kt", "r") as f:
+        c = f.read()
+    c = c.replace("try { context.startActivity(android.content.Intent", "try { (context as? android.app.Activity)?.startActivity(android.content.Intent")
+    # Actually wait, context.startActivity works if context is from LocalContext.current. 
+    # But the error said: Function invocation 'context(...)' expected.
+    # Ah! 'context' might not be defined in DealsAndOffersTab, or it is clashing with something else.
+    # Let me check if 'val context = LocalContext.current' is there.
+    with open("app/src/main/java/com/example/ui/components/DealsAndOffersTab.kt", "w") as f:
+        f.write(c)
 
-with open("app/src/main/java/com/example/ui/MainHomeScreen.kt", "w") as f:
-    f.write(content)
-
-with open("app/src/main/java/com/example/ui/components/InshortsFeedView.kt", "r") as f:
-    content = f.read()
-
-content = content.replace("when (val slide = interleavedSlides[vPage]) {\n                when (val slide = interleavedSlides[vPage]) {", "when (val slide = interleavedSlides[vPage]) {")
-content = content.replace("allNewsList = newsList", "allNewsList = allNewsList")
-
-with open("app/src/main/java/com/example/ui/components/InshortsFeedView.kt", "w") as f:
-    f.write(content)
-
+fix_deals()

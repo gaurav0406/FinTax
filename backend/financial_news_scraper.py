@@ -265,7 +265,7 @@ def push_to_supabase_rest(records: list):
             "financialActionUrl": "https://eportal.incometax.gov.in",
             "sourceUrl": r["url"],
             "sourceName": r["sourceName"][:90],
-            "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=60",
+            "imageUrl": item.get("imageUrl", "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=60"),
             "financialImpactBullets": llm.get("financial_impact", "")[:1000],
             "publishedAt": now_ms
         })
@@ -317,7 +317,7 @@ def main():
             "text": item["text"],
             "category": cat,
             "sourceName": item["sourceName"],
-            "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=60",
+            "imageUrl": item.get("imageUrl", "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=60"),
             "llm_summary": {
                 "summary": summary_obj.get("summary", ""),
                 "who_impacted": summary_obj.get("who_impacted", ""),

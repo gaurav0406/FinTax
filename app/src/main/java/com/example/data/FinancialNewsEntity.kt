@@ -25,7 +25,15 @@ data class FinancialNewsEntity(
     val publishedAt: Long = System.currentTimeMillis(),
     val isBookmarked: Boolean = false,
     val readCount: Int = 1250,
-    val shareCount: Int = 180
+    val shareCount: Int = 180,
+    val badge: String? = null,
+    val paragraphWhatHappened: String? = null,
+    val paragraphTheMath: String? = null,
+    val paragraphNextSteps: String? = null,
+    val uspAndVerdict: String? = null,
+    val affiliateCtaText: String? = null,
+    val affiliateCtaLink: String? = null,
+    val targetAudience: String? = null
 ) {
     val commentCount: Int
         get() = (id * 17) % 150 + 5
@@ -44,46 +52,78 @@ data class FinancialNewsEntity(
 }
 
 fun String.stripIntroductoryLabels(): String {
-    if (this.isBlank()) return "Key regulatory shift impacting market liquidity and interest rate structures."
+    if (this.isBlank()) return ""
     var text = this
-        .replace(Regex("(?m)(^|\\n)(•\\s*)?(Published by|Home|Key Update|Market Context|Source Report|Investor Takeaway|Monetary Outlook|Verify Details|Portfolio Review|Market Update|Key Highlight|Practical Takeaway|Direct Cash Impact|Net Card Yield|Interest Yield|Loan EMI Impact|Operational Savings|Tax Incentive|Liquidity Boost|Expected Yield|Financial Gain|Championship Standing|Curriculum Shift|Streaming Rights|Infrastructure Boost|Tech Efficiency|Workflow Automation|Career Advantage|Ecosystem Growth|Job Creation|Reason for change|Audience Value|Skill Demand|Quantifiable Benefit|Why it matters|Actionable Takeaway|Action Steps|Action|Takeaway|Summary|Key Takeaway):\\s*", RegexOption.IGNORE_CASE), "$1$2")
+        .replace(Regex("(?m)(^|\\n)(•\\s*)?(User Impacted|Why It matters|Why it matters|Financial benefits|Financial Impact|Key Update|Market Context|Source Report|Investor Takeaway|Monetary Outlook|Verify Details|Portfolio Review|Market Update|Key Highlight|Practical Takeaway|Direct Cash Impact|Net Card Yield|Interest Yield|Loan EMI Impact|Operational Savings|Tax Incentive|Liquidity Boost|Expected Yield|Financial Gain|Quantifiable Benefit|Actionable Takeaway|Action Steps|Action|Takeaway|Summary|Key Takeaway):\\s*", RegexOption.IGNORE_CASE), "$1")
         .replace(Regex("(?m)^\\s*(•\\s*)?(Published by|Home\\b).*?(\\n|$)"), "")
-        .replace(Regex("(?i)\\b(Published by|Home\\b|Key Update|Market Context|Source Report|Investor Takeaway|Monetary Outlook|Verify Details|Portfolio Review|Market Update|Why it matters|Actionable Takeaway|Action Steps|Action|Takeaway):\\s*"), "")
+        .replace(Regex("(?i)\\b(Published by|Home\\b|User Impacted|Why It matters|Why it matters|Financial benefits|Financial Impact|Actionable Takeaway|Action Steps|Action|Takeaway):\\s*"), "")
         .trim()
     if (text.isBlank() || text.lowercase() in listOf("published by home", "home", "published by", "home - economic times", "home - livemint")) {
-        text = "Key regulatory update impacting sector valuation, consumer interest rates, and overall market liquidity."
+        text = ""
     }
     return text
 }
 
 fun FinancialNewsEntity.getMergedOverview(): String {
-    val fullText = summaryWhatHappened.replace("•", " ").replace("- ", " ").replace("* ", " ").trim()
-    if (fullText.isBlank()) return "Detailed report covering key financial updates, market developments, and strategic policy shifts."
-    
-    val rawSentences = fullText.split(Regex("(?<=[.!?])\\s+"))
-        .map { it.trim() }
-        .filter { it.isNotBlank() && it.length > 8 && !it.startsWith("•") }
-        .distinct()
-    
-    // Target 5 to 6 lines of overview text
-    val overviewSentences = rawSentences.take(6)
-    return if (overviewSentences.isNotEmpty()) {
-        overviewSentences.joinToString(" ")
-    } else {
-        fullText
-    }
+    val primaryText = summaryWhatHappened.ifBlank { summaryText }
+    val clean = primaryText.stripIntroductoryLabels()
+    if (clean.isNotBlank()) return clean
+    return title
 }
 
 fun FinancialNewsEntity.getMergedKeyTakeaways(): String {
-    val who = summaryWhoImpacted.trim().ifBlank { "• User Impacted: Salaried taxpayers, retail investors & cardholders" }
-    val why = summaryText.trim().ifBlank { "• Why It matters: Key regulatory shift influencing yields and credit savings." }
-    val benefit = financialImpactBullets?.trim()?.ifBlank { null } ?: "• Financial benefits: +₹12,500/yr savings via optimized tax deduction & cashbacks"
+    val overview = getMergedOverview()
+    
+    val rawList = mutableListOf<String>()
+    
+    val who = summaryWhoImpacted.stripIntroductoryLabels()
+    if (who.isNotBlank()) rawList.add(who)
+    
+    val action = summaryActionableTakeaway.stripIntroductoryLabels()
+    if (action.isNotBlank()) rawList.add(action)
 
-    val finalWho = if (who.contains("User Impacted", ignoreCase = true)) who else "• User Impacted: $who"
-    val finalWhy = if (why.contains("Why It matters", ignoreCase = true) || why.contains("Why It Matters", ignoreCase = true)) why else "• Why It matters: $why"
-    val finalBenefit = if (benefit.contains("Financial benefits", ignoreCase = true) || benefit.contains("Tangible Value", ignoreCase = true)) benefit else "• Financial benefits: $benefit"
+    val impact = financialImpactBullets?.stripIntroductoryLabels() ?: ""
+    if (impact.isNotBlank()) rawList.add(impact)
 
-    return "$finalWho\n$finalWhy\n$finalBenefit"
+    if (summaryText.isNotBlank() && summaryText != summaryWhatHappened) {
+        val why = summaryText.stripIntroductoryLabels()
+        if (why.isNotBlank()) rawList.add(why)
+    }
+
+    val uniqueItems = rawList
+        .flatMap { item -> item.split("\n", ";") }
+        .map { line ->
+            line.trim()
+                .removePrefix("•").removePrefix("-").removePrefix("*").trim()
+                .replace(Regex("^(User Impacted|Why It matters|Why it matters|Financial benefits|Financial Impact|Key Update|Market Context|Investor Takeaway|Actionable Takeaway|Action|Summary|Takeaway):\\s*", RegexOption.IGNORE_CASE), "")
+        }
+        .filter { it.isNotBlank() && it.length > 8 }
+        .distinct()
+
+    if (uniqueItems.isNotEmpty()) {
+        return uniqueItems.take(4).joinToString("\n") { "• $it" }
+    }
+
+    // Fallback: If separate fields are empty, extract clean key takeaway bullet points from narrative text
+    val textToSplit = if (summaryWhatHappened.length > 80) summaryWhatHappened else summaryText
+    val sentences = textToSplit.stripIntroductoryLabels()
+        .split(Regex("(?<=[.!?])\\s+"))
+        .map { line ->
+            line.trim()
+                .removePrefix("•").removePrefix("-").removePrefix("*").trim()
+                .replace(Regex("^(User Impacted|Why It matters|Why it matters|Financial benefits|Financial Impact|Key Update|Market Context|Investor Takeaway|Actionable Takeaway|Action|Summary|Takeaway):\\s*", RegexOption.IGNORE_CASE), "")
+        }
+        .filter { it.isNotBlank() && it.length > 12 }
+        .distinct()
+
+    if (sentences.size >= 2) {
+        val takeawaySentences = if (sentences.size > 2) sentences.drop(1).take(3) else sentences.take(2)
+        return takeawaySentences.joinToString("\n") { "• $it" }
+    } else if (sentences.isNotEmpty()) {
+        return "• ${sentences.first()}"
+    }
+
+    return ""
 }
 
 

@@ -26,7 +26,7 @@ fun OnboardingScreen(onComplete: (String) -> Unit) {
     val profiles = listOf("Salaried Employee", "Retail Investor", "Self-Employed / Business", "Student / Beginner")
     
     val selectedInterests = remember { mutableStateListOf<String>() }
-    val interests = listOf("Financial News", "Credit Cards", "Mutual Funds", "Sports", "Cars & EVs", "Education", "Crypto", "Technology")
+    val interests = listOf("Card Hacks & Perks", "Market Signals", "Tech & AI", "Startup & Capital", "Wealth 101")
     
     Surface(
         modifier = Modifier.fillMaxSize(),

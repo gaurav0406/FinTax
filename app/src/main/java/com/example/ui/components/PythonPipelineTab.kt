@@ -67,7 +67,7 @@ from supabase import create_client
 FEEDS = [
     {"name": "Economic Times Wealth", "url": "https://economictimes.indiatimes.com/wealth/rssfeeds/1254212.cms"},
     {"name": "LiveMint Money", "url": "https://www.livemint.com/rss/money"},
-    {"name": "Moneycontrol PF", "url": "https://www.moneycontrol.com/rss/personalfinance.xml"},
+    {"name": "Economic Times Market", "url": "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms"},
     {"name": "RBI Press Releases", "url": "https://rbi.org.in/rssfeed.xml"}
 ]
 
@@ -76,7 +76,7 @@ Output strictly JSON:
 {
   "title": "Max 10 words headline",
   "summary": ["Point 1: What happened", "Point 2: Who impacted", "Point 3: Actionable Takeaway"],
-  "category": "One of ['Credit Cards', 'ITR & Tax', 'Loans & FDs', 'Markets & Mutual Funds', 'RBI & Policy']",
+  "category": "One of ['Card Hacks & Perks', 'Market Signals', 'Tech & AI', 'Startup & Capital', 'Wealth 101']",
   "financial_action_url": "Optional link",
   "source_url": "Original link"
 }
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS public.financial_news (
     title VARCHAR(255) NOT NULL,
     summary JSONB NOT NULL,
     summary_text TEXT NOT NULL,
-    category VARCHAR(50) NOT NULL CHECK (category IN ('Credit Cards', 'ITR & Tax', 'Loans & FDs', 'Markets & Mutual Funds', 'RBI & Policy')),
+    category VARCHAR(50) NOT NULL CHECK (category IN ('Card Hacks & Perks', 'Market Signals', 'Tech & AI', 'Startup & Capital', 'Wealth 101')),
     financial_action_url TEXT,
     source_url TEXT UNIQUE NOT NULL,
     source_name VARCHAR(100),

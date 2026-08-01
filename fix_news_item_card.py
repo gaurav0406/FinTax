@@ -1,14 +1,17 @@
-import re
+with open("app/src/main/java/com/example/ui/components/NewsItemCard.kt", "r") as f:
+    content = f.read()
 
-with open('app/src/main/java/com/example/ui/components/NewsItemCard.kt', 'r') as f:
-    text = f.read()
+bad_str = """        }
+    }
+            )
+    }
 
-text = text.replace('MinimalPurpleLightContainer', 'MaterialTheme.colorScheme.surfaceVariant')
-text = text.replace('TextPrimary', 'MaterialTheme.colorScheme.onSurfaceVariant')
-text = text.replace('TextSecondary', 'MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.7f)')
-text = text.replace('MinimalPurpleDark', 'MaterialTheme.colorScheme.primary')
-text = text.replace('Color.White', 'MaterialTheme.colorScheme.onPrimary')
+    if (showJargonSheet) {"""
 
-with open('app/src/main/java/com/example/ui/components/NewsItemCard.kt', 'w') as f:
-    f.write(text)
+content = content.replace(bad_str, """        }
+    }
 
+    if (showJargonSheet) {""")
+
+with open("app/src/main/java/com/example/ui/components/NewsItemCard.kt", "w") as f:
+    f.write(content)

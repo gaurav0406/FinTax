@@ -1,17 +1,23 @@
-with open('app/src/main/java/com/example/ui/components/TaxCalculatorTab.kt', 'r') as f:
-    text = f.read()
+import re
 
-text = text.replace('viewModel.updateGrossIncome(newValue.filter) { it.isDigit() }', 'viewModel.updateGrossIncome(newValue.filter { it.isDigit() })')
-text = text.replace('viewModel.updateGrossIncome(it.filter) { char -> char.isDigit() }', 'viewModel.updateGrossIncome(it.filter { char -> char.isDigit() })')
-text = text.replace('viewModel.updateSec80C(it.filter) { char -> char.isDigit() }', 'viewModel.updateSec80C(it.filter { char -> char.isDigit() })')
-text = text.replace('viewModel.updateSec80D(it.filter) { char -> char.isDigit() }', 'viewModel.updateSec80D(it.filter { char -> char.isDigit() })')
-text = text.replace('viewModel.updateNps(it.filter) { char -> char.isDigit() }', 'viewModel.updateNps(it.filter { char -> char.isDigit() })')
-text = text.replace('viewModel.updateHraLoan(it.filter) { char -> char.isDigit() }', 'viewModel.updateHraLoan(it.filter { char -> char.isDigit() })')
+# DealsAndOffersTab.kt
+with open("app/src/main/java/com/example/ui/components/DealsAndOffersTab.kt", "r") as f:
+    content = f.read()
 
-text = text.replace('val = it', 'viewModel.updateGrossIncome(it)')
-# Look for line 361: 'val' cannot be reassigned.
-# In Kotlin, `val` can't be reassigned, so maybe there's a typo like `state.grossIncomeInput = it` became `val = it`?
-# Wait, let me check line 361.
+# context.startActivity fails because context is a Context, not Activity? It is available via LocalContext.current
+# Let's fix DealsAndOffersTab syntax error
+# Line 137: "try { context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))) } catch (e: Exception) { e.printStackTrace() }"
+content = content.replace("try { context.startActivity(", "try { (context as? android.app.Activity)?.startActivity(")
 
-with open('app/src/main/java/com/example/ui/components/TaxCalculatorTab.kt', 'w') as f:
-    f.write(text)
+# Let's see what was removed
+# There was a syntax error at 159
+# The let block was:
+# webViewUrlToOpen?.let { url ->
+#     InAppWebViewDialog(
+#         url = url,
+#         title = "Deal",
+#         onDismiss = { webViewUrlToOpen = null }
+#     )
+# }
+# Since I removed it, I might have left some dangling braces or didn't remove the closing brace if the regex failed to match it properly.
+

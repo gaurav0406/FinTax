@@ -32,11 +32,11 @@ data class TaxResult(
 data class TaxCalculatorState(
     val currentPolicy: TaxPolicyConfig = getDefaultPolicy(),
     val isSalaried: Boolean = true,
-    val grossIncomeInput: String = "1200000",
-    val sec80CInput: String = "150000",
-    val sec80DInput: String = "25000",
-    val npsInput: String = "50000",
-    val hraLoanInput: String = "100000"
+    val grossIncomeInput: String = "",
+    val sec80CInput: String = "",
+    val sec80DInput: String = "",
+    val npsInput: String = "",
+    val hraLoanInput: String = ""
 )
 
 fun getDefaultPolicy(): TaxPolicyConfig {
