@@ -339,8 +339,6 @@ def fetch_rss_feed_fast(feed_info: dict, max_items: int = 10) -> list:
             
             if title and link:
                 clean_link = link.split("?")[0]
-                if "moneycontrol" in clean_link.lower() or "moneycontrol" in title.lower() or "moneycontrol" in feed_info["sourceName"].lower():
-                    continue
                 items.append({
                     "title": title[:250],
                     "url": clean_link,

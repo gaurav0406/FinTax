@@ -505,15 +505,8 @@ fun NewsItemCard(
                 if (!news.sourceUrl.isNullOrBlank()) {
                     Button(
                         onClick = {
-                            val activity = context as? Activity
                             val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(news.sourceUrl))
-                            if (activity != null) {
-                                AdMobHelper.showInterstitial(activity) {
-                                    try { context.startActivity(intent) } catch (e: Exception) { e.printStackTrace() }
-                                }
-                            } else {
-                                try { context.startActivity(intent) } catch (e: Exception) { e.printStackTrace() }
-                            }
+                            try { context.startActivity(intent) } catch (e: Exception) { e.printStackTrace() }
                         },
                         modifier = Modifier
                             .height(40.dp)
@@ -542,15 +535,8 @@ fun NewsItemCard(
 
                 OutlinedButton(
                     onClick = {
-                        val activity = context as? Activity
                         val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(news.sourceUrl))
-                        if (activity != null) {
-                            AdMobHelper.showInterstitial(activity) {
-                                try { context.startActivity(intent) } catch (e: Exception) { e.printStackTrace() }
-                            }
-                        } else {
-                            try { context.startActivity(intent) } catch (e: Exception) { e.printStackTrace() }
-                        }
+                        try { context.startActivity(intent) } catch (e: Exception) { e.printStackTrace() }
                     },
                     modifier = Modifier
                         .height(40.dp)
