@@ -44,7 +44,7 @@ data class FinancialNewsEntity(
 
     val isFinancialCategory: Boolean
         get() = when (category.trim()) {
-            "Financial News", "Credit Cards", "Mutual Funds", "Crypto" -> true
+            "FinCards & Wealth 101", "Market Signals", "Financial News" -> true
             else -> false
         }
 

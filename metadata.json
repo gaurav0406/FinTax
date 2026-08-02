@@ -1,5 +1,5 @@
 {
-  "name": "FinTax Audio News",
+  "name": "FinCards & Wealth 101",
   "description": "AI-powered Indian personal finance & tax news reader with 60-word audio summaries, category filters, and Python pipeline backend.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

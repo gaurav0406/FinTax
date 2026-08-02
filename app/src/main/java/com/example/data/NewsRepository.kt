@@ -49,15 +49,22 @@ class NewsRepository(private val dao: FinancialNewsDao) {
     }
 
     fun normalizeCategory(cat: String?): String {
-        if (cat.isNullOrBlank()) return "Wealth 101"
+        if (cat.isNullOrBlank()) return "FinCards & Wealth 101"
         val upper = cat.uppercase()
         return when {
-            upper.contains("CARD") || upper.contains("PERK") || upper.contains("REWARD") -> "Card Hacks & Perks"
-            upper.contains("MARKET") || upper.contains("SIGNAL") || upper.contains("MUTUAL") || upper.contains("STOCK") || upper.contains("NIFTY") || upper.contains("SENSEX") || upper.contains("IPO") || upper.contains("LOAN") || upper.contains("FD") || upper.contains("RBI") || upper.contains("POLICY") -> "Market Signals"
-            upper.contains("TECH") || upper.contains("AI") || upper.contains("GAMING") || upper.contains("CAR") || upper.contains("EV") || upper.contains("AUTOMOBILE") -> "Tech & AI"
-            upper.contains("STARTUP") || upper.contains("CAPITAL") || upper.contains("D2C") || upper.contains("FUNDING") || upper.contains("BUSINESS") || upper.contains("FOUNDER") -> "Startup & Capital"
-            upper.contains("WEALTH") || upper.contains("FINANCE") || upper.contains("TAX") || upper.contains("ITR") || upper.contains("EDUCATION") || upper.contains("CRYPTO") || upper.contains("BITCOIN") -> "Wealth 101"
-            else -> "Wealth 101"
+            upper.contains("CARD") || upper.contains("PERK") || upper.contains("REWARD") || 
+            upper.contains("WEALTH") || upper.contains("FINANCE") || upper.contains("TAX") || 
+            upper.contains("ITR") || upper.contains("EDUCATION") || upper.contains("LOAN") || 
+            upper.contains("FD") -> "FinCards & Wealth 101"
+            upper.contains("MARKET") || upper.contains("SIGNAL") || upper.contains("MUTUAL") || 
+            upper.contains("STOCK") || upper.contains("NIFTY") || upper.contains("SENSEX") || 
+            upper.contains("IPO") || upper.contains("RBI") || upper.contains("POLICY") || 
+            upper.contains("CRYPTO") || upper.contains("BITCOIN") -> "Market Signals"
+            upper.contains("TECH") || upper.contains("AI") || upper.contains("GAMING") || 
+            upper.contains("CAR") || upper.contains("EV") || upper.contains("AUTOMOBILE") -> "Tech & AI"
+            upper.contains("STARTUP") || upper.contains("CAPITAL") || upper.contains("D2C") || 
+            upper.contains("FUNDING") || upper.contains("BUSINESS") || upper.contains("FOUNDER") -> "Startup & Capital"
+            else -> "FinCards & Wealth 101"
         }
     }
 
