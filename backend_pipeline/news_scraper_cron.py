@@ -50,28 +50,6 @@ FEEDS = [
         "sourceName": "BankBazaar Credit Cards"
     },
     {
-        "category": "Credit Cards",
-        "url": "https://www.financialexpress.com/money/feed/",
-        "sourceName": "Financial Express Money"
-    },
-    {
-        "category": "Credit Cards",
-        "url": "https://economictimes.indiatimes.com/wealth/spend/rssfeeds/83815340.cms",
-        "sourceName": "Economic Times Spend & Cards"
-    },
-    {
-        "category": "Credit Cards",
-        "url": "https://paisabazaar.com/blog/category/credit-card/feed/",
-        "sourceName": "Paisabazaar Credit Cards"
-    },
-    {
-        "category": "Credit Cards",
-        "url": "https://www.livemint.com/rss/banking",
-        "sourceName": "LiveMint Banking & Cards"
-    },
-
-    # Financial News Sources (Non-Moneycontrol)
-    {
         "category": "Financial News",
         "url": "https://www.businesstoday.in/rss/topstories",
         "sourceName": "Business Today Top Stories"
@@ -92,13 +70,6 @@ FEEDS = [
         "sourceName": "Economic Times Wealth"
     },
     {
-        "category": "Financial News",
-        "url": "https://www.financialexpress.com/feed/",
-        "sourceName": "Financial Express Main"
-    },
-
-    # Markets & Mutual Funds
-    {
         "category": "Markets & Mutual Funds",
         "url": "https://www.livemint.com/rss/mutual-funds",
         "sourceName": "LiveMint Mutual Funds"
@@ -113,8 +84,6 @@ FEEDS = [
         "url": "https://www.livemint.com/rss/markets",
         "sourceName": "LiveMint Markets"
     },
-
-    # Technology & AI
     {
         "category": "Technology",
         "url": "https://feeds.feedburner.com/gadgets360-latest",
@@ -136,11 +105,6 @@ FEEDS = [
         "category": "Cars & EVs",
         "url": "https://www.rushlane.com/feed",
         "sourceName": "RushLane Auto India"
-    },
-    {
-        "category": "Cars & EVs",
-        "url": "https://drivespark.com/rss/feeds.xml",
-        "sourceName": "DriveSpark Auto"
     },
 
     # Crypto
@@ -297,7 +261,12 @@ def fetch_api_news_finnhub(max_items: int = 10) -> list:
 
 def fetch_rss_feed_fast(feed_info: dict, max_items: int = 10) -> list:
     items = []
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Referer': 'https://www.google.com/'
+    }
     try:
         req = urllib.request.Request(feed_info["url"], headers=headers)
         with urllib.request.urlopen(req, timeout=8) as response:
@@ -581,15 +550,15 @@ def main():
     items_to_process = [item for item in raw_items if item["url"] not in existing_urls]
     logging.info(f"New articles needing Gemini LLM processing: {len(items_to_process)} (Saved {len(raw_items) - len(items_to_process)} LLM API calls!)")
 
-    # Call Gemini in batches of 15 for new articles only
+    # Call Gemini in batches of 5 for new articles only
     llm_map = {}
-    batch_size = 15
+    batch_size = 5
     for i in range(0, len(items_to_process), batch_size):
         batch = items_to_process[i:i+batch_size]
         batch_map = call_gemini_batch_api(batch)
         llm_map.update(batch_map)
         if i + batch_size < len(items_to_process):
-            time.sleep(5)
+            time.sleep(15)
 
     processed_list = []
     for item in raw_items:
