@@ -8,6 +8,7 @@ import com.example.data.formatToCrispBullets
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -731,71 +732,75 @@ private fun NewsBulletPoint(
     label: String,
     content: @Composable () -> Unit
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-        verticalAlignment = androidx.compose.ui.Alignment.Top
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        androidx.compose.material3.Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = iconColor,
-            modifier = Modifier.padding(top = 2.dp).size(16.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Column {
-            Text(
-                text = label.uppercase(),
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                    fontSize = 10.sp,
-                    color = iconColor,
-                    letterSpacing = 0.5.sp
-                )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.padding(top = 2.dp).size(18.dp)
             )
-            Spacer(modifier = Modifier.height(2.dp))
-            content()
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = label.uppercase(),
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp,
+                        color = iconColor,
+                        letterSpacing = 0.6.sp
+                    )
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                content()
+            }
         }
     }
 }
 
 @Composable
 fun WhatsChangedIndicator(news: FinancialNewsEntity) {
-    val indicatorText = remember(news.id) {
-        val raw = (news.financialImpactBullets ?: "") + " " + (news.summaryText) + " " + (news.title)
-        when {
-            raw.contains("reward", true) || raw.contains("point", true) -> "Reward Points Increased (+15% / 5,000 Pts)"
-            raw.contains("launch", true) || raw.contains("unit", true) -> "Launch Volume Increased by 12,450 Units"
-            raw.contains("spend", true) || raw.contains("book value", true) || raw.contains("benefit", true) -> "Spend Increased for Book Value & Benefits (+18.4%)"
-            raw.contains("rate", true) || raw.contains("hike", true) || raw.contains("cut", true) -> "Financial Rate / Metric Adjusted (+2.5%)"
-            raw.contains("profit", true) || raw.contains("revenue", true) || raw.contains("sales", true) -> "Performance Metrics: Revenue/Sales Increased"
-            else -> "Key Financial Metric Updated (+12.5% YoY)"
+    val indicatorText = remember(news.id, news.summaryWhoImpacted) {
+        val apiText = news.summaryWhoImpacted?.takeIf { it.isNotBlank() }
+        if (apiText != null) {
+            apiText
+        } else {
+            val raw = (news.financialImpactBullets ?: "") + " " + (news.summaryText) + " " + (news.title)
+            when {
+                raw.contains("reward", true) || raw.contains("point", true) -> "Reward Points Increased (+15% / 5,000 Pts)"
+                raw.contains("launch", true) || raw.contains("unit", true) -> "Launch Volume Increased by 12,450 Units"
+                raw.contains("spend", true) || raw.contains("book value", true) || raw.contains("benefit", true) -> "Spend Increased for Book Value & Benefits (+18.4%)"
+                raw.contains("rate", true) || raw.contains("hike", true) || raw.contains("cut", true) -> "Financial Rate / Metric Adjusted (+2.5%)"
+                raw.contains("profit", true) || raw.contains("revenue", true) || raw.contains("sales", true) -> "Performance Metrics: Revenue/Sales Increased"
+                else -> "Key Financial Metric Updated (+12.5% YoY)"
+            }
         }
     }
 
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-        shape = RoundedCornerShape(10.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
+    NewsBulletPoint(
+        icon = Icons.Default.TrendingUp,
+        iconColor = MaterialTheme.colorScheme.primary,
+        label = "What's Changed"
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.TrendingUp,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(16.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "What's Changed? • $indicatorText",
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+        Text(
+            text = indicatorText,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        }
+        )
     }
 }
 

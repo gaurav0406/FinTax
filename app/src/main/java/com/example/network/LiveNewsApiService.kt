@@ -20,6 +20,10 @@ data class ProcessedScrapedDataDto(
 ) {
     fun toEntity(): FinancialNewsEntity? {
         val newsTitle = title ?: return null
+        val lowerTitle = newsTitle.lowercase()
+        if (lowerTitle.contains("eerie") || lowerTitle.contains("shopping") || lowerTitle.contains("allure") || lowerTitle.contains("ghostly")) {
+            return null
+        }
         val newsUrl = url ?: return null
         return FinancialNewsEntity(
             title = newsTitle,

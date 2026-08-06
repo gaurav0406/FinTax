@@ -617,10 +617,8 @@ fun MainHomeScreen(
                             )
                         }
 
-                        // Persistent Bottom Sticky Banner Ad on non-feed screens
-                        if (activeTab != 0) {
-                            StickyBottomBannerAd()
-                        }
+                        // Persistent Bottom Sticky Banner Ad just above bottom navigation
+                        StickyBottomBannerAd()
 
                         val isDarkTab = (useInshortsViewMode && activeTab == 0) || activeTab == 5
 

@@ -81,7 +81,7 @@ class NewsRepository(private val dao: FinancialNewsDao) {
                 id = 101,
                 title = "RBI Keeps Repo Rate Unchanged at 6.5%: What It Means For Your Home Loan & EMIs",
                 summaryWhatHappened = "The Monetary Policy Committee (MPC) has voted to keep the repo rate steady at 6.5% for the eighth consecutive time, maintaining a balanced stance on inflation control.",
-                summaryWhoImpacted = "Home Loan Borrowers, Retail Investors & Fixed Income Depositors",
+                summaryWhoImpacted = "6.5% repo rate maintained for eighth consecutive MPC cycle",
                 summaryActionableTakeaway = "Continue your existing EMIs without upward revision. Consider locking in long-term FDs before rate cut cycles begin.",
                 summaryText = "The Reserve Bank of India announced that India's macroeconomic fundamentals remain resilient with GDP growth projected at 7.2% for the current fiscal year. Inflation has moderated towards the 4% target band, allowing the central bank to sustain steady lending rates.",
                 category = "Market Signals",
@@ -89,13 +89,14 @@ class NewsRepository(private val dao: FinancialNewsDao) {
                 sourceUrl = "https://rbi.org.in",
                 sourceName = "RBI Official Bulletin",
                 imageUrl = "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&w=1200&q=80",
+                whyItMatters = "• Directly impacts individual loan EMIs and fixed deposit yields across banking channels.\n• Secures stable borrowing costs for retail home loan and auto loan holders.",
                 publishedAt = System.currentTimeMillis() - 3600000L
             ),
             FinancialNewsEntity(
                 id = 102,
                 title = "Nifty 50 Crosses 25,500 Milestone Driven by Strong FII Inflows & Banking Rally",
                 summaryWhatHappened = "Benchmark Indian indices touched new record highs as foreign institutional investors increased allocations in large-cap banking and IT stocks.",
-                summaryWhoImpacted = "Equity Investors, Mutual Fund SIP Holders & Traders",
+                summaryWhoImpacted = "25,500 Nifty milestone achieved via heavy FII banking inflows",
                 summaryActionableTakeaway = "Maintain disciplined SIP allocations. Avoid lump-sum chasing at all-time highs; rebalance portfolio asset allocation.",
                 summaryText = "Strong quarterly corporate earnings, robust GST collections crossing ₹1.8 lakh crore, and expanding manufacturing PMI metrics fueled bullish market momentum across sectoral indices.",
                 category = "Market Signals",
@@ -103,13 +104,14 @@ class NewsRepository(private val dao: FinancialNewsDao) {
                 sourceUrl = "https://www.nseindia.com",
                 sourceName = "NSE Market Pulse",
                 imageUrl = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80",
+                whyItMatters = "• Enhances liquidity settlement speed and reduces portfolio holding costs for active investors.\n• Unlocks compounding alpha through disciplined systematic investment plans.",
                 publishedAt = System.currentTimeMillis() - 7200000L
             ),
             FinancialNewsEntity(
                 id = 103,
                 title = "Major Credit Card Issuers Revise Milestone Benefits & Airport Lounge Access Rules",
                 summaryWhatHappened = "Top Indian banks updated spend-based milestone thresholds and quarterly airport lounge access criteria across premium lifestyle credit cards.",
-                summaryWhoImpacted = "Credit Cardholders, Frequent Travelers & Reward Maximizers",
+                summaryWhoImpacted = "₹50,000 quarterly spend threshold introduced for lounge access",
                 summaryActionableTakeaway = "Review your card spend tracking apps to meet quarterly milestone requirements before billing cycle cutoffs.",
                 summaryText = "Card issuers are introducing spend prerequisites (e.g. ₹50,000 per quarter) to unlock complimentary domestic and international lounge access, optimizing reward payouts for active users.",
                 category = "Card Hacks & Perks",
@@ -117,13 +119,14 @@ class NewsRepository(private val dao: FinancialNewsDao) {
                 sourceUrl = "https://www.moneycontrol.com",
                 sourceName = "Cards & Perks Desk",
                 imageUrl = "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1200&q=80",
+                whyItMatters = "• Maximizes annual cash back and reward point redemption across dining and travel.\n• Unlocks milestone spending bonuses before quarterly fee revisions.",
                 publishedAt = System.currentTimeMillis() - 14400000L
             ),
             FinancialNewsEntity(
                 id = 104,
                 title = "New Tax Regime Slab Optimizations: How Salaried Professionals Save Up to ₹78,000",
                 summaryWhatHappened = "Income tax department guidelines highlight increased standard deductions and revised rebate slabs under the new tax regime for the financial year.",
-                summaryWhoImpacted = "Salaried Individuals, Taxpayers & Chartered Accountants",
+                summaryWhoImpacted = "₹78,000 annual tax savings unlocked under new regime slabs",
                 summaryActionableTakeaway = "Opt for the new tax regime if your total exemptions through HRA/80C are under ₹3.75 lakh annually.",
                 summaryText = "The revised tax slabs provide significant relief to middle-income earners, reducing tax liabilities and simplifying digital ITR filing through pre-filled portal utilities.",
                 category = "Wealth 101",
@@ -131,13 +134,14 @@ class NewsRepository(private val dao: FinancialNewsDao) {
                 sourceUrl = "https://economictimes.indiatimes.com",
                 sourceName = "ET Wealth",
                 imageUrl = "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80",
+                whyItMatters = "• Directly impacts individual tax slabs, liquidity buffers, and compliance timelines.\n• Optimizes annual net savings through strategic deduction rebalancing.",
                 publishedAt = System.currentTimeMillis() - 21600000L
             ),
             FinancialNewsEntity(
                 id = 105,
                 title = "GenAI & Automation Surge Across Indian Fintech: 40% YoY Growth in Digital Lending",
                 summaryWhatHappened = "Banks and non-banking financial companies (NBFCs) are scaling generative AI models for instant loan underwriting and fraud detection.",
-                summaryWhoImpacted = "Fintech Founders, Tech Professionals & Digital Borrowers",
+                summaryWhoImpacted = "40% YoY surge in digital lending automation across fintechs",
                 summaryActionableTakeaway = "Explore pre-approved digital credit lines via RBI-registered apps with instant KYC verification.",
                 summaryText = "Integration of generative AI and automated decisioning workflows has reduced loan disbursal times from days to under 5 minutes while maintaining strict regulatory compliance.",
                 category = "Tech & AI",
@@ -145,13 +149,14 @@ class NewsRepository(private val dao: FinancialNewsDao) {
                 sourceUrl = "https://techcrunch.com",
                 sourceName = "Tech & AI Briefs",
                 imageUrl = "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
+                whyItMatters = "• Accelerates enterprise AI adoption and automated workflow efficiency.\n• Lowers operational overhead across engineering and product teams.",
                 publishedAt = System.currentTimeMillis() - 28800000L
             ),
             FinancialNewsEntity(
                 id = 106,
                 title = "D2C Startup Funding Rebounds: Venture Capitalists Prioritize Unit Economics & Cash Flow",
                 summaryWhatHappened = "Indian direct-to-consumer and retail brands focusing on operating profitability are securing substantial Series B and C funding rounds.",
-                summaryWhoImpacted = "Startup Founders, Angel Investors & D2C Brands",
+                summaryWhoImpacted = "15% reduction in burn rate prioritizing operating profitability",
                 summaryActionableTakeaway = "Focus on customer lifetime value (LTV) and CAC ratios when presenting financial metrics to institutional investors.",
                 summaryText = "Venture capital sentiment has matured, shifting away from high-burn growth toward sustainable unit economics, gross margin expansion, and omnichannel retail presence.",
                 category = "Startup & Capital",
@@ -159,6 +164,7 @@ class NewsRepository(private val dao: FinancialNewsDao) {
                 sourceUrl = "https://economictimes.indiatimes.com",
                 sourceName = "Venture Pulse",
                 imageUrl = "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=80",
+                whyItMatters = "• Focuses on unit economics and cash flow positivity for VCs.\n• Drives rapid institutional capital backing and sustainable growth.",
                 publishedAt = System.currentTimeMillis() - 36000000L
             )
         )
@@ -167,7 +173,12 @@ class NewsRepository(private val dao: FinancialNewsDao) {
     }
 
     private fun FinancialNewsEntity.isPlaceholder(): Boolean {
-        return title.isBlank() ||
+        val t = title.lowercase()
+        return t.isBlank() ||
+                t.contains("eerie") ||
+                t.contains("shopping") ||
+                t.contains("allure") ||
+                t.contains("ghostly") ||
                 summaryWhatHappened.equals("placeholder", ignoreCase = true) ||
                 (summaryText.contains("Point 1", ignoreCase = true) && summaryWhatHappened.contains("Point 1", ignoreCase = true))
     }
@@ -178,11 +189,13 @@ class NewsRepository(private val dao: FinancialNewsDao) {
 
     suspend fun clearCacheAndFetchFresh(context: android.content.Context? = null) {
         try {
+            dao.deletePlaceholders()
             dao.deleteAllUnbookmarked()
         } catch (e: Exception) {
             android.util.Log.e("NewsRepository", "Error clearing local cache: ${e.message}")
         }
         fetchLiveNewsFromSupabase(context)
+        dao.deletePlaceholders()
         val currentCount = dao.getAllNews().first().size
         if (currentCount == 0) {
             seedInitialDataIfEmpty(context)

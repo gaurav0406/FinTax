@@ -35,7 +35,7 @@ Respond ONLY with a JSON object matching this exact format:
     "raw_headline": "Crisp headline (8 to 10 words)",
     "why_read": "Must start with a metric/number. STRICTLY 8 to 10 words total.",
     "whats_changed": "Must start with a metric/number. STRICTLY 8 to 10 words total.",
-    "summary_bullets": "3-4 bullet points summarizing the news",
+    "summary_bullets": "6-7 bullet points summarizing the news",
     "target_audience": "Who this impacts",
     "monetization_angle": "How this relates to making or saving money",
     "badge": "Short badge text",
@@ -45,10 +45,7 @@ Respond ONLY with a JSON object matching this exact format:
     "uspAndVerdict": "Final verdict or USP",
     "affiliateCtaText": "Call to action text",
     "affiliateCtaLink": "Call to action link",
-    "tweet_handle": "Public Twitter/X handle (e.g. @TaxGuru_In)",
-    "tweet_name": "Author display name",
-    "tweet_text": "Relevant public tweet text regarding this news (2 sentences)",
-    "tweet_badge": "Sentiment badge (e.g. 🟢 Bullish Sentiment)"
+    "why_it_matters": "Detailed explanation of why this news matters to the user (4-5 bullet lines or sentences)"
 }""".trimIndent()
 
                 val prompt = "News: $rawText"
@@ -90,10 +87,7 @@ Respond ONLY with a JSON object matching this exact format:
                         affiliateCtaText = llmResult.optString("affiliateCtaText", null),
                         affiliateCtaLink = llmResult.optString("affiliateCtaLink", null),
                         targetAudience = llmResult.optString("target_audience", null),
-                        communityTweetHandle = llmResult.optString("tweet_handle", null),
-                        communityTweetName = llmResult.optString("tweet_name", null),
-                        communityTweetText = llmResult.optString("tweet_text", null),
-                        communitySentimentBadge = llmResult.optString("tweet_badge", null),
+                        whyItMatters = llmResult.optString("why_it_matters", null),
                         publishedAt = System.currentTimeMillis()
                     )
                 )
@@ -138,7 +132,7 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
     "raw_headline": "Crisp headline (8 to 10 words)",
     "why_read": "Must start with a metric/number. STRICTLY 8 to 10 words total.",
     "whats_changed": "Must start with a metric/number. STRICTLY 8 to 10 words total.",
-    "summary_bullets": "3-4 bullet points summarizing the news",
+    "summary_bullets": "6-7 bullet points summarizing the news",
     "target_audience": "Who this impacts",
     "monetization_angle": "How this relates to making or saving money",
     "badge": "Short badge text",
@@ -148,10 +142,7 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
     "uspAndVerdict": "Final verdict or USP",
     "affiliateCtaText": "Call to action text",
     "affiliateCtaLink": "Call to action link",
-    "tweet_handle": "Public Twitter/X handle (e.g. @TaxGuru_In)",
-    "tweet_name": "Author display name",
-    "tweet_text": "Relevant public tweet text regarding this news (2 sentences)",
-    "tweet_badge": "Sentiment badge (e.g. 🟢 Bullish Sentiment)"
+    "why_it_matters": "Detailed explanation of why this news matters to the user (4-5 bullet lines or sentences)"
   }
 ]""".trimIndent()
 
@@ -207,10 +198,7 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
                         affiliateCtaText = llmResult.optString("affiliateCtaText", null),
                         affiliateCtaLink = llmResult.optString("affiliateCtaLink", null),
                         targetAudience = llmResult.optString("target_audience", null),
-                        communityTweetHandle = llmResult.optString("tweet_handle", null),
-                        communityTweetName = llmResult.optString("tweet_name", null),
-                        communityTweetText = llmResult.optString("tweet_text", null),
-                        communitySentimentBadge = llmResult.optString("tweet_badge", null),
+                        whyItMatters = llmResult.optString("why_it_matters", null),
                         publishedAt = System.currentTimeMillis()
                     )
                 } else {
@@ -253,7 +241,7 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
             else -> "https://economictimes.indiatimes.com"
         }
 
-        val p1 = "• New guidelines announced for $category regarding $snippet.\n• Operational framework revised to enhance transparency and efficiency.\n• Stakeholders are evaluating capital allocation and tax filing rules.\n• Intended to streamline user workflows and reduce compliance burden.\n• Updates take effect in the upcoming financial quarter across all regions."
+        val p1 = "• New guidelines announced for $category regarding $snippet.\n• Operational framework revised to enhance transparency and efficiency.\n• Stakeholders are evaluating capital allocation and tax filing rules.\n• Intended to streamline user workflows and reduce compliance burden.\n• Updates take effect in the upcoming financial quarter across all regions.\n• Comprehensive impact analysis indicates favorable net outcomes for retail participants.\n• Official compliance portals have updated reporting parameters accordingly."
         val p2 = "Salaried individuals, individual taxpayers, and retail investors."
         val p3 = "• Review official portal notices before the upcoming tax quarter deadline.\n• Optimize asset allocation strategy according to the updated sector framework.\n• Consult financial advisor to rebalance portfolio and lock in higher yields.\n• Monitor primary distribution channels for further official updates."
         
@@ -267,6 +255,14 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
 
         val summaryText = "• Key regulatory update affecting interest rate models, tax compliance rules, and market liquidity.\n• Operational shift designed to optimize capital allocation, investor protection, and financial transparency.\n• Recommended strategic adjustment to maximize returns across $category portfolios.\n• Implemented following comprehensive multi-stakeholder consultations and policy reviews."
 
+        val fallbackWhyItMatters = when (category) {
+            "Financial News" -> "• Directly impacts individual tax slabs, liquidity buffers, and compliance timelines.\n• Optimizes annual net savings through strategic deduction rebalancing.\n• Reduces audit scrutiny risks with automated digital filing safeguards.\n• Secures long-term financial stability across fluctuating market cycles."
+            "Credit Cards" -> "• Maximizes annual cash back and reward point redemption across dining and travel.\n• Unlocks milestone spending bonuses before quarterly fee revisions.\n• Reduces foreign markup fees on international transaction channels.\n• Enhances overall net card savings by up to 7.5% annually."
+            "Loans & FDs" -> "• Lowers monthly loan EMIs and secures higher fixed deposit interest yields.\n• Protects portfolio returns against rising inflation and rate cuts.\n• Waives prepayment penalties for early tenure clearance.\n• Enhances emergency liquidity buffers for immediate drawdown needs."
+            "Markets & Mutual Funds" -> "• Enhances liquidity settlement speed and reduces portfolio holding costs.\n• Unlocks compounding alpha through disciplined systematic investment plans.\n• Minimizes expense ratios across top-performing direct index funds.\n• Protects capital against short-term macroeconomic volatility."
+            else -> "• Significantly influences asset allocation and net annual savings strategies.\n• Optimizes long-term financial planning and wealth accumulation goals.\n• Reduces exposure to high-risk speculative asset classes.\n• Unlocks tax-efficient growth across diversified portfolios."
+        }
+
         return FinancialNewsEntity(
             title = "Key $category Update for Indian Taxpayers",
             summaryWhatHappened = p1,
@@ -278,6 +274,7 @@ Respond ONLY with a JSON Array of objects matching this exact format for each it
             sourceUrl = sourceUrl,
             sourceName = "Indian Financial News Feed",
             financialImpactBullets = fallbackImpact,
+            whyItMatters = fallbackWhyItMatters,
             publishedAt = System.currentTimeMillis()
         )
     }

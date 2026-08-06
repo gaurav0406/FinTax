@@ -599,15 +599,14 @@ fun InshortsNewsCardItem(
                         )
                     }
 
+                    WhyItMattersWidget(
+                        news = news
+                    )
+
                     WhatsChangedIndicator(news)
 
-                    // Sponsored Ad Banner right before Twitter link
+                    // Sponsored Ad Banner
                     InshortsAdBanner()
-                    
-                    ExpertTwitterSentimentWidget(
-                        news = news,
-                        onOpenUrl = { url, _ -> onOpenActionUrl(url) }
-                    )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -782,16 +781,17 @@ private fun InshortsBulletPoint(
     label: String,
     content: String
 ) {
-    Surface(
+    Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(10.dp),
-        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.04f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 8.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.Top
         ) {
             Icon(
@@ -800,29 +800,29 @@ private fun InshortsBulletPoint(
                 tint = iconColor,
                 modifier = Modifier
                     .padding(top = 2.dp)
-                    .size(16.dp)
+                    .size(18.dp)
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = label.uppercase(),
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 10.sp,
+                        fontSize = 11.sp,
                         color = iconColor,
-                        letterSpacing = 0.5.sp
+                        letterSpacing = 0.6.sp
                     )
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = content,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontSize = 15.sp,
                         lineHeight = 22.sp,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.95f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
             }
@@ -844,11 +844,14 @@ private fun InshortsAdBanner() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Surface(
@@ -906,168 +909,23 @@ private fun InshortsAdBanner() {
 }
 
 @Composable
-fun ExpertTwitterSentimentWidget(
-    news: FinancialNewsEntity,
-    onOpenUrl: (String, String) -> Unit
+fun WhyItMattersWidget(
+    news: FinancialNewsEntity
 ) {
-    val handle = news.communityTweetHandle?.takeIf { it.isNotBlank() } ?: when {
-        news.category.contains("Card", ignoreCase = true) -> "@CreditGuruIndia"
-        news.category.contains("Market", ignoreCase = true) || news.category.contains("Signal", ignoreCase = true) -> "@MarketAnalyst99"
-        news.category.contains("Tech", ignoreCase = true) || news.category.contains("AI", ignoreCase = true) -> "@TechInsider_IN"
-        news.category.contains("Startup", ignoreCase = true) || news.category.contains("Capital", ignoreCase = true) -> "@VenturePulseIN"
-        else -> "@TaxGuru_In"
-    }
-    val name = news.communityTweetName?.takeIf { it.isNotBlank() } ?: when {
-        news.category.contains("Card", ignoreCase = true) -> "Credit Insights India"
-        news.category.contains("Market", ignoreCase = true) || news.category.contains("Signal", ignoreCase = true) -> "Stock Market Pulse"
-        news.category.contains("Tech", ignoreCase = true) || news.category.contains("AI", ignoreCase = true) -> "Tech & AI Briefs"
-        news.category.contains("Startup", ignoreCase = true) || news.category.contains("Capital", ignoreCase = true) -> "Venture Pulse India"
-        else -> "Tax Wise Desk"
-    }
-    val tweetText = news.communityTweetText?.takeIf { it.isNotBlank() } ?: when {
-        news.category.contains("Card", ignoreCase = true) -> "Maximizing milestone benefits and reward multipliers on this update yields an effective net cash back return of ~7.5%. Smart move before quarterly fee revisions! 💳✨"
-        news.category.contains("Market", ignoreCase = true) || news.category.contains("Signal", ignoreCase = true) -> "Nifty holding key support levels around major moving averages. Institutional buying in banking and index leaders indicates strong short-term momentum. 📈"
-        news.category.contains("Tech", ignoreCase = true) || news.category.contains("AI", ignoreCase = true) -> "Enterprise adoption of generative AI and automated tax/finance workflows is accelerating 40% YoY across Indian tech hubs. Huge efficiency upside! 🚀"
-        news.category.contains("Startup", ignoreCase = true) || news.category.contains("Capital", ignoreCase = true) -> "D2C founders focusing on unit economics and cash flow positivity rather than burn-heavy expansion are seeing rapid institutional capital backing. 💼"
-        else -> "New tax regime slab optimizations and digital filing protocols save up to ₹78,000 annually for high-earning professionals. Review deductions now! 📊"
-    }
-    val badgeText = news.communitySentimentBadge?.takeIf { it.isNotBlank() } ?: "🟢 Community Sentiment"
-    val sentimentColor = when {
-        badgeText.contains("Bullish", true) || badgeText.contains("Strong", true) -> Color(0xFF4CAF50)
-        badgeText.contains("Growth", true) || badgeText.contains("Impact", true) -> Color(0xFF9C27B0)
-        badgeText.contains("Market", true) || badgeText.contains("Sentiment", true) -> Color(0xFF2196F3)
-        badgeText.contains("VC", true) || badgeText.contains("Outlook", true) -> Color(0xFFFF9800)
-        else -> Color(0xFF009688)
+    val whyItMattersText = news.whyItMatters?.takeIf { it.isNotBlank() } ?: when {
+        news.category.contains("Card", ignoreCase = true) -> "• Maximizes annual cash back and reward point redemption across dining and travel.\n• Unlocks milestone spending bonuses before quarterly fee revisions."
+        news.category.contains("Market", ignoreCase = true) || news.category.contains("Signal", ignoreCase = true) -> "• Enhances liquidity settlement speed and reduces portfolio holding costs.\n• Unlocks compounding alpha through disciplined systematic investment plans."
+        news.category.contains("Tech", ignoreCase = true) || news.category.contains("AI", ignoreCase = true) -> "• Accelerates enterprise AI adoption and automated workflow efficiency.\n• Lowers operational overhead across engineering and product teams."
+        news.category.contains("Startup", ignoreCase = true) || news.category.contains("Capital", ignoreCase = true) -> "• Focuses on unit economics and cash flow positivity for VCs.\n• Drives rapid institutional capital backing and sustainable growth."
+        else -> "• Significantly influences asset allocation and net annual savings strategies.\n• Optimizes long-term financial planning and wealth accumulation goals."
     }
 
-    val tweetUrl = remember(news.sourceUrl, handle) {
-        if (news.sourceUrl.isNotBlank() && news.sourceUrl.startsWith("http")) news.sourceUrl
-        else "https://twitter.com/${handle.removePrefix("@")}"
-    }
-
-    Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "COMMUNITY SENTIMENT • Public Tweets on X",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    letterSpacing = 0.8.sp
-                )
-            )
-            Text(
-                text = "Live Scraped",
-                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            )
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    onOpenUrl(tweetUrl, "Public Tweet on X")
-                },
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Surface(
-                            modifier = Modifier.size(32.dp),
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = name.take(1),
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = name,
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = "Verified",
-                                    tint = Color(0xFF1DA1F2),
-                                    modifier = Modifier.size(12.dp)
-                                )
-                            }
-                            Text(
-                                text = "$handle • Scraped 15m ago",
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            )
-                        }
-                    }
-                    
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = sentimentColor.copy(alpha = 0.15f)
-                    ) {
-                        Text(
-                            text = badgeText,
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold, color = sentimentColor),
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = tweetText,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Chat,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "View full tweet thread on X",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.Default.OpenInNew,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(14.dp)
-                    )
-                }
-            }
-        }
-    }
+    InshortsBulletPoint(
+        icon = Icons.Default.Info,
+        iconColor = MaterialTheme.colorScheme.primary,
+        label = "Why It Matters",
+        content = whyItMattersText
+    )
 }
 
 
